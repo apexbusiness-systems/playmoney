@@ -70,3 +70,40 @@ legal copy, UI wiring, CI).
 ### 2026-06-14 · INVARIANT REMINDER
 App default mode = BUILT. `canGoLive()` must return false until all gates green. No code path,
 flag, seed, or test may set LIVE. Secrets only via env; never in code or this folder.
+
+### 2026-06-14 · D-006 · P1 — Real data layer behind the contract (BUILT)
+Recon first: `bun install` ok; `bun run typecheck` clean; **67 tests pass** baseline (vitest).
+Confirmed the §0 ground truth — compliance spine (P0/D-005) is BUILT; the gap is the data layer.
+- **Gap found**: migrations `0001–0005` build the compliance SPINE only. The consumer-facing
+  recovery domain (`Recovery`/`RecoveryEvent`/`Notification`/`Approval` in `playmoney/types.ts`)
+  had **no DB home**. → added `0006_recovery_domain.sql` (recoveries/recovery_events/approvals/
+  notifications), all RLS owner-scoped, idempotency-keyed, money-only notif CHECK (#16). No
+  fund-holding surface; fees stay in `fee_charges` (0004).
+- `src/lib/playmoney/supabase.ts` — `SupabaseApiClient`/`SupabaseAuthClient` implementing the
+  contract: RLS-scoped reads/writes, **Zod-validated `rowTo*` mappers** (boundary), idempotent
+  `approveRecovery`, fee-ledger projected from landed recoveries (mirrors mock). Auth is
+  passwordless (OTP) → typed `MagicLinkSentError` when no live session.
+- `src/lib/playmoney/client.ts` — pure `selectClients(cfg)`: real Supabase when
+  `VITE_SUPABASE_URL`+`VITE_SUPABASE_ANON_KEY` present, else `MockApiClient` fallback. Routes
+  `app.index`/`app.activity`/`app.settings` repointed to this seam (import-line diff only).
+- `scripts/db/verify-rls.ts` PROTECTED list extended with the 4 new tables.
+- **Verified**: `typecheck` clean; **vitest 77 pass** (+10: mappers, #16-at-boundary, selector,
+  mock-fallback-intact); `bun run build` ok. RLS round-trip is reasoned-not-run here (no live creds).
+
+### 2026-06-14 · D-007 · P3 — Recovery engine (pure, no I/O) (BUILT)
+Built the proprietary core as pure functions (deterministic, no clock/IO) under `src/lib/engine/`:
+- `situation.ts` `deriveSituations()` — duplicate-charge / fee / billing-error / subscription
+  detection; each txn consumed at most once; stable output.
+- `router.ts` `routeProblem()` — ProblemType → enabled `AvenueKey` via `AVENUE_REGISTRY`;
+  disabled target → typed `avenue_disabled`. **Invariant proven by test**: default mapping is
+  exhaustive over ProblemType and only ever targets enabled avenues; a disabled-mapping returns
+  `avenue_disabled` (never a hit).
+- `learning.ts` `LearningLoop` — win/loss per avenue over injectable `WinRateStore` (in-memory
+  default); win-rate in [0,1], no division by zero; rankings best-first.
+- **Verified**: `typecheck` clean; **vitest 87 pass** (+10 engine); engine has zero I/O imports.
+
+### 2026-06-14 · NEXT
+P2 (route approve through MAN-Mode executor + recovery_events audit) → P4 (port adapters,
+sealed in BUILT) → P5 (lifecycle saga + fee_reversal e2e) → P6 (onboarding consent) → P7 (CI +
+go-live health check). Pre-existing prettier debt in landing/route files: lint not yet green
+project-wide (formatting only).
