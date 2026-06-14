@@ -167,41 +167,10 @@ export class SupabaseApiClient implements ApiClient {
   }
 
   async approveRecovery(input: { recoveryId: string; idempotencyKey: string }): Promise<Approval> {
-    const ownerId = await this.ownerId();
-
-    // Idempotent: an existing approval with this token short-circuits (no re-send).
-    const existing = await this.sb
-      .from("approvals")
-      .select("*")
-      .eq("approval_token", input.idempotencyKey)
-      .maybeSingle();
-    if (existing.error) throw new Error(`approveRecovery lookup failed: ${existing.error.message}`);
-    if (existing.data) return rowToApproval(existing.data);
-
-    const rec = await this.getRecovery(input.recoveryId);
-    if (!rec) throw new Error("Recovery not found");
-
-    // P1: record the approval + advance status. P2 routes this through the
-    // MAN-Mode executor (LOA + human-review + sealed-unless-LIVE) server-side.
-    const inserted = await this.sb
-      .from("approvals")
-      .insert({
-        owner_id: ownerId,
-        recovery_id: input.recoveryId,
-        approval_token: input.idempotencyKey,
-        approved_by: ownerId,
-      })
-      .select("*")
-      .single();
-    if (inserted.error) throw new Error(`approveRecovery failed: ${inserted.error.message}`);
-
-    const statusUpdate = await this.sb
-      .from("recoveries")
-      .update({ status: "on_the_way" })
-      .eq("id", input.recoveryId);
-    if (statusUpdate.error) throw new Error(`approveRecovery status update failed: ${statusUpdate.error.message}`);
-
-    return rowToApproval(inserted.data);
+    // P2: route through the MAN-Mode executor server fn (LOA + review + sealed-unless-LIVE).
+    // The server fn handles idempotency, LOA build, review, audit trail, and DB writes.
+    const { approveRecoveryFn } = await import("@/lib/api/recovery.functions");
+    return approveRecoveryFn({ data: input });
   }
 
   async listNotifications(): Promise<Notification[]> {
