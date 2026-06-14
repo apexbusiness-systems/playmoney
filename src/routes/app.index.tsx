@@ -2,14 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { toast } from "sonner";
 import { api, formatMoney } from "@/lib/playmoney/client";
 import type { Recovery } from "@/lib/playmoney/types";
+import { approveRecovery } from "@/lib/playmoney/approve";
 import { Odometer } from "@/components/pm/Odometer";
 import { GoldDing } from "@/components/pm/GoldDing";
 import { StatusPill } from "@/components/pm/StatusPill";
 import { PMIcon } from "@/components/pm/Icon";
 import { PMButton } from "@/components/pm/Button";
 import { ConfirmSheet } from "@/components/pm/ConfirmSheet";
+import { useDialogA11y } from "@/components/pm/useDialog";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Your wins — PlayMoney" }] }),
@@ -24,15 +27,20 @@ function WinsPage() {
   const [landed, setLanded] = useState<Recovery | null>(null);
 
   async function approve(rec: Recovery) {
-    // optimistic
-    qc.setQueryData<Recovery[]>(["recoveries"], (old) =>
-      old?.map((r) => (r.id === rec.id ? { ...r, status: "on_the_way" } : r)),
-    );
     setConfirming(null);
-    await api.approveRecovery({ recoveryId: rec.id, idempotencyKey: rec.idempotencyKey });
-    setLanded(rec);
-    await qc.invalidateQueries({ queryKey: ["recoveries"] });
-    await qc.invalidateQueries({ queryKey: ["totals"] });
+    try {
+      await approveRecovery({
+        qc,
+        rec,
+        run: () => api.approveRecovery({ recoveryId: rec.id, idempotencyKey: rec.idempotencyKey }),
+      });
+      setLanded(rec);
+    } catch {
+      // approveRecovery has already rolled the optimistic update back.
+      toast.error("That didn't go through", {
+        description: `We couldn't send ${formatMoney(rec.userNet)} from ${rec.merchant}. Nothing left your side — tap to try again.`,
+      });
+    }
   }
 
   return (
@@ -42,7 +50,10 @@ function WinsPage() {
         <div className="container-pm py-10 sm:py-14">
           <p className="eyebrow text-muted-dark">Found for you</p>
           <div className="mt-3 flex items-end justify-between gap-6">
-            <h1 className="font-display tabular text-5xl font-semibold leading-none sm:text-6xl" style={{ color: "#F2C24B" }}>
+            <h1
+              className="font-display tabular text-5xl font-semibold leading-none sm:text-6xl"
+              style={{ color: "#F2C24B" }}
+            >
               {totals.data ? (
                 <Odometer valueCents={totals.data.foundTotal} duration={1800} />
               ) : (
@@ -93,29 +104,31 @@ function WinsPage() {
 }
 
 function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void }) {
-  // Bigger win = bigger card
-  const size =
-    rec.userNet >= 15000 ? "lg" : rec.userNet >= 5000 ? "md" : "sm";
-  const pad = size === "lg" ? "p-7" : size === "md" ? "p-6" : "p-5";
+  // Bigger win = bigger, visually featured card.
+  const size = rec.userNet >= 15000 ? "lg" : rec.userNet >= 5000 ? "md" : "sm";
+  const featured = size === "lg";
+  const pad = size === "lg" ? "p-7 sm:p-8" : size === "md" ? "p-6" : "p-5";
   const amountClass =
-    size === "lg"
-      ? "text-4xl"
-      : size === "md"
-        ? "text-3xl"
-        : "text-2xl";
+    size === "lg" ? "text-4xl sm:text-5xl" : size === "md" ? "text-3xl" : "text-2xl";
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className={`relative rounded-[20px] border border-border-l bg-card shadow-card-l ${pad}`}
+      className={`relative rounded-[20px] border bg-card shadow-card-l ${pad} ${
+        featured ? "border-gold/40 ring-1 ring-gold/30" : "border-border-l"
+      }`}
       style={{
         borderLeft: `4px solid ${rec.status === "landed" ? "#F2C24B" : rec.status === "needs_approval" ? "#E6A92E" : "#0F6B50"}`,
+        background: featured
+          ? "linear-gradient(180deg, rgba(242,194,75,0.06) 0%, rgba(255,253,248,1) 40%)"
+          : undefined,
       }}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
+          {featured && <p className="eyebrow mb-2 text-gold">Top win</p>}
           <div className="flex items-center gap-3">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-mint-chip">
               <PMIcon name={iconFor(rec.avenue)} />
@@ -135,8 +148,15 @@ function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void
       </div>
       {rec.status === "needs_approval" && (
         <div className="mt-5 flex items-center justify-between gap-4 rounded-[14px] bg-sand px-4 py-3 text-sm">
-          <span className="text-ink-muted">Tap to send <span className="font-semibold text-ink">{formatMoney(rec.userNet)}</span> to your account.</span>
-          <PMButton variant="primaryLight" className="!h-10 !px-4 text-sm" onClick={onApprove}>
+          <span className="text-ink-muted">
+            Tap to send <span className="font-semibold text-ink">{formatMoney(rec.userNet)}</span>{" "}
+            to your account.
+          </span>
+          <PMButton
+            variant="primaryLight"
+            className="!h-10 shrink-0 whitespace-nowrap !px-4 text-sm"
+            onClick={onApprove}
+          >
             Send it
           </PMButton>
         </div>
@@ -185,14 +205,20 @@ function EmptyState() {
 }
 
 function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => void }) {
+  const dialogRef = useDialogA11y<HTMLDivElement>(!!rec, onClose);
   return (
     <AnimatePresence>
       {rec && (
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Recovered ${formatMoney(rec.userNet)} from ${rec.merchant}`}
+          tabIndex={-1}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center outline-none"
           style={{ background: "#15110B" }}
         >
           <div className="text-center">
@@ -204,9 +230,7 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
                 </span>
               </GoldDing>
             </div>
-            <p className="mt-8 font-display text-2xl text-text-dark">
-              From {rec.merchant}
-            </p>
+            <p className="mt-8 font-display text-2xl text-text-dark">From {rec.merchant}</p>
             <button
               onClick={onClose}
               className="mt-10 inline-flex h-11 items-center rounded-full bg-gold px-6 font-semibold text-ink"

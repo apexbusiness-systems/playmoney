@@ -1,30 +1,69 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 interface Props {
   trigger?: number;
   loop?: boolean;
+  /** Maximum pulse cycles before the loop goes quiet. */
+  maxLoops?: number;
   children: ReactNode;
   color?: string;
 }
 
-export function GoldDing({ trigger = 0, loop = false, children, color = "#F2C24B" }: Props) {
+export function GoldDing({
+  trigger = 0,
+  loop = false,
+  maxLoops = 3,
+  children,
+  color = "#F2C24B",
+}: Props) {
   const reduce = useReducedMotion();
   const [tick, setTick] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loop || reduce) return;
-    const i = window.setInterval(() => setTick((t) => t + 1), 3200);
-    return () => window.clearInterval(i);
-  }, [loop, reduce]);
+    const el = containerRef.current;
+    if (!el) return;
+
+    let count = 0;
+    let intervalId: number | undefined;
+
+    const start = () => {
+      if (intervalId || count >= maxLoops) return;
+      intervalId = window.setInterval(() => {
+        count += 1;
+        setTick((t) => t + 1);
+        if (count >= maxLoops && intervalId) {
+          window.clearInterval(intervalId);
+          intervalId = undefined;
+        }
+      }, 3200);
+    };
+    const stop = () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+        intervalId = undefined;
+      }
+    };
+
+    // Only pulse while the element is on screen, and never beyond maxLoops total.
+    const io = new IntersectionObserver(
+      (entries) => (entries[0]?.isIntersecting ? start() : stop()),
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      stop();
+    };
+  }, [loop, reduce, maxLoops]);
 
   const key = loop ? tick : trigger;
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <AnimatePresence>
-        {!reduce && <RingsBurst key={key} color={color} />}
-      </AnimatePresence>
+    <div ref={containerRef} className="relative inline-flex items-center justify-center">
+      <AnimatePresence>{!reduce && <RingsBurst key={key} color={color} />}</AnimatePresence>
       <motion.div
         key={`pop-${key}`}
         initial={{ scale: 0.96 }}
@@ -40,7 +79,10 @@ export function GoldDing({ trigger = 0, loop = false, children, color = "#F2C24B
 
 function RingsBurst({ color }: { color: string }) {
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden>
+    <div
+      className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      aria-hidden
+    >
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}

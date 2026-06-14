@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { PMButton } from "./Button";
 import { PMIcon } from "./Icon";
+import { useDialogA11y } from "./useDialog";
 import { formatMoney } from "@/lib/playmoney/mock";
 import type { Recovery } from "@/lib/playmoney/types";
 
@@ -14,6 +15,7 @@ interface Props {
 
 export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
   const [busy, setBusy] = useState(false);
+  const dialogRef = useDialogA11y<HTMLDivElement>(open && !!recovery, onClose);
 
   return (
     <AnimatePresence>
@@ -33,12 +35,17 @@ export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
             exit={{ y: 40, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg p-4 sm:bottom-12"
-            role="dialog"
-            aria-modal
           >
-            <div className="rounded-[20px] bg-card border border-border-l shadow-card-l p-7">
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="confirm-sheet-title"
+              tabIndex={-1}
+              className="rounded-[20px] bg-card border border-border-l shadow-card-l p-7 outline-none"
+            >
               <p className="eyebrow text-ink-muted">Awaiting your OK</p>
-              <p className="mt-3 font-display text-2xl font-semibold">
+              <p id="confirm-sheet-title" className="mt-3 font-display text-2xl font-semibold">
                 Found you <span className="text-mint">{formatMoney(recovery.userNet)}</span> —<br />
                 send it to your account?
               </p>
@@ -64,7 +71,10 @@ export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
                 >
                   <PMIcon name="check" stroke="#FFFDF8" /> Yes, send it
                 </PMButton>
-                <button className="text-sm font-medium text-ink-muted hover:text-ink" onClick={onClose}>
+                <button
+                  className="text-sm font-medium text-ink-muted hover:text-ink"
+                  onClick={onClose}
+                >
                   Not now
                 </button>
               </div>
