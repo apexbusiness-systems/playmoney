@@ -57,6 +57,16 @@ The cloud env's plaintext env-var field is flagged "visible to anyone". It holds
 build now, **rotate after**. ACTION FOR USER: rotate both in Supabase + relocate to a secret
 store once the build settles. Never store these values in code or omni-recall.
 
+### 2026-06-14 · D-005 · Phase 2 complete — 7 modules + MAN-Mode executor BUILT
+All modules wired with schema+RLS, types, guards, tests, gate hooks. See `05-coverage.md`.
+- M1 loa.ts/`0002` · M2 geofence.ts · M3 contract.ts/`0003` · M4 causation.ts/`0004` (DB CHECK)
+  · M5 review.ts/`0005` (DB CHECK) · M6 upl.ts · M7 avenues.ts · #7 executor.ts + ports.ts.
+- §6 plumbing: gates.ts/mode.ts (pure) + gates.server.ts/audit.server.ts (DB, ops-set).
+- Verified: typecheck clean; **67 tests pass** (T1–T8,T10); `db:verify-rls` = 8/8 deny anon (T9).
+- App remains **BUILT**; `canGoLive()`=false; executor seals real effects until LIVE+gates.
+Residuals tracked in `05-coverage.md` (counsel/insurance gates, secret rotation, adapter wiring,
+legal copy, UI wiring, CI).
+
 ### 2026-06-14 · INVARIANT REMINDER
 App default mode = BUILT. `canGoLive()` must return false until all gates green. No code path,
 flag, seed, or test may set LIVE. Secrets only via env; never in code or this folder.
