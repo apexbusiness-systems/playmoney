@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { api, formatMoney } from "@/lib/playmoney/mock";
+import { api, formatMoney } from "@/lib/playmoney/client";
 import { StatusPill } from "@/components/pm/StatusPill";
 
 export const Route = createFileRoute("/app/activity")({

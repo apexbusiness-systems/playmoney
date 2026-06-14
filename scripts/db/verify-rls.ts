@@ -33,6 +33,10 @@ const PROTECTED = [
   "fee_charges",
   "review_queue",
   "audit_log",
+  "recoveries",
+  "recovery_events",
+  "approvals",
+  "notifications",
 ];
 
 let failures = 0;

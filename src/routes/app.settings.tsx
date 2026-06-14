@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { api, auth } from "@/lib/playmoney/mock";
+import { api, auth } from "@/lib/playmoney/client";
 import { PMCard } from "@/components/pm/Card";
 import { PMButton } from "@/components/pm/Button";
 import { PMIcon } from "@/components/pm/Icon";

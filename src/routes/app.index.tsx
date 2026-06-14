@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { api, formatMoney } from "@/lib/playmoney/mock";
+import { api, formatMoney } from "@/lib/playmoney/client";
 import type { Recovery } from "@/lib/playmoney/types";
 import { Odometer } from "@/components/pm/Odometer";
 import { GoldDing } from "@/components/pm/GoldDing";
