@@ -3,25 +3,68 @@
 
 /* PlayMoney design system — exact token spec. */
 
-@theme {
-  --color-sand: #F4EEE1;
-  --color-card: #FFFDF8;
-  --color-border-l: #E5DBC6;
-  --color-ink: #1C1813;
-  --color-ink-muted: #6A6354;
-  --color-evergreen: #0E3B2D;
-  --color-espresso: #15110B;
-  --color-green-btn: #0F6B50;
-  --color-gold: #E6A92E;
-  --color-gold-num: #F2C24B;
-  --color-mint: #2E8A66;
-  --color-mint-chip: #E7F0EA;
-  --color-text-dark: #F4EEE1;
-  --color-muted-dark: #A8C0B4;
-  --color-border-d: #1E5A45;
+/* ── Self-hosted variable fonts (no third-party CDN; GDPR-safe, no render-block) ── */
+@font-face {
+  font-family: "Fraunces Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  /* `optional`: the display face never swaps mid-view, so the giant hero number
+     and headlines cannot reflow — zero CLS. Same-origin woff2 usually loads inside
+     the block period, so first paint is still Fraunces. */
+  font-display: optional;
+  src: url("../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2")
+    format("woff2-variations");
+}
+@font-face {
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../node_modules/@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
 
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+/* ── Metric-matched fallbacks: hold layout while/if the web fonts are not yet active ── */
+@font-face {
+  font-family: "Fraunces Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  size-adjust: 102%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Hanken Fallback";
+  src: local("Arial"), local("Helvetica Neue");
+  size-adjust: 99%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+@theme {
+  /* Color tokens in oklch(L C H) — perceptually-uniform port of the brand palette.
+     Values are equivalence-preserving (round-trip from the original hex shown). */
+  --color-sand: oklch(0.9503 0.0184 86.15); /* #F4EEE1 */
+  --color-card: oklch(0.9942 0.0069 88.64); /* #FFFDF8 */
+  --color-border-l: oklch(0.8938 0.0302 85.57); /* #E5DBC6 */
+  --color-ink: oklch(0.2119 0.0114 73.3); /* #1C1813 */
+  --color-ink-muted: oklch(0.5017 0.0246 85.95); /* #6A6354 */
+  --color-evergreen: oklch(0.3175 0.0548 168.43); /* #0E3B2D */
+  --color-espresso: oklch(0.1804 0.0134 77.77); /* #15110B */
+  --color-green-btn: oklch(0.4706 0.0917 167.05); /* #0F6B50 */
+  --color-gold: oklch(0.773 0.1471 79.82); /* #E6A92E */
+  --color-gold-num: oklch(0.8358 0.1435 86.44); /* #F2C24B */
+  --color-mint: oklch(0.5694 0.1033 163.47); /* #2E8A66 */
+  --color-mint-chip: oklch(0.9467 0.0124 157); /* #E7F0EA */
+  --color-text-dark: oklch(0.9503 0.0184 86.15); /* #F4EEE1 */
+  --color-muted-dark: oklch(0.7862 0.0311 164.06); /* #A8C0B4 */
+  --color-border-d: oklch(0.4223 0.0714 166.51); /* #1E5A45 */
+
+  /* Self-hosted variable fonts (see @font-face below). Metric-matched fallbacks
+     keep layout stable while the web fonts load (CLS guard). */
+  --font-display: "Fraunces Variable", "Fraunces Fallback", Georgia, serif;
+  --font-sans: "Hanken Grotesk Variable", "Hanken Fallback", system-ui, sans-serif;
 
   --radius-card: 20px;
   --radius-btn: 12px;
@@ -34,7 +77,9 @@
   color-scheme: light;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   background-color: var(--color-sand);
   color: var(--color-ink);
 }
@@ -50,7 +95,9 @@ body {
 .font-display {
   font-family: var(--font-display);
   font-optical-sizing: auto;
-  font-variation-settings: "opsz" 144, "SOFT" 50;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
 }
 
 .tabular {
@@ -100,16 +147,28 @@ body {
 
 /* Marquee */
 @keyframes pm-marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 .marquee-track {
   animation: pm-marquee 40s linear infinite;
   will-change: transform;
 }
 
+/* Pause control: stop the ticker on hover or keyboard focus. */
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
+  .marquee-track {
+    animation: none;
+  }
 }
 
 /* Focus ring */

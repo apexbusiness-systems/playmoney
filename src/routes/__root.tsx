@@ -78,24 +78,45 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "PlayMoney — We do the hard work. You just play with the money." },
-      { name: "description", content: "PlayMoney quietly recovers the refunds, fees and forgotten charges you're owed. You don't lift a finger. No win, no fee." },
+      {
+        name: "description",
+        content:
+          "PlayMoney quietly recovers the refunds, fees and forgotten charges you're owed. You don't lift a finger. No win, no fee.",
+      },
       { name: "author", content: "PlayMoney" },
-      { property: "og:title", content: "PlayMoney — We do the hard work. You just play with the money." },
-      { property: "og:description", content: "PlayMoney quietly recovers the refunds, fees and forgotten charges you're owed. You don't lift a finger. No win, no fee." },
+      {
+        property: "og:title",
+        content: "PlayMoney — We do the hard work. You just play with the money.",
+      },
+      {
+        property: "og:description",
+        content:
+          "PlayMoney quietly recovers the refunds, fees and forgotten charges you're owed. You don't lift a finger. No win, no fee.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "PlayMoney — We do the hard work. You just play with the money." },
-      { name: "twitter:description", content: "PlayMoney quietly recovers the refunds, fees and forgotten charges you're owed. You don't lift a finger. No win, no fee." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cbe203bb-3f67-4208-8d83-04e0bf67503e" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cbe203bb-3f67-4208-8d83-04e0bf67503e" },
+      {
+        name: "twitter:title",
+        content: "PlayMoney — We do the hard work. You just play with the money.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "PlayMoney quietly recovers the refunds, fees and forgotten charges you're owed. You don't lift a finger. No win, no fee.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cbe203bb-3f67-4208-8d83-04e0bf67503e",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cbe203bb-3f67-4208-8d83-04e0bf67503e",
+      },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap",
-      },
+      // Fonts are self-hosted via @font-face in styles.css (no third-party CDN).
       {
         rel: "stylesheet",
         href: appCss,
