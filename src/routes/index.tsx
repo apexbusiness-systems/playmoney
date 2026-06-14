@@ -103,11 +103,9 @@ function Hero() {
           className="mt-6"
         >
           <GoldDing loop>
-            <Odometer
-              valueCents={284732}
-              className="odometer-hero font-display"
-              style={{ color: "#F2C24B" } as React.CSSProperties}
-            />
+            <span style={{ color: "#F2C24B" }}>
+              <Odometer valueCents={284732} className="odometer-hero font-display" />
+            </span>
           </GoldDing>
         </motion.div>
 
