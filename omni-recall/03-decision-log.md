@@ -33,6 +33,30 @@ Do not conflate problem-type with avenue. **Open until M7.**
 - Test runner: none installed → will add **Vitest** (dev-only) to satisfy §5 "show the run".
   Pending confirmation; flagged because it adds a dependency to a Lovable scaffold.
 
+### 2026-06-14 · D-004 · Foundation spine BUILT (phase 1)
+Decisions confirmed by user: build now / rotate secrets after; add Vitest (dev); foundation-first.
+Delivered + verified:
+- DB access: no Supabase CLI here → migrations applied via **Management API SQL endpoint**
+  (`scripts/db/migrate.ts`, `bun run db:migrate`). Idempotent via `private.schema_migrations`.
+- Migration `supabase/migrations/0001_foundation.sql`: `public.profiles` (tenant boundary,
+  tokenised `payout_ref` only), `public.go_live_attestations` (gate store, RLS no-policy =
+  service-role-only), `public.audit_log` (append-only, owner-reads-own). ALL RLS-enabled.
+- TS spine: `src/lib/compliance/money.ts` (non-custodial branded types — no custody surface),
+  `gates.ts` (10 gate keys + pure `canGoLive()`), `mode.ts` (`PLAYMONEY_MODE` default BUILT +
+  `assertLiveAllowed()`), `env.server.ts`, `supabase/{admin.server,client}.ts`.
+- Tests (Vitest) GREEN: T1 (no custody type), T8 (money-only notifications), T10 (gate/mode).
+  `bun run typecheck` clean. RLS proven: anon→[], service-role→10 rows.
+- gates seeded all OFF (attested_true=0). PLAYMONEY_MODE unset → BUILT. canGoLive()=false.
+
+NEXT (phase 2): build modules. Suggested order M2 (geofence) → M7 (avenues) → M1 (e-LOA) →
+M7-wire MAN-Mode executor (#7) → M3 (ToS/PAD) → M4 (causation) → M6 (UPL linter) → M5 (review queue).
+
+### 2026-06-14 · SECURITY-001 · Service-role key + SUPABASE_TOKEN exposed
+The cloud env's plaintext env-var field is flagged "visible to anyone". It holds the SECRET
+`SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS) and `SUPABASE_TOKEN` (management). User accepted:
+build now, **rotate after**. ACTION FOR USER: rotate both in Supabase + relocate to a secret
+store once the build settles. Never store these values in code or omni-recall.
+
 ### 2026-06-14 · INVARIANT REMINDER
 App default mode = BUILT. `canGoLive()` must return false until all gates green. No code path,
 flag, seed, or test may set LIVE. Secrets only via env; never in code or this folder.
