@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "bun run scripts/db/migrate.ts"
+    "db:migrate": "bun run scripts/db/migrate.ts",
+    "db:verify-rls": "bun run scripts/db/verify-rls.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
