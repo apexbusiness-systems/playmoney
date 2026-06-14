@@ -37,6 +37,7 @@ const PROTECTED = [
   "recovery_events",
   "approvals",
   "notifications",
+  "recovery_sagas",
 ];
 
 let failures = 0;
