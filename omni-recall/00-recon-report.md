@@ -6,8 +6,8 @@ Labels: **VERIFIED** = opened/ran the artifact · **INFERRED** = deduced · **MI
 ## Stack (VERIFIED)
 - TanStack Start (`@tanstack/react-start`) + React 19 + `@tanstack/react-router`.
 - Vite 7, Bun (`bun.lock`, `bunfig.toml`), TypeScript `strict` (`tsconfig.json`).
-- Tailwind v4, Zod 3.24, framer-motion, recharts. Lovable scaffold
-  (`@lovable.dev/vite-tanstack-config`). Build target: Cloudflare Workers via nitro.
+- Tailwind v4, Zod 3.24, framer-motion, recharts. Deploy target: Cloudflare Workers via
+  Nitro `cloudflare-module` preset (canonical stack: Cloudflare + GitHub + Supabase).
 - Scripts (`package.json`): `dev`, `build`, `build:dev`, `preview`, `lint` (eslint),
   `format` (prettier). **No `test` script. No test runner installed.**
 
