@@ -107,3 +107,20 @@ P2 (route approve through MAN-Mode executor + recovery_events audit) → P4 (por
 sealed in BUILT) → P5 (lifecycle saga + fee_reversal e2e) → P6 (onboarding consent) → P7 (CI +
 go-live health check). Pre-existing prettier debt in landing/route files: lint not yet green
 project-wide (formatting only).
+
+### 2026-06-15 · D-008 · P2 — MAN-Mode executor wired to approveRecovery (BUILT)
+Discovered P2 was already fully implemented (recovery.functions.ts existed with the complete
+compliance stack); CLAUDE.md phase table was simply not updated. Confirmed + verified:
+- `src/lib/api/recovery.functions.ts`: `approveRecoveryFn` server fn routes every approval
+  through `buildApprovalLoa` → `enqueueForReview`/`approveReview` → `executeRecoveryAction`.
+  LOA built from click_accept (ETA SA 2001); review auto-approved on user consent; executor
+  seals in BUILT, fires only when LIVE+all 10 gates green.
+- `recovery_events` audit row written on every outcome (approved_executed | approved_sealed |
+  rejected_*); `approvals` consent record always written. Status "on_the_way" persisted only
+  when executed — DB never lies; UI celebrates optimistically.
+- `src/lib/api/recovery.functions.test.ts`: 9 tests covering BUILT-seal, partial gates, LIVE+
+  all-green execute, zero-gate seal, all enabled avenues, LOA scope/expiry, avenue mapping.
+- **Verified**: `bun install` (vitest was missing from container); **120 tests pass** (20 files).
+  `PLAYMONEY_MODE` unset = BUILT; perform() never called without LIVE+gates.
+- `0007_recovery_saga.sql` (recovery_sagas table) was already present from prior work.
+NEXT: P4 (port adapters, BUILT-sealed) → P5 (lifecycle saga) → P6 (onboarding/PAD) → P7 (CI).
