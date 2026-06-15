@@ -4,10 +4,12 @@ Non-custodial consumer money-recovery app. _"We do the hard work, you just play 
 the money." / "We don't promise, but we deliver."_ Default posture is **BUILT** (no real
 external effects); **LIVE** is physically sealed behind 10 go-live gates.
 
-## Stack (do NOT introduce Temporal or Cloudflare-Workers-specific infra)
+## Stack — canonical: **Cloudflare + GitHub + Supabase** (do NOT introduce Temporal or Lovable)
 
 - **Frontend**: TanStack Start (React 19) + TanStack Router + React Query + Vite + Tailwind v4
-  + shadcn/Radix + framer-motion. Runtime: **Bun**. TS **strict**.
+  + shadcn/Radix + framer-motion. Tooling/test runtime: **Bun**. TS **strict**.
+- **Deploy**: **Cloudflare Workers** via Nitro `cloudflare-module` preset (`vite.config.ts`);
+  `bun run build && wrangler deploy --config .output/server/wrangler.json`. CI/CD on **GitHub**.
 - **Backend**: Supabase (Postgres + RLS + Auth). Server logic = TanStack Start
   `createServerFn` (see `src/lib/api/example.functions.ts`) — not Supabase Edge Functions.
 - **DB**: `supabase/migrations/0001..0006`. `bun run db:migrate` (Management API SQL endpoint;

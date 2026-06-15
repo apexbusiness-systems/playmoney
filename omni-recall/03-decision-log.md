@@ -31,7 +31,7 @@ Do not conflate problem-type with avenue. **Open until M7.**
 - PSP: default **Stripe** as merchant-of-record for fee-only `PayoutPort`. No wallet/stored-value.
 - Fee: default **25%**, configurable, within the 20–30% benchmark band (#13).
 - Test runner: none installed → will add **Vitest** (dev-only) to satisfy §5 "show the run".
-  Pending confirmation; flagged because it adds a dependency to a Lovable scaffold.
+  Pending confirmation; flagged because it adds a dev dependency.
 
 ### 2026-06-14 · D-004 · Foundation spine BUILT (phase 1)
 Decisions confirmed by user: build now / rotate secrets after; add Vitest (dev); foundation-first.
