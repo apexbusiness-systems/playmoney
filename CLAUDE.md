@@ -69,7 +69,7 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
 |------:|-------|--------|
 | P0 | Compliance spine (money/mode/gates/executor/loa/review/causation/avenues/contract/upl/geofence/ports) + `0001–0005` | ✅ done (D-004/D-005) |
 | **P1** | Real Supabase `ApiClient`/`AuthClient` behind the contract + env selector + `0006` recovery domain; routes repointed; mock fallback intact | ✅ **done (D-006)** |
-| P2 | Route `approveRecovery` through `executeRecoveryAction` (LOA + review + mode/gates), write `recovery_events`, persist truthful status | ⬜ todo |
+| **P2** | Route `approveRecovery` through `executeRecoveryAction` (LOA + review + mode/gates), write `recovery_events`, persist truthful status | ✅ **done (D-008)** |
 | **P3** | Recovery engine (SituationModel / AvenueRouter / LearningLoop), pure + tested | ✅ **done (D-007)** |
 | P4 | Real adapters behind ports (Flinks/Plaid read-only, Stripe fee-only) + OCR/email ingest; all guarded by `assertLiveAllowed` | ⬜ todo |
 | P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | ⬜ todo |
