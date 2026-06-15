@@ -24,4 +24,4 @@ single source of truth; the Rev.3 legal spec is the target.**
 - Never record secrets, tokens, credentials, or PII here.
 - Never claim a file/table/test exists without citing a path you opened/ran.
 
-_Last updated: 2026-06-14._
+_Last updated: 2026-06-15 (D-009: Lovable purged; Cloudflare+GitHub+Supabase canonical)._

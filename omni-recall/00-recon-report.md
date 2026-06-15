@@ -3,6 +3,13 @@
 _Recon date: 2026-06-14. Branch: `claude/compassionate-bardeen-xg06iy`._
 Labels: **VERIFIED** = opened/ran the artifact · **INFERRED** = deduced · **MISSING** = not present.
 
+> ⚠️ **HISTORICAL SNAPSHOT — SUPERSEDED (preserved for audit integrity).** This recon captured the
+> *starting* state on 2026-06-14: a frontend-only mock with no backend. Since then the full
+> compliance spine, the Supabase backend (migrations `0001–0008`, RLS), the recovery engine, and a
+> Vitest suite (**128 tests**) have been built — see `03-decision-log` (D-004→D-009) and
+> `05-coverage` for current state. The "ABORT TRIGGER #4 / mock prototype" findings below are no
+> longer current truth; they are kept verbatim as the historical record only.
+
 ## Stack (VERIFIED)
 - TanStack Start (`@tanstack/react-start`) + React 19 + `@tanstack/react-router`.
 - Vite 7, Bun (`bun.lock`, `bunfig.toml`), TypeScript `strict` (`tsconfig.json`).

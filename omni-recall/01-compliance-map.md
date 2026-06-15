@@ -2,6 +2,9 @@
 
 The target spec. `[GATE]` = must be green before BUILT→LIVE. All rows = BUILD NOW (code only).
 
+_Status (2026-06-15): all 17 controls are **BUILT** in code (P0 spine + P1 data layer); see
+`05-coverage.md` for the control→file→test mapping. App remains BUILT-not-LIVE._
+
 | # | Legal condition (regime) | Technical control | Enforced where | Status |
 |---|--------------------------|-------------------|----------------|--------|
 | 1 | Non-custodial; funds land in user's own acct (PCMLTFA/RPAA) | No FBO/escrow/pooled fund table; destination = user's own payout ref | Data model: no fund table; type forbids | NOW [GATE] |

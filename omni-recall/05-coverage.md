@@ -1,8 +1,10 @@
 # 05 · Compliance Coverage & Residuals (§7 Definition of Done)
 
-_Phase 2 complete: 2026-06-14. Branch `claude/compassionate-bardeen-xg06iy` → PR #1._
+_Phase 2 complete: 2026-06-14. Updated: 2026-06-15 (branch `claude/admiring-cori-civ47c`)._
 **Status: BUILT, not LIVE.** `PLAYMONEY_MODE` default BUILT; `canGoLive()` = false; live paths sealed.
-Verification: `bun run typecheck` clean · `bun run test` = **67 passing** · `bun run db:verify-rls` = 8/8 deny anon.
+Phases delivered since: P1 (D-006), P3 (D-007), P2 (D-008); P5/P6 partially scaffolded (see CLAUDE.md).
+Verification (2026-06-15): `bun run typecheck` clean · `bun run test` = **128 passing / 20 files** ·
+`bun run build` green · `bun run db:verify-rls` denies anon. `bun run lint` not yet green (prettier debt + 1 real).
 
 ## Coverage table (17 controls → enforcement → status)
 | # | Control | Enforced by (file) | Test | Status |
@@ -44,4 +46,8 @@ T1 ✅ · T2 ✅ · T3 ✅ · T4 ✅ · T5 ✅ · T6 ✅ · T7 ✅ · T8 ✅ · 
   not final wording.
 - **UI wiring:** enforcement lives in the domain/service layer + DB; onboarding/settings React routes
   still use the mock client and are not yet wired to the geofence/consent/causation guards.
-- **No CI workflow** exists in the repo; tests/typecheck/RLS run locally via bun scripts.
+- **No CI workflow** exists in the repo; tests/typecheck/RLS run locally via bun scripts (P7).
+- **Stack (2026-06-15, D-009):** Lovable scaffold purged; canonical stack = Cloudflare + GitHub +
+  Supabase; deploy via Cloudflare Workers (Nitro `cloudflare-module`).
+- **P6 onboarding seam (2026-06-15):** `OccupationStep` is built but not rendered by the onboarding
+  route; `submitOnboardingFn` userId resolution is broken (`getUserById(payoutRef)`). Both pending P6-full.
