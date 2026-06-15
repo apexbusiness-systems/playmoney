@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { BankTransaction } from "@/lib/compliance/ports";
-import { RecoveryAvenue } from "@/lib/playmoney/types";
+import { RecoveryAvenue, type OccupationContext } from "@/lib/playmoney/types";
 import { AVENUE_REGISTRY, ENABLED_AVENUES, type AvenueKey } from "@/lib/compliance/avenues";
-import { deriveSituations, type ProblemType } from "./situation";
+import { deriveSituations, rankByContext, type ProblemType } from "./situation";
 import { PROBLEM_TYPE_TO_AVENUE, routeProblem, routeSituation } from "./router";
 import { InMemoryWinRateStore, LearningLoop } from "./learning";
 
@@ -119,5 +119,63 @@ describe("P3 · LearningLoop: win-rate store, no division by zero", () => {
     const ranks = loop.rankings();
     expect(ranks[0].avenue).toBe("fee_reversal"); // 1.0 beats 0.5
     expect(ranks[0].winRate).toBe(1);
+  });
+});
+
+// ── Shared fixture for rankByContext tests ────────────────────────────────────
+const ctx = (occupationType: OccupationContext["occupationType"], hints: string[] = []): OccupationContext => ({
+  occupationType,
+  platforms: [],
+  priorityAvenueHints: hints,
+});
+
+const sit = (problemType: ProblemType, merchant = "Acme") =>
+  ({
+    situation: { id: `s_${problemType}`, merchant, detectedAt: "2026-06-14T00:00:00Z", summary: "" },
+    problemType,
+    merchant,
+    amountCents: 100,
+    evidenceTxnIds: [],
+  }) as const;
+
+describe("P6 · rankByContext: surfaces most relevant situations first", () => {
+  it("gig_worker: double_charge rises above fee_reversal in detection order", () => {
+    const sits = [sit("fee_reversal"), sit("double_charge"), sit("subscription")];
+    const ranked = rankByContext(sits, ctx("gig_worker"));
+    expect(ranked[0].problemType).toBe("double_charge");
+    expect(ranked[1].problemType).toBe("fee_reversal");
+  });
+
+  it("employee: fee_reversal is top priority", () => {
+    const sits = [sit("subscription"), sit("billing_error"), sit("fee_reversal")];
+    const ranked = rankByContext(sits, ctx("employee"));
+    expect(ranked[0].problemType).toBe("fee_reversal");
+  });
+
+  it("student: subscription surfaces first", () => {
+    const sits = [sit("double_charge"), sit("subscription"), sit("billing_error")];
+    const ranked = rankByContext(sits, ctx("student"));
+    expect(ranked[0].problemType).toBe("subscription");
+  });
+
+  it("other: no reranking — original order preserved", () => {
+    const sits = [sit("billing_error"), sit("fee_reversal"), sit("double_charge")];
+    const ranked = rankByContext(sits, ctx("other"));
+    expect(ranked.map((s) => s.problemType)).toEqual(["billing_error", "fee_reversal", "double_charge"]);
+  });
+
+  it("explicit priorityAvenueHints override occupation defaults", () => {
+    const sits = [sit("double_charge"), sit("fee_reversal"), sit("subscription")];
+    const ranked = rankByContext(sits, ctx("gig_worker", ["subscription", "fee_reversal"]));
+    expect(ranked[0].problemType).toBe("subscription");
+    expect(ranked[1].problemType).toBe("fee_reversal");
+  });
+
+  it("is stable — equal-priority items keep original detection order", () => {
+    const a = { ...sit("double_charge", "AcmeA"), situation: { ...sit("double_charge", "AcmeA").situation, id: "s1" } };
+    const b = { ...sit("double_charge", "AcmeB"), situation: { ...sit("double_charge", "AcmeB").situation, id: "s2" } };
+    const ranked = rankByContext([a, b], ctx("gig_worker"));
+    expect(ranked[0].situation.id).toBe("s1");
+    expect(ranked[1].situation.id).toBe("s2");
   });
 });

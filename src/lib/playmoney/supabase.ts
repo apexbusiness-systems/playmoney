@@ -12,6 +12,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import {
   Approval,
+  OccupationContext,
   type ApiClient,
   type AuthClient,
   FeeLedgerEntry,
@@ -61,6 +62,7 @@ const ProfileRow = z.object({
   id: z.string(),
   display_name: z.string(),
   payout_ref: z.string().nullable(),
+  user_context: z.unknown().optional(),
   created_at: z.string(),
 });
 type ProfileRow = z.infer<typeof ProfileRow>;
@@ -118,6 +120,11 @@ export function recoveryToFeeEntry(rec: Recovery): FeeLedgerEntry {
 
 export function rowToProfile(row: unknown, email: string): Profile {
   const r = ProfileRow.parse(row);
+  const rawCtx = r.user_context;
+  const parsedCtx =
+    rawCtx && typeof rawCtx === "object" && !Array.isArray(rawCtx) && Object.keys(rawCtx).length > 0
+      ? OccupationContext.safeParse(rawCtx).data
+      : undefined;
   return Profile.parse({
     id: r.id,
     displayName: r.display_name,
@@ -127,6 +134,7 @@ export function rowToProfile(row: unknown, email: string): Profile {
     // then it is truthfully false rather than fabricated.
     identityVerified: false,
     createdAt: r.created_at,
+    context: parsedCtx,
   });
 }
 
@@ -233,7 +241,7 @@ export class SupabaseAuthClient implements AuthClient {
 
     const { data, error } = await this.sb
       .from("profiles")
-      .select("id, display_name, payout_ref, created_at")
+      .select("id, display_name, payout_ref, user_context, created_at")
       .eq("id", user.id)
       .maybeSingle();
     if (error) throw new Error(`getProfile failed: ${error.message}`);
@@ -243,7 +251,7 @@ export class SupabaseAuthClient implements AuthClient {
       const created = await this.sb
         .from("profiles")
         .insert({ id: user.id, display_name: email.split("@")[0] || "" })
-        .select("id, display_name, payout_ref, created_at")
+        .select("id, display_name, payout_ref, user_context, created_at")
         .single();
       if (created.error) throw new Error(`profile bootstrap failed: ${created.error.message}`);
       return rowToProfile(created.data, email);
@@ -270,6 +278,21 @@ export class SupabaseAuthClient implements AuthClient {
     if (error) throw new Error(`signOut failed: ${error.message}`);
   }
 
+  async saveContext(context: OccupationContext): Promise<Profile> {
+    const { data: sessionData } = await this.sb.auth.getUser();
+    const user = sessionData.user;
+    if (!user) ownerScopeError("saveContext");
+    const email = user.email ?? "";
+    const { data, error } = await this.sb
+      .from("profiles")
+      .update({ user_context: context })
+      .eq("id", user.id)
+      .select("id, display_name, payout_ref, user_context, created_at")
+      .single();
+    if (error) throw new Error(`saveContext failed: ${error.message}`);
+    return rowToProfile(data, email);
+  }
+
   async updateProfile(patch: Partial<Profile>): Promise<Profile> {
     const { data: sessionData } = await this.sb.auth.getUser();
     const user = sessionData.user;
@@ -284,7 +307,7 @@ export class SupabaseAuthClient implements AuthClient {
       .from("profiles")
       .update(dbPatch)
       .eq("id", user.id)
-      .select("id, display_name, payout_ref, created_at")
+      .select("id, display_name, payout_ref, user_context, created_at")
       .single();
     if (error) throw new Error(`updateProfile failed: ${error.message}`);
     return rowToProfile(data, email);

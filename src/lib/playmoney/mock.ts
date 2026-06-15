@@ -3,6 +3,7 @@ import type {
   AuthClient,
   Approval,
   Notification,
+  OccupationContext,
   Profile,
   Recovery,
 } from "./types";
@@ -126,6 +127,10 @@ export class MockAuthClient implements AuthClient {
   }
   async updateProfile(patch: Partial<Profile>) {
     this.profile = { ...(this.profile ?? seededProfile), ...patch };
+    return this.profile;
+  }
+  async saveContext(context: OccupationContext): Promise<Profile> {
+    this.profile = { ...(this.profile ?? seededProfile), context };
     return this.profile;
   }
 }

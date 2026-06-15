@@ -8,7 +8,7 @@
 // RecoveryAvenue enum (types.ts); the AvenueRouter (router.ts) maps it onto an
 // enabled administrative avenue (#9) before anything executes.
 
-import { RecoveryAvenue, Situation } from "@/lib/playmoney/types";
+import { RecoveryAvenue, Situation, type OccupationContext, type OccupationType } from "@/lib/playmoney/types";
 import type { BankTransaction } from "@/lib/compliance/ports";
 
 export type ProblemType = RecoveryAvenue;
@@ -19,6 +19,39 @@ export interface DetectedSituation {
   readonly merchant: string;
   readonly amountCents: number;
   readonly evidenceTxnIds: readonly string[];
+}
+
+const OCCUPATION_PRIORITY: Record<OccupationType, ProblemType[]> = {
+  gig_worker:     ["double_charge", "fee_reversal", "refund"],
+  freelancer:     ["billing_error", "subscription", "double_charge"],
+  small_business: ["billing_error", "fee_reversal", "double_charge"],
+  employee:       ["fee_reversal", "double_charge", "subscription"],
+  student:        ["subscription", "fee_reversal", "billing_error"],
+  other:          [],
+};
+
+/**
+ * Re-rank detected situations by occupation context. Detection is unchanged;
+ * only the presentation order shifts to surface the most relevant problems first.
+ * Pure + stable (equal-priority items preserve original detection order).
+ */
+export function rankByContext(
+  situations: DetectedSituation[],
+  context: OccupationContext,
+): DetectedSituation[] {
+  const priority: ProblemType[] =
+    context.priorityAvenueHints.length > 0
+      ? (context.priorityAvenueHints as ProblemType[])
+      : OCCUPATION_PRIORITY[context.occupationType];
+
+  if (priority.length === 0) return situations;
+
+  const rank = (s: DetectedSituation): number => {
+    const idx = priority.indexOf(s.problemType);
+    return idx === -1 ? priority.length : idx;
+  };
+
+  return [...situations].sort((a, b) => rank(a) - rank(b));
 }
 
 /** Fee/charge keywords that signal a reversible bank/merchant fee. */

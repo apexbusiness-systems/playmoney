@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+export const OccupationType = z.enum([
+  "employee",
+  "gig_worker",
+  "freelancer",
+  "small_business",
+  "student",
+  "other",
+]);
+export type OccupationType = z.infer<typeof OccupationType>;
+
+export const OccupationContext = z.object({
+  occupationType: OccupationType,
+  platforms: z.array(z.string()).default([]),
+  priorityAvenueHints: z.array(z.string()).default([]),
+});
+export type OccupationContext = z.infer<typeof OccupationContext>;
+
 export const RecoveryStatus = z.enum([
   "found",
   "needs_approval",
@@ -24,6 +41,7 @@ export const Profile = z.object({
   payoutRef: z.string(), // tokenised reference, never raw credentials
   identityVerified: z.boolean(),
   createdAt: z.string(),
+  context: OccupationContext.optional(),
 });
 export type Profile = z.infer<typeof Profile>;
 
@@ -105,4 +123,5 @@ export interface AuthClient {
   signIn(input: { email: string }): Promise<Profile>;
   signOut(): Promise<void>;
   updateProfile(patch: Partial<Profile>): Promise<Profile>;
+  saveContext(context: OccupationContext): Promise<Profile>;
 }
