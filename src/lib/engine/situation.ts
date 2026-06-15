@@ -8,7 +8,12 @@
 // RecoveryAvenue enum (types.ts); the AvenueRouter (router.ts) maps it onto an
 // enabled administrative avenue (#9) before anything executes.
 
-import { RecoveryAvenue, Situation, type OccupationContext, type OccupationType } from "@/lib/playmoney/types";
+import {
+  RecoveryAvenue,
+  Situation,
+  type OccupationContext,
+  type OccupationType,
+} from "@/lib/playmoney/types";
 import type { BankTransaction } from "@/lib/compliance/ports";
 
 export type ProblemType = RecoveryAvenue;
@@ -22,36 +27,55 @@ export interface DetectedSituation {
 }
 
 const OCCUPATION_PRIORITY: Record<OccupationType, ProblemType[]> = {
-  gig_worker:     ["double_charge", "fee_reversal", "refund"],
-  freelancer:     ["billing_error", "subscription", "double_charge"],
+  gig_worker: ["double_charge", "fee_reversal", "refund"],
+  freelancer: ["billing_error", "subscription", "double_charge"],
   small_business: ["billing_error", "fee_reversal", "double_charge"],
-  employee:       ["fee_reversal", "double_charge", "subscription"],
-  student:        ["subscription", "fee_reversal", "billing_error"],
-  other:          [],
+  employee: ["fee_reversal", "double_charge", "subscription"],
+  student: ["subscription", "fee_reversal", "billing_error"],
+  other: [],
 };
 
 /**
- * Re-rank detected situations by occupation context. Detection is unchanged;
- * only the presentation order shifts to surface the most relevant problems first.
- * Pure + stable (equal-priority items preserve original detection order).
+ * Resolve the ProblemType priority order for a context: explicit hints win,
+ * else the occupation's default ordering. Empty = no opinion (preserve order).
+ */
+export function contextPriority(context: OccupationContext): ProblemType[] {
+  return context.priorityAvenueHints.length > 0
+    ? (context.priorityAvenueHints as ProblemType[])
+    : OCCUPATION_PRIORITY[context.occupationType];
+}
+
+/**
+ * Generic, pure, stable re-rank of any ProblemType-bearing items by occupation
+ * context. Detection/content is unchanged — only presentation order shifts, so the
+ * most relevant problems surface first. Equal-priority items keep their input order.
+ * Shared by the engine (DetectedSituation) and the dashboard (Recovery.avenue).
+ */
+export function rankByContextKey<T>(
+  items: T[],
+  problemTypeOf: (item: T) => ProblemType,
+  context: OccupationContext,
+): T[] {
+  const priority = contextPriority(context);
+  if (priority.length === 0) return items;
+
+  const rank = (item: T): number => {
+    const idx = priority.indexOf(problemTypeOf(item));
+    return idx === -1 ? priority.length : idx;
+  };
+
+  return [...items].sort((a, b) => rank(a) - rank(b));
+}
+
+/**
+ * Re-rank detected situations by occupation context. Thin wrapper over
+ * `rankByContextKey` kept for the engine's existing call sites + tests.
  */
 export function rankByContext(
   situations: DetectedSituation[],
   context: OccupationContext,
 ): DetectedSituation[] {
-  const priority: ProblemType[] =
-    context.priorityAvenueHints.length > 0
-      ? (context.priorityAvenueHints as ProblemType[])
-      : OCCUPATION_PRIORITY[context.occupationType];
-
-  if (priority.length === 0) return situations;
-
-  const rank = (s: DetectedSituation): number => {
-    const idx = priority.indexOf(s.problemType);
-    return idx === -1 ? priority.length : idx;
-  };
-
-  return [...situations].sort((a, b) => rank(a) - rank(b));
+  return rankByContextKey(situations, (s) => s.problemType, context);
 }
 
 /** Fee/charge keywords that signal a reversible bank/merchant fee. */
@@ -70,13 +94,24 @@ const FEE_KEYWORDS = [
 ];
 
 /** Keywords that signal a billing error (charged after cancel, wrong line, etc.). */
-const BILLING_ERROR_KEYWORDS = ["cancelled", "canceled", "cancel", "billing error", "wrong", "adjustment"];
+const BILLING_ERROR_KEYWORDS = [
+  "cancelled",
+  "canceled",
+  "cancel",
+  "billing error",
+  "wrong",
+  "adjustment",
+];
 
 const DUPLICATE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // duplicates post within 72h
 const RECURRING_MIN_OCCURRENCES = 3; // 3+ equal charges => a subscription pattern
 
 function slug(s: string): string {
-  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+  return s
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
 }
 
 function hay(t: BankTransaction): string {
@@ -127,7 +162,9 @@ export function deriveSituations(transactions: readonly BankTransaction[]): Dete
   const merchants = [...groups.keys()].sort();
 
   for (const merchant of merchants) {
-    const txns = [...(groups.get(merchant) ?? [])].sort((a, b) => a.postedAt.localeCompare(b.postedAt));
+    const txns = [...(groups.get(merchant) ?? [])].sort((a, b) =>
+      a.postedAt.localeCompare(b.postedAt),
+    );
 
     // 1) Duplicate charges: same magnitude within a 72h window.
     for (let i = 0; i < txns.length; i++) {
@@ -139,7 +176,8 @@ export function deriveSituations(transactions: readonly BankTransaction[]): Dete
         if (consumed.has(b.id)) continue;
         const sameAmount = Math.abs(a.amountCents) === Math.abs(b.amountCents);
         const withinWindow =
-          Math.abs(new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()) <= DUPLICATE_WINDOW_MS;
+          Math.abs(new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()) <=
+          DUPLICATE_WINDOW_MS;
         if (sameAmount && withinWindow) dupes.push(b);
       }
       if (dupes.length >= 2) {

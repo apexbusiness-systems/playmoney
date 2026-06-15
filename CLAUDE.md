@@ -75,7 +75,7 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
 | **P3** | Recovery engine (SituationModel / AvenueRouter / LearningLoop), pure + tested | ✅ **done (D-007)** |
 | P4 | Real adapters behind ports (Flinks/Plaid read-only, Stripe fee-only) + OCR/email ingest; all guarded by `assertLiveAllowed` | ⬜ todo |
 | P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | 🟡 partial — `0007_recovery_saga` + `lifecycle.functions` (`settleFee`) built & tested; end-to-end `fee_reversal` wiring pending |
-| P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data | 🟡 partial — occupation/context step **now wired** into `app.onboarding.tsx` (renders `OccupationStep`, persists via `auth.saveContext`, seam-tested); remaining: `submitOnboardingFn` userId broken (ToS/PAD/profile) + `rankByContext` not yet consumed (see Residuals) |
+| P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data | 🟢 mostly wired — onboarding persists ToS/Privacy/PAD + profile + occupation context via `auth.submitOnboarding` (contract seam, RLS-owner writes; broken admin path removed); dashboard consumes `rankByContext`. Remaining: live Supabase needs the passwordless OTP session flow; consent versions are placeholders pending counsel |
 | P7 | CI: lint+typecheck+build+test green; go-live health check; confirm BUILT default + every live path sealed | ⬜ todo |
 
 ## Project memory
@@ -90,16 +90,17 @@ Append decisions there; never store secrets in it.
   visible env field); relocate to a secret store.
 - **Stack**: Lovable scaffold fully purged (D-009). Deploy target is **Cloudflare Workers**
   (Nitro `cloudflare-module` preset); canonical stack = Cloudflare + GitHub + Supabase.
-- **lint debt**: 133 auto-fixable prettier errors + 6 `react-refresh` warnings + **1 real**
-  (`@typescript-eslint/no-unused-expressions`, `components/onboarding/OccupationStep.tsx:36`).
-  `bun run lint` not yet green project-wide; `typecheck` · `test` (128) · `build` are green.
-- **P6 onboarding seam**: occupation/context discovery is now wired into
-  `routes/app.onboarding.tsx` (renders `OccupationStep` as step 2/4, persists via
-  `auth.saveContext`, guarded by `app.onboarding.seam.test.ts`). Remaining P6-full:
-  (a) `submitOnboardingFn` resolves the user via `getUserById(payoutRef)` (a PSP token, never an
-  auth UUID) → always fails; needs request-session extraction — blocks ToS/PAD/profile persistence
-  and leaves the payout/name inputs uncontrolled; (b) `rankByContext` (engine) is built + tested
-  but not yet consumed by the surfaced-wins path (belongs with the P4/P5 detection/ingest flow).
+- **lint debt**: ~130 auto-fixable prettier errors + 6 `react-refresh` warnings. The one real
+  error (`no-unused-expressions`) is fixed. `bun run lint` not yet green project-wide (prettier
+  only); `typecheck` · `test` (139) · `build` are green.
+- **P6 onboarding (D-011)**: end-to-end through the contract seam. `app.onboarding.tsx` (4 steps)
+  collects occupation context (step 2), payout token + legal name (step 3, controlled), and
+  ToS/Privacy/PAD consent (step 4), then calls `auth.submitOnboarding`. Supabase impl resolves the
+  user via the RLS session (`sb.auth.getUser()`) and writes `user_acceptances` / `pad_consents` /
+  `profiles` under owner RLS — the broken admin `getUserById(payoutRef)` server fn was removed.
+  The dashboard re-ranks wins by saved context via `rankByContextKey`. Remaining P6: a live
+  Supabase session requires the passwordless OTP confirm UI; consent versions/hashes are
+  placeholders until counsel supplies the published agreements.
 - `SupabaseAuthClient.signIn` is passwordless (magic link) → throws typed `MagicLinkSentError`
   when no live session exists yet; the OTP-confirm UI flow is not wired (UI work for P6).
 - Adapters (Flinks/Plaid/Stripe/OCR) are still port interfaces — concrete impls are P4.

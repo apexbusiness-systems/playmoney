@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { OnboardingInput, OnboardingResult } from "@/lib/api/onboarding.core";
 
 export const OccupationType = z.enum([
   "employee",
@@ -17,12 +18,7 @@ export const OccupationContext = z.object({
 });
 export type OccupationContext = z.infer<typeof OccupationContext>;
 
-export const RecoveryStatus = z.enum([
-  "found",
-  "needs_approval",
-  "on_the_way",
-  "landed",
-]);
+export const RecoveryStatus = z.enum(["found", "needs_approval", "on_the_way", "landed"]);
 export type RecoveryStatus = z.infer<typeof RecoveryStatus>;
 
 export const RecoveryAvenue = z.enum([
@@ -107,10 +103,7 @@ export type Notification = z.infer<typeof Notification>;
 export interface ApiClient {
   listRecoveries(): Promise<Recovery[]>;
   getRecovery(id: string): Promise<Recovery | null>;
-  approveRecovery(input: {
-    recoveryId: string;
-    idempotencyKey: string;
-  }): Promise<Approval>;
+  approveRecovery(input: { recoveryId: string; idempotencyKey: string }): Promise<Approval>;
   listNotifications(): Promise<Notification[]>;
   listFeeLedger(): Promise<FeeLedgerEntry[]>;
   totals(): Promise<{ foundTotal: number; landedTotal: number; ourFeeTotal: number }>;
@@ -124,4 +117,5 @@ export interface AuthClient {
   signOut(): Promise<void>;
   updateProfile(patch: Partial<Profile>): Promise<Profile>;
   saveContext(context: OccupationContext): Promise<Profile>;
+  submitOnboarding(input: OnboardingInput): Promise<OnboardingResult>;
 }

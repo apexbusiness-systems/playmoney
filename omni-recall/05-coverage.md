@@ -3,8 +3,8 @@
 _Phase 2 complete: 2026-06-14. Updated: 2026-06-15 (branch `claude/admiring-cori-civ47c`)._
 **Status: BUILT, not LIVE.** `PLAYMONEY_MODE` default BUILT; `canGoLive()` = false; live paths sealed.
 Phases delivered since: P1 (D-006), P3 (D-007), P2 (D-008); P5/P6 partially scaffolded (see CLAUDE.md).
-Verification (2026-06-15): `bun run typecheck` clean · `bun run test` = **128 passing / 20 files** ·
-`bun run build` green · `bun run db:verify-rls` denies anon. `bun run lint` not yet green (prettier debt + 1 real).
+Verification (2026-06-15): `bun run typecheck` clean · `bun run test` = **139 passing / 23 files** ·
+`bun run build` green · `bun run db:verify-rls` denies anon. `bun run lint` not yet green (prettier debt only; 0 real errors).
 
 ## Coverage table (17 controls → enforcement → status)
 | # | Control | Enforced by (file) | Test | Status |

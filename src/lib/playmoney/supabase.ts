@@ -20,6 +20,11 @@ import {
   Profile,
   Recovery,
 } from "./types";
+import {
+  processOnboarding,
+  type OnboardingInput,
+  type OnboardingResult,
+} from "@/lib/api/onboarding.core";
 
 // ── DB row schemas (snake_case). int8 may arrive as number or numeric string. ──
 const cents = z.coerce.number().int();
@@ -268,7 +273,10 @@ export class SupabaseAuthClient implements AuthClient {
     if (current && current.email.toLowerCase() === email.toLowerCase()) return current;
 
     // Passwordless sign-in: email a magic link, then surface a typed signal.
-    const { error } = await this.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+    const { error } = await this.sb.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
     if (error) throw new Error(`signIn failed: ${error.message}`);
     throw new MagicLinkSentError(email);
   }
@@ -291,6 +299,58 @@ export class SupabaseAuthClient implements AuthClient {
       .single();
     if (error) throw new Error(`saveContext failed: ${error.message}`);
     return rowToProfile(data, email);
+  }
+
+  async submitOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
+    // Resolve the user from the live session; all writes are RLS-scoped to them.
+    const { data: sessionData } = await this.sb.auth.getUser();
+    const user = sessionData.user;
+    if (!user) ownerScopeError("submitOnboarding");
+    const userId = user.id;
+
+    return processOnboarding({
+      parsedInput: input,
+      userId,
+      writeAcceptance: async (agreementType, agreementVersion, contentHash) => {
+        const { error } = await this.sb.from("user_acceptances").insert({
+          owner_id: userId,
+          agreement_type: agreementType,
+          agreement_version: agreementVersion,
+          content_hash: contentHash,
+        });
+        if (error) throw new Error(`submitOnboarding: acceptance write failed: ${error.message}`);
+      },
+      writePadConsent: async (consent) => {
+        const { error } = await this.sb.from("pad_consents").insert({
+          owner_id: userId,
+          method: consent.method,
+          amount_basis: consent.amountBasis,
+          advance_notice_days: consent.advanceNoticeDays,
+          cancellation_path: consent.cancellationPath,
+          status: "active",
+        });
+        if (error) throw new Error(`submitOnboarding: pad_consent write failed: ${error.message}`);
+      },
+      updateProfile: async (displayName, payoutRef, province) => {
+        const { error } = await this.sb
+          .from("profiles")
+          .update({
+            display_name: displayName,
+            payout_ref: payoutRef,
+            jurisdiction_province: province,
+            jurisdiction_country: input.country.toUpperCase(),
+          })
+          .eq("id", userId);
+        if (error) throw new Error(`submitOnboarding: profile update failed: ${error.message}`);
+      },
+      saveContext: async (context) => {
+        const { error } = await this.sb
+          .from("profiles")
+          .update({ user_context: context })
+          .eq("id", userId);
+        if (error) throw new Error(`submitOnboarding: context save failed: ${error.message}`);
+      },
+    });
   }
 
   async updateProfile(patch: Partial<Profile>): Promise<Profile> {

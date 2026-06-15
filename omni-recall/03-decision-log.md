@@ -161,3 +161,24 @@ Closed the seam gap root-caused in D-009 (component built in `5aabbf1`, never re
 - **Residual (honest)**: `rankByContext` (engine, `situation.ts`) is built + tested but **consumed
   nowhere** — its application point is the detection/ingest path (P4/P5), so saved context has no
   surfaced-wins effect yet. `submitOnboardingFn` userId resolution still broken (ToS/PAD/profile).
+
+### 2026-06-15 · D-011 · P6 — onboarding persistence + context-ranked dashboard (BUILT)
+Closed both residuals from D-010. Two independent units, fully wired + tested:
+- **(a) Onboarding persists via the contract seam.** Added `auth.submitOnboarding(input)` to the
+  AuthClient contract (mock + supabase), reusing the pure `processOnboarding` extracted into
+  `onboarding.core.ts`. The Supabase impl resolves the user from the **RLS session**
+  (`sb.auth.getUser()`) and writes `user_acceptances` / `pad_consents` / `profiles` under owner
+  RLS (`auth.uid() = owner_id`, INSERT policies in `0003`/`0001`) — so it never needs the admin
+  client. The broken `submitOnboardingFn` (`getUserById(payoutRef)`, a PSP token) was **removed**;
+  `checkOnboardingStatusFn` kept (+ Zod-parsed its rows). `app.onboarding.tsx` now collects
+  controlled payout/name (step 3) + ToS/Privacy/PAD consent checkboxes (step 4) and submits.
+- **(b) Dashboard consumes the engine ranking.** Extracted `contextPriority` + a generic, pure,
+  stable `rankByContextKey` in `situation.ts` (`rankByContext` now delegates). `app.index.tsx`
+  fetches the profile and re-ranks `Recovery[]` by `avenue` when context exists ("Prioritized for
+  you"). Detection unchanged — order only.
+- **Tests**: `onboarding.client.test.ts` (mock submit: eligible persists, context saved,
+  non-Alberta blocked without persisting) + `rank.test.ts` (priority resolution, generic rank,
+  purity). Onboarding + auth focused suite **42 pass / 8 files**; full suite **139 pass / 23 files**;
+  typecheck + build green; prettier-clean on all touched files; 0 real lint errors.
+- **Remaining P6**: a live Supabase session needs the passwordless OTP confirm UI (signIn is
+  magic-link); consent versions/hashes are placeholders until counsel supplies published agreements.
