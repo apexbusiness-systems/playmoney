@@ -7,6 +7,11 @@ import type {
   Profile,
   Recovery,
 } from "./types";
+import {
+  processOnboarding,
+  type OnboardingInput,
+  type OnboardingResult,
+} from "@/lib/api/onboarding.core";
 
 // Cents helpers
 const c = (dollars: number) => Math.round(dollars * 100);
@@ -16,15 +21,89 @@ const NOW = new Date("2026-06-14T12:00:00Z").getTime();
 const ago = (mins: number) => new Date(NOW - mins * 60_000).toISOString();
 
 function seedRecoveries(): Recovery[] {
-  const rows: Array<Omit<Recovery, "id" | "idempotencyKey" | "createdAt" | "updatedAt"> & { mins: number }> = [
-    { merchant: "Chase Checking", avenue: "fee_reversal", reason: "Overdraft fee reversed", grossAmount: c(35), userNet: c(28), ourFee: c(7), status: "landed", mins: 60 * 26 },
-    { merchant: "Uber", avenue: "double_charge", reason: "Duplicate ride charge", grossAmount: c(51.4), userNet: c(41.12), ourFee: c(10.28), status: "landed", mins: 60 * 50 },
-    { merchant: "Spotify", avenue: "subscription", reason: "Unused 7 months — refund issued", grossAmount: c(83.93), userNet: c(67.14), ourFee: c(16.79), status: "on_the_way", mins: 60 * 4 },
-    { merchant: "Delta Airlines", avenue: "refund", reason: "Delay compensation rule 240", grossAmount: c(240), userNet: c(192), ourFee: c(48), status: "needs_approval", mins: 60 * 2 },
-    { merchant: "Comcast", avenue: "billing_error", reason: "Charged for cancelled line", grossAmount: c(118.62), userNet: c(94.9), ourFee: c(23.72), status: "needs_approval", mins: 30 },
-    { merchant: "Amazon Prime", avenue: "subscription", reason: "Auto-renewed after cancel request", grossAmount: c(139), userNet: c(111.2), ourFee: c(27.8), status: "found", mins: 12 },
-    { merchant: "Bank of America", avenue: "fee_reversal", reason: "Foreign transaction fee", grossAmount: c(8.7), userNet: c(6.96), ourFee: c(1.74), status: "found", mins: 6 },
-    { merchant: "Adobe Creative Cloud", avenue: "refund", reason: "Promo pricing not honored", grossAmount: c(64.99), userNet: c(51.99), ourFee: c(13), status: "on_the_way", mins: 60 * 11 },
+  const rows: Array<
+    Omit<Recovery, "id" | "idempotencyKey" | "createdAt" | "updatedAt"> & { mins: number }
+  > = [
+    {
+      merchant: "Chase Checking",
+      avenue: "fee_reversal",
+      reason: "Overdraft fee reversed",
+      grossAmount: c(35),
+      userNet: c(28),
+      ourFee: c(7),
+      status: "landed",
+      mins: 60 * 26,
+    },
+    {
+      merchant: "Uber",
+      avenue: "double_charge",
+      reason: "Duplicate ride charge",
+      grossAmount: c(51.4),
+      userNet: c(41.12),
+      ourFee: c(10.28),
+      status: "landed",
+      mins: 60 * 50,
+    },
+    {
+      merchant: "Spotify",
+      avenue: "subscription",
+      reason: "Unused 7 months — refund issued",
+      grossAmount: c(83.93),
+      userNet: c(67.14),
+      ourFee: c(16.79),
+      status: "on_the_way",
+      mins: 60 * 4,
+    },
+    {
+      merchant: "Delta Airlines",
+      avenue: "refund",
+      reason: "Delay compensation rule 240",
+      grossAmount: c(240),
+      userNet: c(192),
+      ourFee: c(48),
+      status: "needs_approval",
+      mins: 60 * 2,
+    },
+    {
+      merchant: "Comcast",
+      avenue: "billing_error",
+      reason: "Charged for cancelled line",
+      grossAmount: c(118.62),
+      userNet: c(94.9),
+      ourFee: c(23.72),
+      status: "needs_approval",
+      mins: 30,
+    },
+    {
+      merchant: "Amazon Prime",
+      avenue: "subscription",
+      reason: "Auto-renewed after cancel request",
+      grossAmount: c(139),
+      userNet: c(111.2),
+      ourFee: c(27.8),
+      status: "found",
+      mins: 12,
+    },
+    {
+      merchant: "Bank of America",
+      avenue: "fee_reversal",
+      reason: "Foreign transaction fee",
+      grossAmount: c(8.7),
+      userNet: c(6.96),
+      ourFee: c(1.74),
+      status: "found",
+      mins: 6,
+    },
+    {
+      merchant: "Adobe Creative Cloud",
+      avenue: "refund",
+      reason: "Promo pricing not honored",
+      grossAmount: c(64.99),
+      userNet: c(51.99),
+      ourFee: c(13),
+      status: "on_the_way",
+      mins: 60 * 11,
+    },
   ];
   return rows.map((r, i) => ({
     ...r,
@@ -47,9 +126,30 @@ const seededProfile: Profile = {
 };
 
 const seededNotifications: Notification[] = [
-  { id: "ntf_1", type: "money_landed", recoveryId: "rec_0002", message: "$41.12 just landed from Uber", ts: ago(60 * 50), read: false },
-  { id: "ntf_2", type: "needs_signature", recoveryId: "rec_0004", message: "Delta refund needs your OK ($192)", ts: ago(60 * 2), read: false },
-  { id: "ntf_3", type: "money_landed", recoveryId: "rec_0001", message: "$28 just landed from Chase", ts: ago(60 * 26), read: true },
+  {
+    id: "ntf_1",
+    type: "money_landed",
+    recoveryId: "rec_0002",
+    message: "$41.12 just landed from Uber",
+    ts: ago(60 * 50),
+    read: false,
+  },
+  {
+    id: "ntf_2",
+    type: "needs_signature",
+    recoveryId: "rec_0004",
+    message: "Delta refund needs your OK ($192)",
+    ts: ago(60 * 2),
+    read: false,
+  },
+  {
+    id: "ntf_3",
+    type: "money_landed",
+    recoveryId: "rec_0001",
+    message: "$28 just landed from Chase",
+    ts: ago(60 * 26),
+    read: true,
+  },
 ];
 
 export class MockApiClient implements ApiClient {
@@ -65,7 +165,13 @@ export class MockApiClient implements ApiClient {
     await this.delay();
     return this.recoveries.find((r) => r.id === rid) ?? null;
   }
-  async approveRecovery({ recoveryId, idempotencyKey }: { recoveryId: string; idempotencyKey: string }) {
+  async approveRecovery({
+    recoveryId,
+    idempotencyKey,
+  }: {
+    recoveryId: string;
+    idempotencyKey: string;
+  }) {
     await this.delay(220);
     const existing = this.approvals.find((a) => a.approvalToken === idempotencyKey);
     if (existing) return existing;
@@ -91,17 +197,28 @@ export class MockApiClient implements ApiClient {
     await this.delay();
     return this.recoveries
       .filter((r) => r.status === "landed")
-      .map((r, i) => ({ id: id("fee", i + 1), recoveryId: r.id, feeAmount: r.ourFee, ts: r.updatedAt }));
+      .map((r, i) => ({
+        id: id("fee", i + 1),
+        recoveryId: r.id,
+        feeAmount: r.ourFee,
+        ts: r.updatedAt,
+      }));
   }
   async totals() {
     await this.delay();
     const foundTotal = this.recoveries.reduce((s, r) => s + r.userNet, 0);
-    const landedTotal = this.recoveries.filter((r) => r.status === "landed").reduce((s, r) => s + r.userNet, 0);
-    const ourFeeTotal = this.recoveries.filter((r) => r.status === "landed").reduce((s, r) => s + r.ourFee, 0);
+    const landedTotal = this.recoveries
+      .filter((r) => r.status === "landed")
+      .reduce((s, r) => s + r.userNet, 0);
+    const ourFeeTotal = this.recoveries
+      .filter((r) => r.status === "landed")
+      .reduce((s, r) => s + r.ourFee, 0);
     return { foundTotal, landedTotal, ourFeeTotal };
   }
   async exportData() {
-    return new Blob([JSON.stringify({ recoveries: this.recoveries }, null, 2)], { type: "application/json" });
+    return new Blob([JSON.stringify({ recoveries: this.recoveries }, null, 2)], {
+      type: "application/json",
+    });
   }
   async deleteAllData() {
     this.recoveries = [];
@@ -132,6 +249,20 @@ export class MockAuthClient implements AuthClient {
   async saveContext(context: OccupationContext): Promise<Profile> {
     this.profile = { ...(this.profile ?? seededProfile), context };
     return this.profile;
+  }
+  async submitOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
+    return processOnboarding({
+      parsedInput: input,
+      userId: (this.profile ?? seededProfile).id,
+      writeAcceptance: async () => undefined,
+      writePadConsent: async () => undefined,
+      updateProfile: async (displayName, payoutRef) => {
+        this.profile = { ...(this.profile ?? seededProfile), displayName, payoutRef };
+      },
+      saveContext: async (context) => {
+        this.profile = { ...(this.profile ?? seededProfile), context };
+      },
+    });
   }
 }
 

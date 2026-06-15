@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { PMButton } from "@/components/pm/Button";
@@ -17,13 +17,37 @@ export const Route = createFileRoute("/app/onboarding")({
 type Step = 1 | 2 | 3 | 4;
 const TOTAL_STEPS = 4;
 
+// Currently-published agreement versions the user accepts on the consent step.
+const TOS = { version: "1.0", hash: "sha256_tos_v1" };
+const PRIVACY = { version: "1.0", hash: "sha256_priv_v1" };
+const PAD = {
+  amountBasis: "25% of recovered amount, charged after successful recovery",
+  cancellationPath: "Email cancel@playmoney.app or call 1-800-PLAYMONEY",
+};
+
 function Onboarding() {
   const [step, setStep] = useState<Step>(1);
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [capturedContext, setCapturedContext] = useState<OccupationContext | null>(null);
+  const [payoutToken, setPayoutToken] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [tosAccepted, setTosAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [padAccepted, setPadAccepted] = useState(false);
   const nav = useNavigate();
+
+  const canSubmit =
+    tosAccepted &&
+    privacyAccepted &&
+    padAccepted &&
+    legalName.trim().length > 0 &&
+    payoutToken.trim().length > 0 &&
+    !submitting;
 
   async function handleOccupationComplete(context: OccupationContext) {
     setSaving(true);
+    setCapturedContext(context);
     try {
       await auth.saveContext(context);
     } catch {
@@ -34,6 +58,38 @@ function Onboarding() {
     } finally {
       setSaving(false);
       setStep(3);
+    }
+  }
+
+  async function handleFinalSubmit() {
+    setSubmitting(true);
+    try {
+      const res = await auth.submitOnboarding({
+        country: "CA",
+        province: "AB",
+        tosVersion: TOS.version,
+        tosContentHash: TOS.hash,
+        privacyVersion: PRIVACY.version,
+        privacyContentHash: PRIVACY.hash,
+        padMethod: "card_on_file",
+        padAmountBasis: PAD.amountBasis,
+        padAdvanceNoticeDays: 0,
+        padCancellationPath: PAD.cancellationPath,
+        padWaiveAdvanceNotice: false,
+        displayName: legalName.trim(),
+        payoutRef: payoutToken.trim(),
+        occupationContext: capturedContext ?? undefined,
+      });
+      if (res.ok) {
+        toast.success("You're all set", { description: "We're watching for your money now." });
+        nav({ to: "/app" });
+      } else {
+        toast.error("We couldn't finish setup", { description: res.reason });
+      }
+    } catch {
+      toast.error("Setup didn't go through", { description: "Please try again in a moment." });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -94,8 +150,20 @@ function Onboarding() {
                   A tokenised payout reference — never raw bank credentials.
                 </p>
                 <div className="mt-5 grid gap-3">
-                  <Field label="Routing token" placeholder="tok_payout_***" />
-                  <Field label="Legal name" placeholder="Maya Chen" />
+                  <Field
+                    label="Routing token"
+                    placeholder="tok_payout_***"
+                    value={payoutToken}
+                    onChange={setPayoutToken}
+                    autoComplete="off"
+                  />
+                  <Field
+                    label="Legal name"
+                    placeholder="Maya Chen"
+                    value={legalName}
+                    onChange={setLegalName}
+                    autoComplete="name"
+                  />
                 </div>
               </>
             )}
@@ -103,20 +171,26 @@ function Onboarding() {
               <>
                 <IconChip name="shield" />
                 <h2 className="mt-5 font-display text-2xl font-semibold">
-                  You're set. We're on it.
+                  One last thing — your agreement.
                 </h2>
                 <p className="mt-2 text-ink-muted">
-                  We'll ping you only when there's money. No marketing. No noise.
+                  Alberta, Canada · non-custodial. We charge a fee only after we recover money for
+                  you.
                 </p>
-                <ul className="mt-5 space-y-2 text-sm text-ink">
-                  {["money_landed alerts only", "Non-custodial routing", "One-tap approvals"].map(
-                    (x) => (
-                      <li key={x} className="flex items-center gap-2">
-                        <PMIcon name="check" width={16} height={16} /> {x}
-                      </li>
-                    ),
-                  )}
-                </ul>
+                <div className="mt-5 space-y-2">
+                  <Consent checked={tosAccepted} onChange={setTosAccepted}>
+                    I agree to the <span className="font-semibold text-ink">Terms of Service</span>{" "}
+                    (internet-sales agreement).
+                  </Consent>
+                  <Consent checked={privacyAccepted} onChange={setPrivacyAccepted}>
+                    I've read the <span className="font-semibold text-ink">Privacy Policy</span>.
+                  </Consent>
+                  <Consent checked={padAccepted} onChange={setPadAccepted}>
+                    I authorize a <span className="font-semibold text-ink">card-on-file fee</span>{" "}
+                    of 25% of any amount recovered, charged only after the money lands. Cancel
+                    anytime.
+                  </Consent>
+                </div>
               </>
             )}
 
@@ -124,12 +198,17 @@ function Onboarding() {
             <div className="mt-8 flex items-center gap-3">
               {step !== 2 && (
                 <PMButton
+                  disabled={step === TOTAL_STEPS && !canSubmit}
                   onClick={() => {
-                    if (step === TOTAL_STEPS) nav({ to: "/app" });
+                    if (step === TOTAL_STEPS) void handleFinalSubmit();
                     else setStep((step + 1) as Step);
                   }}
                 >
-                  {step === TOTAL_STEPS ? "Open my wins" : "Continue"}{" "}
+                  {step === TOTAL_STEPS
+                    ? submitting
+                      ? "Setting up…"
+                      : "Open my wins"
+                    : "Continue"}{" "}
                   <PMIcon name="arrow" stroke="#FFFDF8" />
                 </PMButton>
               )}
@@ -137,7 +216,7 @@ function Onboarding() {
                 <button
                   className="text-sm text-ink-muted hover:text-ink disabled:opacity-50"
                   onClick={() => setStep((step - 1) as Step)}
-                  disabled={saving}
+                  disabled={saving || submitting}
                 >
                   Back
                 </button>
@@ -175,14 +254,54 @@ function Onboarding() {
   );
 }
 
-function Field({ label, placeholder }: { label: string; placeholder: string }) {
+function Field({
+  label,
+  placeholder,
+  value,
+  onChange,
+  type = "text",
+  autoComplete,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  autoComplete?: string;
+}) {
   return (
     <label className="block">
       <span className="eyebrow text-ink-muted">{label}</span>
       <input
+        type={type}
+        autoComplete={autoComplete}
         placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         className="mt-1 h-12 w-full rounded-[12px] border border-border-l bg-card px-4 text-ink placeholder:text-ink-muted/60 focus-visible:border-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       />
+    </label>
+  );
+}
+
+function Consent({
+  checked,
+  onChange,
+  children,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-[12px] border border-border-l bg-card p-3 text-sm">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 accent-[#0F6B50]"
+      />
+      <span className="text-ink-muted">{children}</span>
     </label>
   );
 }

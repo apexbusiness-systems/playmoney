@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { api, formatMoney } from "@/lib/playmoney/client";
+import { api, auth, formatMoney } from "@/lib/playmoney/client";
 import type { Recovery } from "@/lib/playmoney/types";
 import { approveRecovery } from "@/lib/playmoney/approve";
+import { rankByContextKey } from "@/lib/engine/situation";
 import { Odometer } from "@/components/pm/Odometer";
 import { GoldDing } from "@/components/pm/GoldDing";
 import { StatusPill } from "@/components/pm/StatusPill";
@@ -23,8 +24,18 @@ function WinsPage() {
   const qc = useQueryClient();
   const totals = useQuery({ queryKey: ["totals"], queryFn: () => api.totals() });
   const recs = useQuery({ queryKey: ["recoveries"], queryFn: () => api.listRecoveries() });
+  const profile = useQuery({ queryKey: ["profile"], queryFn: () => auth.getProfile() });
   const [confirming, setConfirming] = useState<Recovery | null>(null);
   const [landed, setLanded] = useState<Recovery | null>(null);
+
+  // P6/P3: if the user told us their occupation, surface the most relevant wins
+  // first (engine `rankByContextKey`). Detection is unchanged — only the order.
+  const context = profile.data?.context;
+  const ordered = useMemo(
+    () =>
+      context ? rankByContextKey(recs.data ?? [], (r) => r.avenue, context) : (recs.data ?? []),
+    [recs.data, context],
+  );
 
   async function approve(rec: Recovery) {
     setConfirming(null);
@@ -78,14 +89,14 @@ function WinsPage() {
           <h2 className="font-display text-2xl font-semibold">Recent wins</h2>
           <div className="flex items-center gap-2 text-sm text-ink-muted">
             <span className="h-2 w-2 rounded-full bg-mint" />
-            Watching {recs.data?.length ?? 0} signals
+            {context ? "Prioritized for you" : `Watching ${recs.data?.length ?? 0} signals`}
           </div>
         </div>
 
         <div className="mt-6 space-y-3">
           {recs.isLoading && <SkeletonFeed />}
           {recs.data?.length === 0 && <EmptyState />}
-          {recs.data?.map((r) => (
+          {ordered.map((r) => (
             <RecoveryCard key={r.id} rec={r} onApprove={() => setConfirming(r)} />
           ))}
         </div>
