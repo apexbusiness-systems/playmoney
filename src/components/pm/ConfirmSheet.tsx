@@ -1,9 +1,20 @@
+// ConfirmSheet — bottom-sheet that collects the user's 1-click e-LOA.
+//
+// Anti-netting layout: the gross amount is what the TARGET PLATFORM sends
+// directly to the user's account. PlayMoney's success fee is a SEPARATE
+// Stripe merchant charge — never netted from funds in transit (#1, #5).
+//
+// Status alignment:
+//   needs_approval → ConfirmSheet opens; user mints e-LOA via "Authorize & Transfer".
+//   on_the_way     → e-LOA minted; enters human-review queue; UI reflects processing
+//                    while the internal team greenlights the StripePayoutAdapter.
+
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { PMButton } from "./Button";
 import { PMIcon } from "./Icon";
 import { useDialogA11y } from "./useDialog";
-import { formatMoney } from "@/lib/playmoney/mock";
+import { formatMoney } from "@/lib/playmoney/client";
 import type { Recovery } from "@/lib/playmoney/types";
 
 interface Props {
@@ -11,9 +22,20 @@ interface Props {
   recovery: Recovery | null;
   onClose: () => void;
   onApprove: (rec: Recovery) => Promise<void>;
+  /** Masked display of the user's bank account (populated from payoutRef in P4/P6). */
+  routingDestination?: string;
+  /** Masked display of the card PlayMoney charges its fee to (populated in P6). */
+  feeBilledTo?: string;
 }
 
-export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
+export function ConfirmSheet({
+  open,
+  recovery,
+  onClose,
+  onApprove,
+  routingDestination = "Checking •••• ——",
+  feeBilledTo = "Card •••• ——",
+}: Props) {
   const [busy, setBusy] = useState(false);
   const dialogRef = useDialogA11y<HTMLDivElement>(open && !!recovery, onClose);
 
@@ -46,19 +68,39 @@ export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
             >
               <p className="eyebrow text-ink-muted">Awaiting your OK</p>
               <p id="confirm-sheet-title" className="mt-3 font-display text-2xl font-semibold">
-                Found you <span className="text-mint">{formatMoney(recovery.userNet)}</span> —<br />
-                send it to your account?
+                Found you{" "}
+                <span className="text-mint">{formatMoney(recovery.grossAmount)}</span>{" "}
+                from {recovery.merchant}.
               </p>
+
+              {/* ── Anti-netting ledger ───────────────────────────────────────────
+                  Gross amount routes DIRECTLY from the platform to the user's
+                  account. The success fee is a separate Stripe charge (#1, #5).  */}
               <div className="mt-5 rounded-[14px] bg-sand p-4 text-sm">
-                <Row k="Merchant" v={recovery.merchant} />
-                <Row k="Reason" v={recovery.reason} />
-                <Row k="Gross recovered" v={formatMoney(recovery.grossAmount)} />
-                <Row k="Our cut (20%)" v={formatMoney(recovery.ourFee)} muted />
+                <Row k="Target platform sends you" v={formatMoney(recovery.grossAmount)} strong />
                 <div className="mt-2 border-t border-border-l pt-2">
-                  <Row k="You get" v={formatMoney(recovery.userNet)} strong />
+                  <Row k="PlayMoney success fee (20%)" v={`− ${formatMoney(recovery.ourFee)}`} muted />
                 </div>
               </div>
-              <div className="mt-6 flex items-center gap-3">
+
+              {/* ── Routing destination + fee billing anchors ─────────────────── */}
+              <div className="mt-4 flex flex-col gap-2 px-1">
+                <div className="flex items-center justify-between text-xs text-ink-muted">
+                  <span>Routing destination</span>
+                  <span className="font-medium text-ink">{routingDestination}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-ink-muted">
+                  <span>Fee billed to</span>
+                  <span className="font-medium text-ink">{feeBilledTo}</span>
+                </div>
+              </div>
+
+              {/* ── 1-click e-LOA consent copy + button ──────────────────────── */}
+              <p className="mt-6 mb-2 text-center text-[11px] leading-tight text-ink-muted">
+                By continuing, you authorize PlayMoney to route these funds on your behalf
+                and agree to the success fee charged separately to your card.
+              </p>
+              <div className="flex items-center gap-3">
                 <PMButton
                   variant="primaryLight"
                   className="flex-1"
@@ -69,7 +111,7 @@ export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
                     setBusy(false);
                   }}
                 >
-                  <PMIcon name="check" stroke="#FFFDF8" /> Yes, send it
+                  <PMIcon name="check" stroke="#FFFDF8" /> Authorize & Transfer
                 </PMButton>
                 <button
                   className="text-sm font-medium text-ink-muted hover:text-ink"
@@ -78,6 +120,7 @@ export function ConfirmSheet({ open, recovery, onClose, onApprove }: Props) {
                   Not now
                 </button>
               </div>
+
               <p className="mt-4 text-xs text-ink-muted">
                 Funds route directly to your account. PlayMoney never holds your money.
               </p>
