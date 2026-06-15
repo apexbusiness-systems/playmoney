@@ -23,6 +23,7 @@ function makeIO() {
     writeAcceptance: vi.fn(async () => undefined),
     writePadConsent: vi.fn(async () => undefined),
     updateProfile: vi.fn(async () => undefined),
+    saveContext: vi.fn(async () => undefined),
   };
 }
 
@@ -84,5 +85,34 @@ describe("P6 · processOnboarding: consent records written, gates satisfied", ()
     });
     expect(result.ok).toBe(true);
     expect(io.writePadConsent).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists occupation context when provided", async () => {
+    const io = makeIO();
+    const result = await processOnboarding({
+      parsedInput: {
+        ...BASE_INPUT,
+        occupationContext: {
+          occupationType: "gig_worker",
+          platforms: ["Uber", "DoorDash"],
+          priorityAvenueHints: [],
+        },
+      },
+      ...io,
+    });
+    expect(result.ok).toBe(true);
+    expect(io.saveContext).toHaveBeenCalledTimes(1);
+    expect(io.saveContext).toHaveBeenCalledWith({
+      occupationType: "gig_worker",
+      platforms: ["Uber", "DoorDash"],
+      priorityAvenueHints: [],
+    });
+  });
+
+  it("skips saveContext when no occupationContext provided", async () => {
+    const io = makeIO();
+    const result = await processOnboarding({ parsedInput: BASE_INPUT, ...io });
+    expect(result.ok).toBe(true);
+    expect(io.saveContext).not.toHaveBeenCalled();
   });
 });

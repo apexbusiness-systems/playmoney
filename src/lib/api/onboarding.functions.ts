@@ -19,6 +19,7 @@ import {
   PadMethod,
 } from "@/lib/compliance/contract";
 import { checkEligibility } from "@/lib/compliance/geofence";
+import { OccupationContext } from "@/lib/playmoney/types";
 
 export const OnboardingInput = z.object({
   // Jurisdiction
@@ -39,6 +40,8 @@ export const OnboardingInput = z.object({
   // Identity attestation
   displayName: z.string().min(1),
   payoutRef: z.string().min(1),
+  // Occupation context — optional; captured on the context discovery step.
+  occupationContext: OccupationContext.optional(),
 });
 export type OnboardingInput = z.infer<typeof OnboardingInput>;
 
@@ -57,6 +60,7 @@ export async function processOnboarding(input: {
   writeAcceptance: (type: string, version: string, hash: string) => Promise<void>;
   writePadConsent: (consent: ReturnType<typeof buildPadConsent>) => Promise<void>;
   updateProfile: (displayName: string, payoutRef: string, province: string | null) => Promise<void>;
+  saveContext?: (context: OccupationContext) => Promise<void>;
 }): Promise<OnboardingResult> {
   const si = input.parsedInput;
   const now = input.now ?? new Date();
@@ -101,6 +105,11 @@ export async function processOnboarding(input: {
 
   // 5. Update profile jurisdiction + display info.
   await input.updateProfile(si.displayName, si.payoutRef, eligibility.jurisdiction.province);
+
+  // 6. Persist occupation context if provided and a saveContext handler is wired.
+  if (si.occupationContext && input.saveContext) {
+    await input.saveContext(si.occupationContext);
+  }
 
   return { ok: true, message: "Onboarding consent recorded." };
 }
@@ -159,6 +168,13 @@ export const submitOnboardingFn = createServerFn({ method: "POST" })
           })
           .eq("id", userId);
         if (error) throw new Error(`submitOnboarding: profile update failed: ${error.message}`);
+      },
+      saveContext: async (context) => {
+        const { error } = await sb
+          .from("profiles")
+          .update({ user_context: context })
+          .eq("id", userId);
+        if (error) throw new Error(`submitOnboarding: context save failed: ${error.message}`);
       },
     });
 
