@@ -1,26 +1,52 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { PMButton } from "@/components/pm/Button";
 import { PMCard } from "@/components/pm/Card";
 import { IconChip, PMIcon } from "@/components/pm/Icon";
+import { OccupationStep } from "@/components/onboarding/OccupationStep";
+import { auth } from "@/lib/playmoney/client";
+import type { OccupationContext } from "@/lib/playmoney/types";
 
 export const Route = createFileRoute("/app/onboarding")({
   head: () => ({ meta: [{ title: "Get set up — PlayMoney" }] }),
   component: Onboarding,
 });
 
+type Step = 1 | 2 | 3 | 4;
+const TOTAL_STEPS = 4;
+
 function Onboarding() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<Step>(1);
+  const [saving, setSaving] = useState(false);
   const nav = useNavigate();
+
+  async function handleOccupationComplete(context: OccupationContext) {
+    setSaving(true);
+    try {
+      await auth.saveContext(context);
+    } catch {
+      // Context is a ranking hint, not a gate — never block onboarding on it.
+      toast.error("We couldn't save that just now", {
+        description: "No problem — you can keep going; we'll tune your matches as we learn.",
+      });
+    } finally {
+      setSaving(false);
+      setStep(3);
+    }
+  }
+
   return (
     <section className="bg-sand">
       <div className="container-pm py-14">
-        <p className="eyebrow text-ink-muted">Setup · step {step} of 3</p>
+        <p className="eyebrow text-ink-muted">
+          Setup · step {step} of {TOTAL_STEPS}
+        </p>
         <h1 className="h2-display mt-3">Let's get you on the receiving end.</h1>
 
-        <div className="mt-10 grid gap-3 sm:grid-cols-3">
-          {([1, 2, 3] as const).map((i) => (
+        <div className="mt-10 grid gap-3 sm:grid-cols-4">
+          {([1, 2, 3, 4] as const).map((i) => (
             <div
               key={i}
               className="h-1.5 rounded-full"
@@ -56,6 +82,9 @@ function Onboarding() {
               </>
             )}
             {step === 2 && (
+              <OccupationStep onComplete={handleOccupationComplete} isLoading={saving} />
+            )}
+            {step === 3 && (
               <>
                 <IconChip name="coin" />
                 <h2 className="mt-5 font-display text-2xl font-semibold">
@@ -70,7 +99,7 @@ function Onboarding() {
                 </div>
               </>
             )}
-            {step === 3 && (
+            {step === 4 && (
               <>
                 <IconChip name="shield" />
                 <h2 className="mt-5 font-display text-2xl font-semibold">
@@ -91,19 +120,24 @@ function Onboarding() {
               </>
             )}
 
+            {/* Step 2 (occupation) owns its own Continue button inside OccupationStep. */}
             <div className="mt-8 flex items-center gap-3">
-              <PMButton
-                onClick={() => {
-                  if (step === 3) nav({ to: "/app" });
-                  else setStep((step + 1) as 1 | 2 | 3);
-                }}
-              >
-                {step === 3 ? "Open my wins" : "Continue"} <PMIcon name="arrow" stroke="#FFFDF8" />
-              </PMButton>
+              {step !== 2 && (
+                <PMButton
+                  onClick={() => {
+                    if (step === TOTAL_STEPS) nav({ to: "/app" });
+                    else setStep((step + 1) as Step);
+                  }}
+                >
+                  {step === TOTAL_STEPS ? "Open my wins" : "Continue"}{" "}
+                  <PMIcon name="arrow" stroke="#FFFDF8" />
+                </PMButton>
+              )}
               {step > 1 && (
                 <button
-                  className="text-sm text-ink-muted hover:text-ink"
-                  onClick={() => setStep((step - 1) as 1 | 2)}
+                  className="text-sm text-ink-muted hover:text-ink disabled:opacity-50"
+                  onClick={() => setStep((step - 1) as Step)}
+                  disabled={saving}
                 >
                   Back
                 </button>
