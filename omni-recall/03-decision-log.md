@@ -144,3 +144,20 @@ NEXT: P4 (port adapters, BUILT-sealed) → P5 (lifecycle saga) → P6 (onboardin
   test + request-session userId extraction.
 - **Verified**: `typecheck` clean · **128 tests / 20 files** pass · `build` green · `bun.lock`
   Lovable-free. `lint` still carries 133 auto-fixable prettier + 1 real (`OccupationStep:36`).
+
+### 2026-06-15 · D-010 · P6 — occupation/context step wired into onboarding (BUILT)
+Closed the seam gap root-caused in D-009 (component built in `5aabbf1`, never rendered):
+- `routes/app.onboarding.tsx` now a 4-step flow; step 2 renders `<OccupationStep>` and persists
+  the captured `OccupationContext` via the `auth.saveContext` contract seam (RLS-session scoped in
+  Supabase — `sb.auth.getUser()` — so it sidesteps the broken admin `getUserById(payoutRef)` path).
+  Context save is non-blocking (ranking hint, not a gate): failure shows a toast and still advances.
+- `OccupationStep` restyled to the pm brand tokens (ink/sand/gold + `PMButton`/`IconChip`) for
+  visual coherence; fixed its real lint error (`no-unused-expressions` ternary → `if/else`).
+- `routes/app.onboarding.seam.test.ts` added — a dep-free (node-env) source-level guard asserting
+  the route imports + renders `OccupationStep` and calls `auth.saveContext`. This is the regression
+  shield that was missing when the orphan merged green.
+- **Verified**: `typecheck` clean · **131 tests / 21 files** pass · `build` green · the 1 real lint
+  error is gone (only auto-fixable prettier remains).
+- **Residual (honest)**: `rankByContext` (engine, `situation.ts`) is built + tested but **consumed
+  nowhere** — its application point is the detection/ingest path (P4/P5), so saved context has no
+  surfaced-wins effect yet. `submitOnboardingFn` userId resolution still broken (ToS/PAD/profile).

@@ -1,17 +1,28 @@
 import { useState } from "react";
 import { type OccupationContext, type OccupationType } from "@/lib/playmoney/types";
 import { cn } from "@/lib/utils";
+import { IconChip, PMIcon } from "@/components/pm/Icon";
+import { PMButton } from "@/components/pm/Button";
 
 const OCCUPATION_OPTIONS: Array<{ value: OccupationType; label: string; hint: string }> = [
-  { value: "employee",       label: "Employee",       hint: "Salaried or hourly, T4 / W-2" },
-  { value: "gig_worker",     label: "Gig worker",     hint: "Uber, DoorDash, Lyft, Instacart" },
-  { value: "freelancer",     label: "Freelancer",     hint: "Fiverr, Upwork, independent contracts" },
+  { value: "employee", label: "Employee", hint: "Salaried or hourly, T4 / W-2" },
+  { value: "gig_worker", label: "Gig worker", hint: "Uber, DoorDash, Lyft, Instacart" },
+  { value: "freelancer", label: "Freelancer", hint: "Fiverr, Upwork, independent contracts" },
   { value: "small_business", label: "Business owner", hint: "Registered sole-prop or corporation" },
-  { value: "student",        label: "Student",        hint: "Full- or part-time enrolment" },
-  { value: "other",          label: "Other",          hint: "None of the above" },
+  { value: "student", label: "Student", hint: "Full- or part-time enrolment" },
+  { value: "other", label: "Other", hint: "None of the above" },
 ];
 
-const GIG_PLATFORMS = ["Uber", "DoorDash", "Lyft", "Instacart", "Fiverr", "Upwork", "Skip", "Amazon Flex"];
+const GIG_PLATFORMS = [
+  "Uber",
+  "DoorDash",
+  "Lyft",
+  "Instacart",
+  "Fiverr",
+  "Upwork",
+  "Skip",
+  "Amazon Flex",
+];
 const FREELANCE_PLATFORMS = ["Fiverr", "Upwork", "Toptal", "99designs", "Contra", "LinkedIn"];
 
 interface Props {
@@ -19,6 +30,11 @@ interface Props {
   isLoading?: boolean;
 }
 
+/**
+ * P6 onboarding question: capture occupation + platforms so the recovery engine
+ * (`rankByContext` in `engine/situation.ts`) can surface the most relevant wins first.
+ * Detection is unchanged — this only re-orders what the user sees.
+ */
 export function OccupationStep({ onComplete, isLoading = false }: Props) {
   const [occupationType, setOccupationType] = useState<OccupationType | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<Set<string>>(new Set());
@@ -33,7 +49,11 @@ export function OccupationStep({ onComplete, isLoading = false }: Props) {
   function togglePlatform(p: string) {
     setSelectedPlatforms((prev) => {
       const next = new Set(prev);
-      next.has(p) ? next.delete(p) : next.add(p);
+      if (next.has(p)) {
+        next.delete(p);
+      } else {
+        next.add(p);
+      }
       return next;
     });
   }
@@ -48,50 +68,51 @@ export function OccupationStep({ onComplete, isLoading = false }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Tell us about yourself</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          We'll surface the most relevant money-back opportunities for you.
-        </p>
-      </div>
+    <>
+      <IconChip name="spark" />
+      <h2 className="mt-5 font-display text-2xl font-semibold text-ink">Tell us about yourself</h2>
+      <p className="mt-2 text-ink-muted">
+        We'll surface the money-back opportunities that matter most for how you earn.
+      </p>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {OCCUPATION_OPTIONS.map((opt) => (
           <button
             key={opt.value}
             type="button"
+            aria-pressed={occupationType === opt.value}
             onClick={() => {
               setOccupationType(opt.value);
               setSelectedPlatforms(new Set());
             }}
             className={cn(
-              "flex flex-col items-start rounded-xl border p-4 text-left transition-colors",
+              "flex flex-col items-start rounded-[12px] border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
               occupationType === opt.value
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                : "border-border hover:border-primary/40 hover:bg-muted/40",
+                ? "border-gold bg-gold/10 ring-1 ring-gold"
+                : "border-border-l hover:border-gold/40 hover:bg-sand",
             )}
           >
-            <span className="text-sm font-medium">{opt.label}</span>
-            <span className="text-xs text-muted-foreground mt-0.5">{opt.hint}</span>
+            <span className="text-sm font-semibold text-ink">{opt.label}</span>
+            <span className="mt-0.5 text-xs text-ink-muted">{opt.hint}</span>
           </button>
         ))}
       </div>
 
       {platformOptions.length > 0 && (
-        <div>
-          <p className="text-sm font-medium mb-2">Which platforms do you use?</p>
+        <div className="mt-6">
+          <p className="mb-2 text-sm font-semibold text-ink">Which platforms do you use?</p>
           <div className="flex flex-wrap gap-2">
             {platformOptions.map((p) => (
               <button
                 key={p}
                 type="button"
+                aria-pressed={selectedPlatforms.has(p)}
                 onClick={() => togglePlatform(p)}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  "rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
                   selectedPlatforms.has(p)
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border hover:border-primary/40",
+                    ? "border-gold bg-gold text-ink"
+                    : "border-border-l text-ink-muted hover:border-gold/40 hover:text-ink",
                 )}
               >
                 {p}
@@ -101,14 +122,16 @@ export function OccupationStep({ onComplete, isLoading = false }: Props) {
         </div>
       )}
 
-      <button
-        type="button"
-        disabled={!occupationType || isLoading}
-        onClick={handleSubmit}
-        className="mt-2 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
-      >
-        {isLoading ? "Saving…" : "Continue"}
-      </button>
-    </div>
+      <div className="mt-8">
+        <PMButton
+          variant="primaryLight"
+          disabled={!occupationType || isLoading}
+          onClick={handleSubmit}
+        >
+          {isLoading ? "Saving…" : "Continue"}
+          {!isLoading && <PMIcon name="arrow" stroke="#FFFDF8" />}
+        </PMButton>
+      </div>
+    </>
   );
 }
