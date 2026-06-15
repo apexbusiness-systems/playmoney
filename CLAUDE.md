@@ -4,15 +4,34 @@ Non-custodial consumer money-recovery app. _"We do the hard work, you just play 
 the money." / "We don't promise, but we deliver."_ Default posture is **BUILT** (no real
 external effects); **LIVE** is physically sealed behind 10 go-live gates.
 
-## Stack (do NOT introduce Temporal or Cloudflare-Workers-specific infra)
+## Stack (do NOT introduce Temporal)
 
-- **Frontend**: TanStack Start (React 19) + TanStack Router + React Query + Vite + Tailwind v4
+- **Frontend**: TanStack Start (React 19) + TanStack Router + React Query + Vite 7 + Tailwind v4
   + shadcn/Radix + framer-motion. Runtime: **Bun**. TS **strict**.
 - **Backend**: Supabase (Postgres + RLS + Auth). Server logic = TanStack Start
-  `createServerFn` (see `src/lib/api/example.functions.ts`) — not Supabase Edge Functions.
+  `createServerFn` — not Supabase Edge Functions.
 - **DB**: `supabase/migrations/0001..0006`. `bun run db:migrate` (Management API SQL endpoint;
   idempotent via `private.schema_migrations`), `bun run db:verify-rls` (anon-denied proof).
 - **Tests**: Vitest. `bun run test` · `bun run typecheck` · `bun run lint` · `bun run build`.
+- **Deployment**: Cloudflare Workers via Nitro `cloudflare-module` preset. `bun run deploy`
+  (build + `wrangler deploy`). Live at `https://playmoney.icu`. Wrangler config auto-generated
+  to `.output/server/wrangler.json` on every build — do NOT commit it.
+
+## Build & deploy pipeline
+
+```
+bun run build   # vite build → .output/server/index.mjs + .output/public/
+bun run deploy  # build + wrangler deploy --config .output/server/wrangler.json
+```
+
+- `vite.config.ts` uses **direct** plugin imports (no Lovable wrapper):
+  `tanstackStart` · `react` · `tailwindcss` · `tsconfigPaths` · `nitro` (cloudflare-module).
+- Nitro generates `.output/server/wrangler.json` — this is the authoritative deploy config.
+- `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` must be present at build time (bake into
+  client bundle). Keep in a local `.env` (gitignored). Also stored as Cloudflare Worker secrets.
+- `SUPABASE_SERVICE_ROLE_KEY` + any other server-only secrets → `wrangler secret put <KEY>`.
+- **Cloudflare account**: `53dfe0e79d719c097188b3e0bd89e331` · worker name: `playmoney`
+  · workers.dev: `playmoney.playmoneywins.workers.dev`.
 
 ## House style (hard constraints)
 
@@ -71,6 +90,7 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
 | **P1** | Real Supabase `ApiClient`/`AuthClient` behind the contract + env selector + `0006` recovery domain; routes repointed; mock fallback intact | ✅ **done (D-006)** |
 | P2 | Route `approveRecovery` through `executeRecoveryAction` (LOA + review + mode/gates), write `recovery_events`, persist truthful status | ⬜ todo |
 | **P3** | Recovery engine (SituationModel / AvenueRouter / LearningLoop), pure + tested | ✅ **done (D-007)** |
+| **P3.5** | Cloudflare Workers deployment — Lovable wrapper removed; Nitro cloudflare-module; `playmoney.icu` live | ✅ **done (D-008)** |
 | P4 | Real adapters behind ports (Flinks/Plaid read-only, Stripe fee-only) + OCR/email ingest; all guarded by `assertLiveAllowed` | ⬜ todo |
 | P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | ⬜ todo |
 | P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data | ⬜ todo |
@@ -92,3 +112,6 @@ Append decisions there; never store secrets in it.
   when no live session exists yet; the OTP-confirm UI flow is not wired (UI work for P6).
 - Adapters (Flinks/Plaid/Stripe/OCR) are still port interfaces — concrete impls are P4.
 - External gates `G-counsel` + `G-insurance` are ops/legal facts; code never auto-sets them.
+- **No CI workflow** in repo yet — typecheck/test/build run locally only (P7 scope).
+- `@lovable.dev/vite-tanstack-config` remains in `package.json` devDependencies but is no longer
+  imported anywhere; safe to remove once the lock file churn is acceptable.

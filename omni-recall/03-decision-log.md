@@ -107,3 +107,48 @@ P2 (route approve through MAN-Mode executor + recovery_events audit) → P4 (por
 sealed in BUILT) → P5 (lifecycle saga + fee_reversal e2e) → P6 (onboarding consent) → P7 (CI +
 go-live health check). Pre-existing prettier debt in landing/route files: lint not yet green
 project-wide (formatting only).
+
+---
+
+### 2026-06-15 · D-008 · Cloudflare Workers deployment (LIVE at playmoney.icu)
+
+**Context**: User directed removal of `@lovable.dev/vite-tanstack-config` wrapper and deployment
+to Cloudflare Workers on `playmoney.icu` (domain purchased from IONOS).
+
+**Decisions made:**
+- Drop `@lovable.dev/vite-tanstack-config`. Use direct plugin imports in `vite.config.ts`:
+  `tanstackStart` (from `@tanstack/react-start/plugin/vite`), `react` (`@vitejs/plugin-react`),
+  `tailwindcss` (`@tailwindcss/vite`), `tsconfigPaths` (`vite-tsconfig-paths`),
+  `nitro` (`nitro/vite`, preset: `cloudflare-module`, `nodeCompat: true`).
+- `vite.config.ts` is async `defineConfig` callback to allow dynamic `import("nitro/vite")`.
+- Nitro generates `.output/server/wrangler.json` automatically — this is the deploy config.
+  Root-level `wrangler.toml` is not needed and was removed.
+- `bun run deploy` = `bun run build && wrangler deploy --config .output/server/wrangler.json`.
+- `.env` / `.env.*` added to `.gitignore`; Supabase public keys also stored as CF Worker secrets.
+- `PLAYMONEY_MODE` is **not** set in the Worker — app remains in BUILT mode (default).
+
+**Infrastructure provisioned (all via Cloudflare API):**
+- CF account: `53dfe0e79d719c097188b3e0bd89e331` (Playmoneywins@gmail.com)
+- workers.dev subdomain: `playmoneywins` → `playmoney.playmoneywins.workers.dev`
+- Zone `playmoney.icu` created (ID `fe8e2cfc26fc8486991faa08b37bc58a`), activated
+- Custom domains attached: `playmoney.icu` + `www.playmoney.icu` → worker `playmoney`
+- SSL certificates issued (Google CA via Cloudflare Universal + Advanced)
+- ACME TXT records added to DNS during provisioning (can be cleaned up after cert renewal)
+- Domain NS at IONOS updated to `julissa.ns.cloudflare.com` / `quinton.ns.cloudflare.com`
+
+**Verified:**
+- `bun run build` clean (693 client modules, 66 server ESM modules, zero errors)
+- `wrangler deploy` succeeded; worker version `84b0ad72-938b-4e55-ac31-14509afa37ce`
+- `https://playmoney.icu` → HTTP 200 (SSR Worker serving React app)
+- PR #6 merged to `main`
+
+**Residuals:**
+- `@lovable.dev/vite-tanstack-config` still in `package.json` devDeps (unused). Remove when
+  convenient to reduce lock-file churn.
+- No CI workflow yet; typecheck/test/build are local only (P7 scope).
+- Worker currently runs BUILT mode. `PLAYMONEY_MODE=LIVE` must never be set until all 10
+  gates green; see `04-go-live-gate.md`.
+
+### 2026-06-15 · NEXT
+P2 (route `approveRecovery` through MAN-Mode executor) → P4 (real port adapters) → P5
+(lifecycle saga) → P6 (onboarding/consent) → P7 (CI green + go-live health check).

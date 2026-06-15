@@ -1,15 +1,29 @@
 # 00 · Recon Report
 
-_Recon date: 2026-06-14. Branch: `claude/compassionate-bardeen-xg06iy`._
+_Last recon: 2026-06-15. Branch at D-008: `claude/wonderful-davinci-5bgdwy` → merged to `main` (PR #6)._
+_Prior recon: 2026-06-14. Branch: `claude/compassionate-bardeen-xg06iy`._
 Labels: **VERIFIED** = opened/ran the artifact · **INFERRED** = deduced · **MISSING** = not present.
 
-## Stack (VERIFIED)
-- TanStack Start (`@tanstack/react-start`) + React 19 + `@tanstack/react-router`.
+## D-008 delta (Cloudflare deployment — 2026-06-15)
+- `vite.config.ts` rewritten: `@lovable.dev/vite-tanstack-config` wrapper removed; now uses
+  direct plugin imports (`tanstackStart`, `react`, `tailwindcss`, `tsconfigPaths`, `nitro`).
+- `nitro` preset = `cloudflare-module`. Outputs to `.output/server/index.mjs` + `.output/public/`.
+- `wrangler@4.100.0` added to devDependencies. `package.json` deploy script added.
+- `.gitignore` updated: `.env` / `.env.*` excluded.
+- **Cloudflare Workers** live: worker `playmoney` on account `53dfe0e79d719c097188b3e0bd89e331`.
+- **`https://playmoney.icu`** + `https://www.playmoney.icu` — LIVE, HTTP 200, SSL active.
+- Workers.dev fallback: `https://playmoney.playmoneywins.workers.dev`.
+- Worker secrets: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (runtime-accessible).
+- PR #6 merged to `main`.
+
+## Stack (VERIFIED — updated D-008)
+- TanStack Start (`@tanstack/react-start@1.167`) + React 19 + `@tanstack/react-router`.
 - Vite 7, Bun (`bun.lock`, `bunfig.toml`), TypeScript `strict` (`tsconfig.json`).
-- Tailwind v4, Zod 3.24, framer-motion, recharts. Lovable scaffold
-  (`@lovable.dev/vite-tanstack-config`). Build target: Cloudflare Workers via nitro.
-- Scripts (`package.json`): `dev`, `build`, `build:dev`, `preview`, `lint` (eslint),
-  `format` (prettier). **No `test` script. No test runner installed.**
+- Tailwind v4, Zod 3.24, framer-motion, recharts, shadcn/Radix.
+- **No Lovable wrapper.** `vite.config.ts` uses direct plugin imports (see D-008).
+- Nitro `3.0.260603-beta` + `wrangler@4.100.0` → Cloudflare Workers deploy.
+- Scripts (`package.json`): `dev`, `build`, `build:dev`, `preview`, `deploy`, `lint`,
+  `format`, `test` (vitest), `typecheck`, `db:migrate`, `db:verify-rls`.
 
 ## Persistence (VERIFIED)
 - **No database, no Supabase, no Postgres, no migrations, no RLS.**

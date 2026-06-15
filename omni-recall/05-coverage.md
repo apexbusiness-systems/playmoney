@@ -1,8 +1,11 @@
 # 05 · Compliance Coverage & Residuals (§7 Definition of Done)
 
 _Phase 2 complete: 2026-06-14. Branch `claude/compassionate-bardeen-xg06iy` → PR #1._
+_P3 (engine) complete: 2026-06-14. `bun run test` = **87 passing**._
+_P3.5 (Cloudflare deployment): 2026-06-15. Branch `claude/wonderful-davinci-5bgdwy` → PR #6 (merged)._
 **Status: BUILT, not LIVE.** `PLAYMONEY_MODE` default BUILT; `canGoLive()` = false; live paths sealed.
-Verification: `bun run typecheck` clean · `bun run test` = **67 passing** · `bun run db:verify-rls` = 8/8 deny anon.
+**Production**: `https://playmoney.icu` live on Cloudflare Workers. BUILT mode (no real effects).
+Verification: `bun run typecheck` clean · `bun run test` = **87 passing** · `bun run db:verify-rls` = 8/8 deny anon · `bun run build` clean.
 
 ## Coverage table (17 controls → enforcement → status)
 | # | Control | Enforced by (file) | Test | Status |
@@ -45,3 +48,6 @@ T1 ✅ · T2 ✅ · T3 ✅ · T4 ✅ · T5 ✅ · T6 ✅ · T7 ✅ · T8 ✅ · 
 - **UI wiring:** enforcement lives in the domain/service layer + DB; onboarding/settings React routes
   still use the mock client and are not yet wired to the geofence/consent/causation guards.
 - **No CI workflow** exists in the repo; tests/typecheck/RLS run locally via bun scripts.
+- **Deployment (D-008):** `@lovable.dev/vite-tanstack-config` unused in devDeps; remove when
+  convenient. ACME TXT records in CF zone DNS can be cleaned after cert renewal cycle (~90 days).
+  Worker runs BUILT; never set `PLAYMONEY_MODE=LIVE` in CF Worker env until all gates green.

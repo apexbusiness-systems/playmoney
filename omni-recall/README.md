@@ -11,6 +11,8 @@ single source of truth; the Rev.3 legal spec is the target.**
 3. `02-invariants-and-lanes.md` — non-negotiable invariants + GREEN/YELLOW/RED lanes.
 4. `03-decision-log.md` — decisions, YELLOW assumptions, and open STOPs. Append-only.
 5. `04-go-live-gate.md` — the BUILT→LIVE gate spec. App default = BUILT.
+6. `05-coverage.md` — compliance coverage, test status, residuals.
+7. `06-ops-runbook.md` — dev onboarding, deployment, secrets, Cloudflare ops.
 
 ## The one bright line (highest invariant)
 - **BUILT** = write/wire/test all code, schemas, contracts. Always allowed.
@@ -18,10 +20,15 @@ single source of truth; the Rev.3 legal spec is the target.**
 - Default mode = `BUILT`. No code path, flag, seed, or test may set `LIVE`.
 - Go-live requires external Alberta fintech counsel counter-sign + all gates green.
 
+## Current production state
+- App is live at **`https://playmoney.icu`** on Cloudflare Workers.
+- Mode = **BUILT** (no real effects). `canGoLive()` = false.
+- Tests: **87 passing** (vitest). Typecheck clean. Build clean.
+
 ## How to update this folder
 - Append to `03-decision-log.md` whenever a decision/assumption/STOP is made.
 - Update `00-recon-report.md` only after re-running recon against the repo.
 - Never record secrets, tokens, credentials, or PII here.
 - Never claim a file/table/test exists without citing a path you opened/ran.
 
-_Last updated: 2026-06-14._
+_Last updated: 2026-06-15 (D-008 — Cloudflare deployment)._
