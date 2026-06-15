@@ -12,7 +12,7 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
   `bun run build && wrangler deploy --config .output/server/wrangler.json`. CI/CD on **GitHub**.
 - **Backend**: Supabase (Postgres + RLS + Auth). Server logic = TanStack Start
   `createServerFn` (see `src/lib/api/example.functions.ts`) — not Supabase Edge Functions.
-- **DB**: `supabase/migrations/0001..0006`. `bun run db:migrate` (Management API SQL endpoint;
+- **DB**: `supabase/migrations/0001..0008`. `bun run db:migrate` (Management API SQL endpoint;
   idempotent via `private.schema_migrations`), `bun run db:verify-rls` (anon-denied proof).
 - **Tests**: Vitest. `bun run test` · `bun run typecheck` · `bun run lint` · `bun run build`.
 
@@ -74,8 +74,8 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
 | **P2** | Route `approveRecovery` through `executeRecoveryAction` (LOA + review + mode/gates), write `recovery_events`, persist truthful status | ✅ **done (D-008)** |
 | **P3** | Recovery engine (SituationModel / AvenueRouter / LearningLoop), pure + tested | ✅ **done (D-007)** |
 | P4 | Real adapters behind ports (Flinks/Plaid read-only, Stripe fee-only) + OCR/email ingest; all guarded by `assertLiveAllowed` | ⬜ todo |
-| P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | ⬜ todo |
-| P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data | ⬜ todo |
+| P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | 🟡 partial — `0007_recovery_saga` + `lifecycle.functions` (`settleFee`) built & tested; end-to-end `fee_reversal` wiring pending |
+| P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data | 🟡 partial — `0008_user_context`, `OccupationStep`, `submitOnboardingFn`/`saveContext` built & tested, **but route not wired** and `submitOnboardingFn` userId resolution is broken (see Residuals) |
 | P7 | CI: lint+typecheck+build+test green; go-live health check; confirm BUILT default + every live path sealed | ⬜ todo |
 
 ## Project memory
@@ -88,8 +88,16 @@ Append decisions there; never store secrets in it.
 
 - **SECURITY-001**: rotate `SUPABASE_SERVICE_ROLE_KEY` + `SUPABASE_TOKEN` (were in a publicly
   visible env field); relocate to a secret store.
-- Pre-existing **prettier/lint debt** in `src/routes/index.tsx`, `app.index.tsx`, `app.settings.tsx`
-  (formatting only; unrelated to logic). `bun run lint` is not yet green project-wide.
+- **Stack**: Lovable scaffold fully purged (D-009). Deploy target is **Cloudflare Workers**
+  (Nitro `cloudflare-module` preset); canonical stack = Cloudflare + GitHub + Supabase.
+- **lint debt**: 133 auto-fixable prettier errors + 6 `react-refresh` warnings + **1 real**
+  (`@typescript-eslint/no-unused-expressions`, `components/onboarding/OccupationStep.tsx:36`).
+  `bun run lint` not yet green project-wide; `typecheck` · `test` (128) · `build` are green.
+- **P6 onboarding seam**: `OccupationStep` (built in `5aabbf1`) is **not rendered** by
+  `routes/app.onboarding.tsx` — that commit wired every layer except the route seam, and no test
+  guards it, so it merged green. `submitOnboardingFn` resolves the user via
+  `getUserById(payoutRef)` (a PSP token, never an auth UUID) → always fails; needs request-session
+  extraction (P6-full). Onboarding route inputs are also still uncontrolled / non-persisting.
 - `SupabaseAuthClient.signIn` is passwordless (magic link) → throws typed `MagicLinkSentError`
   when no live session exists yet; the OTP-confirm UI flow is not wired (UI work for P6).
 - Adapters (Flinks/Plaid/Stripe/OCR) are still port interfaces — concrete impls are P4.

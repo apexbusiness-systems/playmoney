@@ -124,3 +124,23 @@ compliance stack); CLAUDE.md phase table was simply not updated. Confirmed + ver
   `PLAYMONEY_MODE` unset = BUILT; perform() never called without LIVE+gates.
 - `0007_recovery_saga.sql` (recovery_sagas table) was already present from prior work.
 NEXT: P4 (port adapters, BUILT-sealed) → P5 (lifecycle saga) → P6 (onboarding/PAD) → P7 (CI).
+
+### 2026-06-15 · D-009 · Stack canonicalized (Cloudflare+GitHub+Supabase); Lovable purged; P6 onboarding seam gap root-caused
+- **Lovable purge**: removed `src/lib/lovable-error-reporting.ts` + its `__root.tsx` hook, the
+  `@lovable.dev/vite-tanstack-config` dep, and the `bunfig.toml` release-age excludes; repointed
+  `framer-motion`/`motion-*` tarballs from the `lovable-core-prod` mirror to `registry.npmjs.org`
+  (identical sha512 integrity, `bun install` validated). `bun.lock` now has **0** Lovable references.
+- **Stack canonical** (per user direction; cloud env carries Cloudflare tokens): CLAUDE.md's
+  "do NOT introduce Cloudflare-Workers-specific infra" is **retired**. Deploy target is now
+  **Cloudflare Workers** (Nitro `cloudflare-module`, `wrangler deploy`). Canonical stack =
+  Cloudflare + GitHub + Supabase. `00-recon`, `05-coverage`, and CLAUDE.md updated to match.
+- **P6 onboarding seam gap (root-caused)**: commit `5aabbf1` ("bake occupation & context discovery
+  into onboarding") added `OccupationStep`, `rankByContext` (`situation.ts`), `0008_user_context`,
+  and `saveContext` across mock/supabase/onboarding-fn + tests — but **never touched
+  `routes/app.onboarding.tsx`**. Born-orphaned: every layer wired except the route seam, and no
+  test guards the seam, so it merged green. Separately, `submitOnboardingFn` resolves the user via
+  `getUserById(payoutRef)` (a PSP token, not an auth UUID) → always fails. Both are P6-full;
+  tracked in CLAUDE.md Residuals. Fix plan: render `OccupationStep` in the route + add a route-seam
+  test + request-session userId extraction.
+- **Verified**: `typecheck` clean · **128 tests / 20 files** pass · `build` green · `bun.lock`
+  Lovable-free. `lint` still carries 133 auto-fixable prettier + 1 real (`OccupationStep:36`).
