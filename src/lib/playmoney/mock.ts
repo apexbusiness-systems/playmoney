@@ -307,5 +307,5 @@ export const liveWins: Array<{ name: string; amount: number; reason: string }> =
 
 export function formatMoney(cents: number): string {
   const dollars = cents / 100;
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(dollars);
+  return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(dollars);
 }

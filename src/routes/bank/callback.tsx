@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { auth } from "@/lib/playmoney/client";
 
@@ -20,6 +20,7 @@ function BankCallback() {
   const { loginId, error } = Route.useSearch();
   const nav = useNavigate();
   const [status, setStatus] = useState<"scanning" | "done" | "error">("scanning");
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -50,7 +51,7 @@ function BankCallback() {
         });
 
         // Slight delay for UX, then return to dashboard to view the pipeline.
-        setTimeout(() => {
+        navTimerRef.current = setTimeout(() => {
           void nav({ to: "/app" });
         }, 1500);
       } catch (err) {
@@ -60,6 +61,9 @@ function BankCallback() {
         });
       }
     })();
+    return () => {
+      if (navTimerRef.current !== null) clearTimeout(navTimerRef.current);
+    };
   }, [loginId, error, nav]);
 
   return (
