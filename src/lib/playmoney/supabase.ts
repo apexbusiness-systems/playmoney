@@ -397,12 +397,14 @@ export class SupabaseAuthClient implements AuthClient {
   }
 
   async getFlinksConnectUrl(): Promise<{ connectUrl: string }> {
-    throw new Error("getFlinksConnectUrl not implemented in SupabaseAuthClient yet.");
+    const { getFlinksConnectUrlFn } = await import("@/lib/api/bank.functions");
+    return getFlinksConnectUrlFn();
   }
 
-  async ingestTransactions(_input: {
+  async ingestTransactions(input: {
     aggregatorToken: string;
   }): Promise<{ success: boolean; situationCount: number }> {
-    throw new Error("ingestTransactions not implemented in SupabaseAuthClient yet.");
+    const { ingestTransactionsFn } = await import("@/lib/api/bank.functions");
+    return ingestTransactionsFn({ data: input });
   }
 }
