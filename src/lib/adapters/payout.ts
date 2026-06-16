@@ -7,7 +7,7 @@
 // before any Stripe API call is made.
 
 import type { PayoutPort } from "@/lib/compliance/ports";
-import { assertLiveAllowed } from "@/lib/compliance/mode";
+import { assertLiveAllowed, assertModeIsLive } from "@/lib/compliance/mode";
 import { loadGateStatus } from "@/lib/compliance/gates.server";
 
 interface StripeChargeResponse {
@@ -28,6 +28,7 @@ export class StripePayoutAdapter implements PayoutPort {
     customerRef: string;
     idempotencyKey: string;
   }): Promise<{ pspChargeRef: string }> {
+    assertModeIsLive(); // fast I/O-free BUILT seal; avoids Supabase call in CI
     const gates = await loadGateStatus();
     assertLiveAllowed(gates); // throws LiveModeBlockedError in BUILT
 
@@ -67,6 +68,7 @@ export function createPayoutAdapter(config: { stripeSecretKey?: string }): Payou
   }
   return {
     async chargeFee() {
+      assertModeIsLive(); // fast I/O-free BUILT seal; avoids Supabase call in CI
       const gates = await loadGateStatus();
       assertLiveAllowed(gates);
       throw new Error("No PayoutPort adapter configured");

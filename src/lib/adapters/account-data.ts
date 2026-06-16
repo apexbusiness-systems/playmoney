@@ -10,7 +10,7 @@
 // that moves money (#3).
 
 import type { AccountDataPort, BankTransaction } from "@/lib/compliance/ports";
-import { assertLiveAllowed } from "@/lib/compliance/mode";
+import { assertLiveAllowed, assertModeIsLive } from "@/lib/compliance/mode";
 import { loadGateStatus } from "@/lib/compliance/gates.server";
 
 // ── Shared HTTP helper (typed, no `any`) ──────────────────────────────────────
@@ -44,6 +44,7 @@ export class FlinksAccountDataAdapter implements AccountDataPort {
     aggregatorToken: string;
     since?: string;
   }): Promise<ReadonlyArray<BankTransaction>> {
+    assertModeIsLive(); // fast I/O-free BUILT seal; avoids Supabase call in CI
     const gates = await loadGateStatus();
     assertLiveAllowed(gates);
 
@@ -95,6 +96,7 @@ export class PlaidAccountDataAdapter implements AccountDataPort {
     aggregatorToken: string;
     since?: string;
   }): Promise<ReadonlyArray<BankTransaction>> {
+    assertModeIsLive(); // fast I/O-free BUILT seal; avoids Supabase call in CI
     const gates = await loadGateStatus();
     // US jurisdiction is deferred (G-geofence gate) — assertLiveAllowed will
     // also throw because us_recovery avenue is disabled at the registry level.
@@ -150,6 +152,7 @@ export function createAccountDataAdapter(config: {
   // No adapter configured — return a sealed stub that always throws in BUILT.
   return {
     async listTransactions() {
+      assertModeIsLive(); // fast I/O-free BUILT seal; avoids Supabase call in CI
       const gates = await loadGateStatus();
       assertLiveAllowed(gates); // throws LiveModeBlockedError in BUILT
       throw new Error("No AccountDataPort adapter configured");
