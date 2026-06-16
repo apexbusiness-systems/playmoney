@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { api, auth, formatMoney } from "@/lib/playmoney/client";
+import { api, auth } from "@/lib/playmoney/client";
+import { useFormatMoney } from "@/lib/playmoney/currency";
 import type { Recovery } from "@/lib/playmoney/types";
 import { approveRecovery } from "@/lib/playmoney/approve";
 import { rankByContextKey } from "@/lib/engine/situation";
@@ -37,6 +38,7 @@ function WinsPage() {
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => auth.getProfile() });
   const [confirming, setConfirming] = useState<Recovery | null>(null);
   const [landed, setLanded] = useState<Recovery | null>(null);
+  const fmt = useFormatMoney();
 
   // P6/P3: if the user told us their occupation, surface the most relevant wins
   // first (engine `rankByContextKey`). Detection is unchanged — only the order.
@@ -59,7 +61,7 @@ function WinsPage() {
     } catch {
       // approveRecovery has already rolled the optimistic update back.
       toast.error("That didn't go through", {
-        description: `We couldn't send ${formatMoney(rec.userNet)} from ${rec.merchant}. Nothing left your side — tap to try again.`,
+        description: `We couldn't send ${fmt(rec.userNet)} from ${rec.merchant}. Nothing left your side — tap to try again.`,
       });
     }
   }
@@ -84,7 +86,7 @@ function WinsPage() {
             <div className="hidden text-right sm:block">
               <p className="text-sm text-muted-dark">Landed in your account</p>
               <p className="font-display tabular text-2xl text-text-dark">
-                {totals.data ? formatMoney(totals.data.landedTotal) : "—"}
+                {totals.data ? fmt(totals.data.landedTotal) : "—"}
               </p>
             </div>
           </div>
@@ -133,6 +135,7 @@ function WinsPage() {
 }
 
 function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void }) {
+  const fmt = useFormatMoney();
   // Bigger win = bigger, visually featured card.
   const size = rec.userNet >= 15000 ? "lg" : rec.userNet >= 5000 ? "md" : "sm";
   const featured = size === "lg";
@@ -169,17 +172,15 @@ function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void
           </div>
         </div>
         <div className="flex items-center gap-5 sm:flex-col sm:items-end">
-          <p className={`font-display tabular font-semibold ${amountClass}`}>
-            {formatMoney(rec.userNet)}
-          </p>
+          <p className={`font-display tabular font-semibold ${amountClass}`}>{fmt(rec.userNet)}</p>
           <StatusPill status={rec.status} />
         </div>
       </div>
       {rec.status === "needs_approval" && (
         <div className="mt-5 flex items-center justify-between gap-4 rounded-[14px] bg-sand px-4 py-3 text-sm">
           <span className="text-ink-muted">
-            Tap to send <span className="font-semibold text-ink">{formatMoney(rec.userNet)}</span>{" "}
-            to your account.
+            Tap to send <span className="font-semibold text-ink">{fmt(rec.userNet)}</span> to your
+            account.
           </span>
           <PMButton
             variant="primaryLight"
@@ -242,6 +243,7 @@ function EmptyPipeline() {
 }
 
 function SituationsCard({ count, amountCents }: { count: number; amountCents: number }) {
+  const fmt = useFormatMoney();
   return (
     <div
       className="rounded-[20px] border border-gold/40 bg-card p-6 text-center shadow-card-l"
@@ -251,8 +253,7 @@ function SituationsCard({ count, amountCents }: { count: number; amountCents: nu
     >
       <p className="font-display text-2xl font-semibold">We found {count} new situations!</p>
       <p className="mt-2 text-ink-muted">
-        Totaling up to{" "}
-        <span className="font-semibold text-text-dark">{formatMoney(amountCents)}</span>.
+        Totaling up to <span className="font-semibold text-text-dark">{fmt(amountCents)}</span>.
       </p>
       <div className="mt-6 flex justify-center">
         <Link
@@ -267,6 +268,7 @@ function SituationsCard({ count, amountCents }: { count: number; amountCents: nu
 }
 
 function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => void }) {
+  const fmt = useFormatMoney();
   const dialogRef = useDialogA11y<HTMLDivElement>(!!rec, onClose);
   return (
     <AnimatePresence>
@@ -275,7 +277,7 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
-          aria-label={`Recovered ${formatMoney(rec.userNet)} from ${rec.merchant}`}
+          aria-label={`Recovered ${fmt(rec.userNet)} from ${rec.merchant}`}
           tabIndex={-1}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

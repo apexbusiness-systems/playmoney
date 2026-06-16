@@ -38,4 +38,4 @@
 - [ ] Custom domain routed to the Worker.
 - [ ] Environment variables pushed via `wrangler secret put`.
 
-_Verified by: ****\*\*****\_\_\_****\*\***** Date: ****\*\*****\_\_\_****\*\*****_
+_Verified by: \***\*\*\*\*\***\_\_\_\***\*\*\*\*\*** Date: \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***_

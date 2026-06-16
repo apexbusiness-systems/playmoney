@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { api, formatMoney } from "@/lib/playmoney/client";
+import { api } from "@/lib/playmoney/client";
+import { useFormatMoney } from "@/lib/playmoney/currency";
 import { StatusPill } from "@/components/pm/StatusPill";
 
 export const Route = createFileRoute("/app/activity")({
@@ -12,6 +13,7 @@ function Activity() {
   const recs = useQuery({ queryKey: ["recoveries"], queryFn: () => api.listRecoveries() });
   const fees = useQuery({ queryKey: ["fees"], queryFn: () => api.listFeeLedger() });
   const feeTotal = fees.data?.reduce((s, f) => s + f.feeAmount, 0) ?? 0;
+  const fmt = useFormatMoney();
 
   return (
     <section className="container-pm py-12">
@@ -32,9 +34,7 @@ function Activity() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="min-w-0 font-semibold">{r.merchant}</p>
-                  <p className="shrink-0 font-display tabular font-semibold">
-                    {formatMoney(r.userNet)}
-                  </p>
+                  <p className="shrink-0 font-display tabular font-semibold">{fmt(r.userNet)}</p>
                 </div>
                 <div className="mt-1 flex items-end justify-between gap-3">
                   <p className="min-w-0 text-sm text-ink-muted">{r.reason}</p>
@@ -65,9 +65,7 @@ function Activity() {
                   <tr key={r.id} className="border-t border-border-l">
                     <td className="px-5 py-4 font-semibold">{r.merchant}</td>
                     <td className="px-5 py-4 text-ink-muted">{r.reason}</td>
-                    <td className="px-5 py-4 text-right font-display tabular">
-                      {formatMoney(r.userNet)}
-                    </td>
+                    <td className="px-5 py-4 text-right font-display tabular">{fmt(r.userNet)}</td>
                     <td className="px-5 py-4">
                       <StatusPill status={r.status} />
                     </td>
@@ -90,7 +88,7 @@ function Activity() {
               className="mt-2 font-display tabular text-4xl font-semibold"
               style={{ color: "#F2C24B" }}
             >
-              {fees.data ? formatMoney(feeTotal) : "—"}
+              {fees.data ? fmt(feeTotal) : "—"}
             </p>
             <p className="mt-2 text-sm text-muted-dark">
               Across {fees.data?.length ?? 0} landed{" "}
@@ -107,7 +105,7 @@ function Activity() {
               >
                 <span className="text-ink-muted">{new Date(f.ts).toLocaleDateString()}</span>
                 <span className="font-display tabular font-semibold text-evergreen">
-                  {formatMoney(f.feeAmount)}
+                  {fmt(f.feeAmount)}
                 </span>
               </div>
             ))}

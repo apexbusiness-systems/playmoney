@@ -123,6 +123,7 @@ const seededProfile: Profile = {
   payoutRef: "tok_payout_***z29x",
   identityVerified: true,
   createdAt: ago(60 * 24 * 30),
+  country: "CA",
 };
 
 const seededNotifications: Notification[] = [
@@ -305,7 +306,7 @@ export const liveWins: Array<{ name: string; amount: number; reason: string }> =
   { name: "Luca", amount: c(76.4), reason: "Late delivery credit" },
 ];
 
-export function formatMoney(cents: number): string {
-  const dollars = cents / 100;
-  return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(dollars);
+export function formatMoney(cents: number, currency: "CAD" | "USD" = "CAD"): string {
+  const locale = currency === "USD" ? "en-US" : "en-CA";
+  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(cents / 100);
 }

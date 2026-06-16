@@ -38,6 +38,7 @@ export const Profile = z.object({
   identityVerified: z.boolean(),
   createdAt: z.string(),
   context: OccupationContext.optional(),
+  country: z.string().optional(), // jurisdiction country code (CA / US)
 });
 export type Profile = z.infer<typeof Profile>;
 
