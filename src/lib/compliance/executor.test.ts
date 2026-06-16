@@ -11,8 +11,17 @@ const sig: ESignature = {
   statement: "I authorize PlayMoney to pursue this refund.",
   consentElectronic: true,
 };
-const scope: LoaScope = { avenue: "merchant_refund", merchant: "Delta Airlines", maxAmountCents: 24000 };
-const action = { recoveryId: "rec_0004", avenue: "merchant_refund", merchant: "Delta Airlines", amountCents: 24000 };
+const scope: LoaScope = {
+  avenue: "merchant_refund",
+  merchant: "Delta Airlines",
+  maxAmountCents: 24000,
+};
+const action = {
+  recoveryId: "rec_0004",
+  avenue: "merchant_refund",
+  merchant: "Delta Airlines",
+  amountCents: 24000,
+};
 const NOW = new Date("2026-06-14T12:05:00Z");
 const ALL_GREEN: GateStatus = Object.fromEntries(GATE_KEYS.map((k) => [k, true])) as GateStatus;
 
@@ -26,14 +35,23 @@ const attestation: LegitimacyAttestation = {
 
 function validLoa() {
   return buildLoa({
-    ownerId: "user_1", recoveryId: "rec_0004", scope, signature: sig,
-    ttlMinutes: 60, idempotencyKey: "idem_1", now: new Date("2026-06-14T12:00:00Z"),
+    ownerId: "user_1",
+    recoveryId: "rec_0004",
+    scope,
+    signature: sig,
+    ttlMinutes: 60,
+    idempotencyKey: "idem_1",
+    now: new Date("2026-06-14T12:00:00Z"),
   });
 }
 function approvedReview() {
   const item = enqueueForReview({
-    ownerId: "user_1", recoveryId: "rec_0004", actionType: "send_refund_request",
-    attestation, evidence: [{ kind: "receipt", ref: "e.pdf" }], idempotencyKey: "idem_r1",
+    ownerId: "user_1",
+    recoveryId: "rec_0004",
+    actionType: "send_refund_request",
+    attestation,
+    evidence: [{ kind: "receipt", ref: "e.pdf" }],
+    idempotencyKey: "idem_r1",
     now: new Date("2026-06-14T12:00:00Z"),
   });
   return approveReview(item, "reviewer_jane");
@@ -47,42 +65,88 @@ afterEach(() => {
 
 describe("#7 MAN-Mode Executor — LOA + review + mode gate (T3, T7, §6)", () => {
   it("rejects an action with no LOA token", async () => {
-    const r = await executeRecoveryAction({ action, loaToken: null, reviewItem: approvedReview(), gateStatus: ALL_GREEN, perform, now: NOW });
+    const r = await executeRecoveryAction({
+      action,
+      loaToken: null,
+      reviewItem: approvedReview(),
+      gateStatus: ALL_GREEN,
+      perform,
+      now: NOW,
+    });
     expect(r.status).toBe("rejected");
     if (r.status === "rejected") expect(r.code).toBe("loa_invalid");
   });
 
   it("rejects an out-of-scope action even with a token", async () => {
-    const r = await executeRecoveryAction({ action: { ...action, amountCents: 99999 }, loaToken: validLoa(), reviewItem: approvedReview(), gateStatus: ALL_GREEN, perform, now: NOW });
+    const r = await executeRecoveryAction({
+      action: { ...action, amountCents: 99999 },
+      loaToken: validLoa(),
+      reviewItem: approvedReview(),
+      gateStatus: ALL_GREEN,
+      perform,
+      now: NOW,
+    });
     expect(r.status).toBe("rejected");
     if (r.status === "rejected") expect(r.code).toBe("loa_invalid");
   });
 
   it("rejects when the review item is not approved", async () => {
     const pending = enqueueForReview({
-      ownerId: "user_1", recoveryId: "rec_0004", actionType: "send_refund_request",
-      attestation, evidence: [{ kind: "receipt", ref: "e.pdf" }], idempotencyKey: "idem_r2",
+      ownerId: "user_1",
+      recoveryId: "rec_0004",
+      actionType: "send_refund_request",
+      attestation,
+      evidence: [{ kind: "receipt", ref: "e.pdf" }],
+      idempotencyKey: "idem_r2",
     });
-    const r = await executeRecoveryAction({ action, loaToken: validLoa(), reviewItem: pending, gateStatus: ALL_GREEN, perform, now: NOW });
+    const r = await executeRecoveryAction({
+      action,
+      loaToken: validLoa(),
+      reviewItem: pending,
+      gateStatus: ALL_GREEN,
+      perform,
+      now: NOW,
+    });
     expect(r.status).toBe("rejected");
     if (r.status === "rejected") expect(r.code).toBe("review_not_approved");
   });
 
   it("SEALS execution in BUILT mode even when authorized + reviewed + gates green", async () => {
-    const r = await executeRecoveryAction({ action, loaToken: validLoa(), reviewItem: approvedReview(), gateStatus: ALL_GREEN, perform, now: NOW });
+    const r = await executeRecoveryAction({
+      action,
+      loaToken: validLoa(),
+      reviewItem: approvedReview(),
+      gateStatus: ALL_GREEN,
+      perform,
+      now: NOW,
+    });
     expect(r.status).toBe("sealed"); // default BUILT => no real send
   });
 
   it("executes ONLY when LIVE + all gates green + LOA + review", async () => {
     process.env.PLAYMONEY_MODE = "LIVE";
-    const r = await executeRecoveryAction({ action, loaToken: validLoa(), reviewItem: approvedReview(), gateStatus: ALL_GREEN, perform, now: NOW });
+    const r = await executeRecoveryAction({
+      action,
+      loaToken: validLoa(),
+      reviewItem: approvedReview(),
+      gateStatus: ALL_GREEN,
+      perform,
+      now: NOW,
+    });
     expect(r.status).toBe("executed");
     if (r.status === "executed") expect(r.result).toBe("REAL_SEND_DONE");
   });
 
   it("stays sealed in LIVE if any gate is unmet", async () => {
     process.env.PLAYMONEY_MODE = "LIVE";
-    const r = await executeRecoveryAction({ action, loaToken: validLoa(), reviewItem: approvedReview(), gateStatus: { ...ALL_GREEN, "G-counsel": false }, perform, now: NOW });
+    const r = await executeRecoveryAction({
+      action,
+      loaToken: validLoa(),
+      reviewItem: approvedReview(),
+      gateStatus: { ...ALL_GREEN, "G-counsel": false },
+      perform,
+      now: NOW,
+    });
     expect(r.status).toBe("sealed");
   });
 });

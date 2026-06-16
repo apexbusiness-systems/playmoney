@@ -9,7 +9,13 @@ interface Props {
   startFrom?: number;
 }
 
-export function Odometer({ valueCents, duration = 2400, className, prefix = "$", startFrom = 0.62 }: Props) {
+export function Odometer({
+  valueCents,
+  duration = 2400,
+  className,
+  prefix = "$",
+  startFrom = 0.62,
+}: Props) {
   const reduce = useReducedMotion();
   const [display, setDisplay] = useState(reduce ? valueCents : Math.round(valueCents * startFrom));
 

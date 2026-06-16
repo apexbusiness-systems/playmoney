@@ -14,8 +14,7 @@ export type PlayMoneyMode = "BUILT" | "LIVE";
 
 /** Reads PLAYMONEY_MODE from env. Anything other than the exact string "LIVE" => BUILT. */
 export function getMode(): PlayMoneyMode {
-  const raw =
-    (typeof process !== "undefined" ? process.env?.PLAYMONEY_MODE : undefined) ?? "BUILT";
+  const raw = (typeof process !== "undefined" ? process.env?.PLAYMONEY_MODE : undefined) ?? "BUILT";
   return raw === "LIVE" ? "LIVE" : "BUILT";
 }
 

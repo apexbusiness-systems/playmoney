@@ -24,14 +24,11 @@ function projectRef(): string {
 async function runSql(query: string): Promise<unknown> {
   const token = process.env.SUPABASE_TOKEN;
   if (!token) throw new Error("Missing SUPABASE_TOKEN");
-  const res = await fetch(
-    `https://api.supabase.com/v1/projects/${projectRef()}/database/query`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ query }),
-    },
-  );
+  const res = await fetch(`https://api.supabase.com/v1/projects/${projectRef()}/database/query`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
   if (!res.ok) {
     throw new Error(`SQL failed (${res.status}): ${await res.text()}`);
   }

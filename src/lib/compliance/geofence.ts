@@ -11,9 +11,7 @@
 export type Jurisdiction = { country: string; province: string | null };
 
 /** The ONLY enabled jurisdiction at MVP. Everything else is OFF. */
-export const ENABLED_JURISDICTIONS: readonly Jurisdiction[] = [
-  { country: "CA", province: "AB" },
-];
+export const ENABLED_JURISDICTIONS: readonly Jurisdiction[] = [{ country: "CA", province: "AB" }];
 
 /** Explicitly deferred/blocked, with the reason surfaced for audit + UX. */
 export const BLOCKED_JURISDICTIONS: Readonly<Record<string, string>> = {
@@ -35,7 +33,11 @@ export function checkEligibility(country: string, province: string | null): Elig
 
   // Explicit blocks first, so the reason is precise.
   if (c === "CA" && p === "QC") {
-    return { eligible: false, code: "jurisdiction_blocked", reason: BLOCKED_JURISDICTIONS["CA/QC"] };
+    return {
+      eligible: false,
+      code: "jurisdiction_blocked",
+      reason: BLOCKED_JURISDICTIONS["CA/QC"],
+    };
   }
   if (c === "US") {
     return { eligible: false, code: "jurisdiction_blocked", reason: BLOCKED_JURISDICTIONS["US"] };

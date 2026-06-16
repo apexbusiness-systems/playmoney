@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { FlinksAccountDataAdapter, PlaidAccountDataAdapter, createAccountDataAdapter } from "./account-data";
+import {
+  FlinksAccountDataAdapter,
+  PlaidAccountDataAdapter,
+  createAccountDataAdapter,
+} from "./account-data";
 import { StripePayoutAdapter, createPayoutAdapter } from "./payout";
 
 afterEach(() => {
@@ -9,16 +13,12 @@ afterEach(() => {
 describe("P4 · Adapters are sealed in BUILT — no real outbound call escapes", () => {
   it("FlinksAccountDataAdapter throws LiveModeBlockedError in BUILT before any HTTP call", async () => {
     const adapter = new FlinksAccountDataAdapter("https://flinks.example.com", "client-id");
-    await expect(adapter.listTransactions({ aggregatorToken: "tok" })).rejects.toThrow(
-      "BLOCKED",
-    );
+    await expect(adapter.listTransactions({ aggregatorToken: "tok" })).rejects.toThrow("BLOCKED");
   });
 
   it("PlaidAccountDataAdapter throws LiveModeBlockedError in BUILT", async () => {
     const adapter = new PlaidAccountDataAdapter("sandbox", "cid", "secret");
-    await expect(adapter.listTransactions({ aggregatorToken: "tok" })).rejects.toThrow(
-      "BLOCKED",
-    );
+    await expect(adapter.listTransactions({ aggregatorToken: "tok" })).rejects.toThrow("BLOCKED");
   });
 
   it("StripePayoutAdapter throws LiveModeBlockedError in BUILT", async () => {

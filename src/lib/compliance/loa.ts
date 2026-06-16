@@ -104,14 +104,26 @@ export function verifyLoa(
   try {
     assertAvenueEnabled(t.scope.avenue);
   } catch {
-    return { valid: false, code: "avenue_disabled", reason: `Avenue ${t.scope.avenue} is disabled` };
+    return {
+      valid: false,
+      code: "avenue_disabled",
+      reason: `Avenue ${t.scope.avenue} is disabled`,
+    };
   }
 
   if (!eq(t.scope.avenue, action.avenue)) {
-    return { valid: false, code: "scope_avenue_mismatch", reason: "Action avenue outside LOA scope" };
+    return {
+      valid: false,
+      code: "scope_avenue_mismatch",
+      reason: "Action avenue outside LOA scope",
+    };
   }
   if (!eq(t.scope.merchant, action.merchant)) {
-    return { valid: false, code: "scope_merchant_mismatch", reason: "Action merchant outside LOA scope" };
+    return {
+      valid: false,
+      code: "scope_merchant_mismatch",
+      reason: "Action merchant outside LOA scope",
+    };
   }
   if (action.amountCents > t.scope.maxAmountCents) {
     return { valid: false, code: "amount_exceeds_scope", reason: "Action amount exceeds LOA cap" };

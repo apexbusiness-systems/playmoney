@@ -22,7 +22,12 @@ export const PROBLEM_TYPE_TO_AVENUE: Readonly<Record<ProblemType, AvenueKey>> = 
 
 export type RouteResult =
   | { ok: true; problemType: ProblemType; avenue: AvenueDef }
-  | { ok: false; problemType: ProblemType; code: "avenue_disabled" | "avenue_unknown"; reason: string };
+  | {
+      ok: false;
+      problemType: ProblemType;
+      code: "avenue_disabled" | "avenue_unknown";
+      reason: string;
+    };
 
 /**
  * Route a problem-type to an enabled avenue. The mapping is injectable so callers

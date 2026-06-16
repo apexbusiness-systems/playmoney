@@ -17,7 +17,9 @@ function Settings() {
     const blob = await api.exportData();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "playmoney-export.json"; a.click();
+    a.href = url;
+    a.download = "playmoney-export.json";
+    a.click();
     URL.revokeObjectURL(url);
   }
 
@@ -46,7 +48,10 @@ function Settings() {
               { k: "needs_signature", v: "On" },
               { k: "marketing", v: "Never" },
             ].map((r) => (
-              <li key={r.k} className="flex items-center justify-between rounded-[12px] bg-sand px-4 py-2">
+              <li
+                key={r.k}
+                className="flex items-center justify-between rounded-[12px] bg-sand px-4 py-2"
+              >
                 <span className="font-mono text-xs text-ink-muted">{r.k}</span>
                 <span className="font-semibold">{r.v}</span>
               </li>
@@ -66,16 +71,25 @@ function Settings() {
                 <p className="text-xs text-ink-muted">Sync receipts repo (read-only)</p>
               </div>
             </div>
-            <PMButton variant="ghostLight" className="!h-9">Connect</PMButton>
+            <PMButton variant="ghostLight" className="!h-9">
+              Connect
+            </PMButton>
           </div>
         </PMCard>
 
         <PMCard>
           <p className="eyebrow text-ink-muted">Your data</p>
-          <p className="mt-2 text-ink-muted">Tokens, not credentials. Export or delete at any time.</p>
+          <p className="mt-2 text-ink-muted">
+            Tokens, not credentials. Export or delete at any time.
+          </p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <PMButton variant="ghostLight" onClick={exportData}>Export data</PMButton>
-            <button className="text-sm font-semibold text-destructive hover:underline" style={{ color: "#9C2A1A" }}>
+            <PMButton variant="ghostLight" onClick={exportData}>
+              Export data
+            </PMButton>
+            <button
+              className="text-sm font-semibold text-destructive hover:underline"
+              style={{ color: "#9C2A1A" }}
+            >
               Delete everything
             </button>
           </div>

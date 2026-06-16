@@ -90,7 +90,13 @@ describe("P2 · processApproval: perform() is never called in BUILT mode", () =>
   });
 
   it("works across all enabled RecoveryAvenue problem types (no disabled-avenue reject)", async () => {
-    const avenues = ["refund", "fee_reversal", "subscription", "billing_error", "double_charge"] as const;
+    const avenues = [
+      "refund",
+      "fee_reversal",
+      "subscription",
+      "billing_error",
+      "double_charge",
+    ] as const;
     for (const avenue of avenues) {
       const perform = vi.fn(async () => undefined);
       const outcome = await processApproval({
