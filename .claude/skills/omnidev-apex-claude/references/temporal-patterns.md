@@ -1,11 +1,12 @@
 # TEMPORAL PATTERNS — OMNIDEV-APEX Reference
 
 ## Saga Pattern (every distributed transaction)
+
 ```typescript
 interface SagaStep<T> {
-  id: string;                              // unique idempotency key
+  id: string; // unique idempotency key
   execute: (ctx: T) => Promise<void>;
-  compensate: (ctx: T) => Promise<void>;  // always defined — no partial sagas
+  compensate: (ctx: T) => Promise<void>; // always defined — no partial sagas
 }
 
 class SagaOrchestrator<T> {
@@ -19,9 +20,9 @@ class SagaOrchestrator<T> {
       } catch (err) {
         // Compensate in reverse order
         for (const done of [...this.completed].reverse()) {
-          await done.compensate(ctx).catch(e =>
-            log.error('Compensation failed', { stepId: done.id, err: e })
-          );
+          await done
+            .compensate(ctx)
+            .catch((e) => log.error("Compensation failed", { stepId: done.id, err: e }));
         }
         throw new SagaFailedError(step.id, err);
       }
@@ -30,19 +31,20 @@ class SagaOrchestrator<T> {
 
   private async idempotentExecute(key: string, fn: () => Promise<void>) {
     const existing = await store.get(`saga:${key}`);
-    if (existing === 'done') return; // already executed — skip
+    if (existing === "done") return; // already executed — skip
     await fn();
-    await store.set(`saga:${key}`, 'done', { ttl: 86400 }); // 24h TTL
+    await store.set(`saga:${key}`, "done", { ttl: 86400 }); // 24h TTL
   }
 }
 ```
 
 ## Idempotency Pattern
+
 ```typescript
 // Every mutating API endpoint: idempotency key required
 async function idempotentHandler(
   idempotencyKey: string,
-  fn: () => Promise<Result>
+  fn: () => Promise<Result>,
 ): Promise<Result> {
   // 1. Check for existing result
   const cached = await store.get(`idem:${idempotencyKey}`);
@@ -50,7 +52,7 @@ async function idempotentHandler(
 
   // 2. Acquire lock to prevent concurrent duplicate execution
   const lock = await store.acquireLock(`lock:idem:${idempotencyKey}`, 30_000);
-  if (!lock) throw new ConflictError('Request in progress');
+  if (!lock) throw new ConflictError("Request in progress");
 
   try {
     // 3. Double-check after lock
@@ -70,14 +72,16 @@ async function idempotentHandler(
 ```
 
 ## Outbox Pattern (guaranteed event delivery)
+
 ```typescript
 // Transactional outbox: save event in same DB tx as business data
 async function createOrderWithEvent(order: Order, db: Tx) {
   await db.transaction(async (tx) => {
     await tx.orders.insert(order);
-    await tx.outbox.insert({  // same transaction — atomic
+    await tx.outbox.insert({
+      // same transaction — atomic
       id: uuidv7(),
-      eventType: 'order.created',
+      eventType: "order.created",
       payload: JSON.stringify(order),
       createdAt: new Date(),
       processedAt: null,

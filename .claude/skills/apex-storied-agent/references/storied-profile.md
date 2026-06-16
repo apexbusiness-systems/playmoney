@@ -16,11 +16,11 @@ The profile is modeled on public reporting about **Fable 5**, a frontier model A
 
 **Status (as of 2026-06-14):** disabled pending restoration — not a permanent retirement. Anthropic states the export-control directive is a misunderstanding and that it is working to restore access, with no timeline given. Treat the model's current availability as `UNCERTAIN`.
 
-**NOT verifiable / NOT claimed here:** Fable 5's weights, training data, internal reasoning traces, or specific numeric benchmark scores. None are public in reproducible form. This skill therefore reconstructs a *behavioral discipline* consistent with the public report — it does not and cannot reproduce the model. Treat every trait below as an elicitation heuristic, not a claim of equivalence.
+**NOT verifiable / NOT claimed here:** Fable 5's weights, training data, internal reasoning traces, or specific numeric benchmark scores. None are public in reproducible form. This skill therefore reconstructs a _behavioral discipline_ consistent with the public report — it does not and cannot reproduce the model. Treat every trait below as an elicitation heuristic, not a claim of equivalence.
 
 ## The behavioral profile — 6 reconstructed traits
 
-1. **Mechanism-first reading.** It is reported to find what others miss by tracing the *actual* execution/data path rather than the intended one. Encoded as the Trace pass.
+1. **Mechanism-first reading.** It is reported to find what others miss by tracing the _actual_ execution/data path rather than the intended one. Encoded as the Trace pass.
 2. **Adversarial self-review.** Attacking one's own draft before defending it surfaces the edge case that confirmation bias hides. Encoded as the Oppose pass — the single highest-yield habit in the loop.
 3. **Assumption externalization.** Naming assumptions and unknowns up front converts silent guesses into auditable items. Encoded as Scope + the `UNCERTAIN:` convention.
 4. **Evidence-bound claims.** Every assertion travels with the check that supports it; unbacked numbers are treated as hypotheses. Encoded as Evidence + the verification trace.
@@ -34,6 +34,7 @@ The profile is modeled on public reporting about **Fable 5**, a frontier model A
 **Without the skill (typical):** "Looks correct — it checks the balance before debiting." Stops at intended behavior.
 
 **With the skill (Oppose pass applied):**
+
 ```
 - Goal: confirm transfer() is safe to ship
 - Assumptions: single-threaded; amt > 0 enforced upstream  | UNCERTAIN: concurrency model
@@ -43,6 +44,7 @@ The profile is modeled on public reporting about **Fable 5**, a frontier model A
   not guarded locally. Fix: wrap in a transaction / row lock; assert amt>0.
 - Residual risk: upstream amt validation unconfirmed — flagged, not assumed
 ```
+
 The Oppose pass turns "looks correct" into the race condition — the class of defect the source model was reported to catch.
 
 ## Before / After: analysis example
@@ -52,6 +54,7 @@ The Oppose pass turns "looks correct" into the race condition — the class of d
 **Without the skill:** "Yes, 40% growth indicates the campaign is effective."
 
 **With the skill:**
+
 ```
 - Goal: attribute signup growth to the campaign
 - Assumptions: 40% is period-over-period  | UNCERTAIN: seasonality, other concurrent changes

@@ -43,7 +43,7 @@ def semantic_dedup(lines: list, threshold=0.75):
     kept = [lines[0]]
     for line in lines[1:]:
         is_duplicate = any(
-            jaccard_similarity(line, k) >= threshold 
+            jaccard_similarity(line, k) >= threshold
             for k in kept[-15:]  # Sliding window
         )
         if not is_duplicate:

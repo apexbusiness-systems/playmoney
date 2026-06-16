@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
@@ -24,6 +24,16 @@ function WinsPage() {
   const qc = useQueryClient();
   const totals = useQuery({ queryKey: ["totals"], queryFn: () => api.totals() });
   const recs = useQuery({ queryKey: ["recoveries"], queryFn: () => api.listRecoveries() });
+
+  // P5: Fetch upstream pipeline situations if they have them.
+  const situations = useQuery({
+    queryKey: ["situations"],
+    queryFn: async () => {
+      const { getSituationsFn } = await import("@/lib/api/situations.functions");
+      return getSituationsFn();
+    },
+  });
+
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => auth.getProfile() });
   const [confirming, setConfirming] = useState<Recovery | null>(null);
   const [landed, setLanded] = useState<Recovery | null>(null);
@@ -95,7 +105,15 @@ function WinsPage() {
 
         <div className="mt-6 space-y-3">
           {recs.isLoading && <SkeletonFeed />}
-          {recs.data?.length === 0 && <EmptyState />}
+          {/* P5: Show bank connect or situations if pipeline is totally empty */}
+          {recs.data?.length === 0 && !situations.data?.length && <EmptyPipeline />}
+          {recs.data?.length === 0 && (situations.data?.length ?? 0) > 0 && (
+            <SituationsCard
+              count={situations.data!.length}
+              amountCents={situations.data!.reduce((sum, s) => sum + s.amountCents, 0)}
+            />
+          )}
+
           {ordered.map((r) => (
             <RecoveryCard key={r.id} rec={r} onApprove={() => setConfirming(r)} />
           ))}
@@ -203,14 +221,47 @@ function SkeletonFeed() {
   );
 }
 
-function EmptyState() {
+function EmptyPipeline() {
   return (
     <div className="rounded-[20px] border border-dashed border-border-l bg-card p-10 text-center">
       <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-mint-chip">
-        <PMIcon name="bell" />
+        <PMIcon name="shield" />
       </span>
-      <p className="mt-4 font-display text-xl font-semibold">All quiet — we're watching.</p>
-      <p className="mt-1 text-ink-muted">We'll ping you the moment there's money.</p>
+      <p className="mt-4 font-display text-xl font-semibold">Ready to find your money?</p>
+      <p className="mt-1 text-ink-muted">Connect your bank securely to scan for hidden refunds.</p>
+      <div className="mt-6 flex justify-center">
+        <Link
+          to="/bank/connect"
+          className="inline-flex h-10 items-center rounded-full bg-gold px-5 text-sm font-semibold text-ink hover:brightness-95"
+        >
+          Connect a bank
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SituationsCard({ count, amountCents }: { count: number; amountCents: number }) {
+  return (
+    <div
+      className="rounded-[20px] border border-gold/40 bg-card p-6 text-center shadow-card-l"
+      style={{
+        background: "linear-gradient(180deg, rgba(242,194,75,0.06) 0%, rgba(255,253,248,1) 40%)",
+      }}
+    >
+      <p className="font-display text-2xl font-semibold">We found {count} new situations!</p>
+      <p className="mt-2 text-ink-muted">
+        Totaling up to{" "}
+        <span className="font-semibold text-text-dark">{formatMoney(amountCents)}</span>.
+      </p>
+      <div className="mt-6 flex justify-center">
+        <Link
+          to="/app/pipeline"
+          className="inline-flex h-10 items-center rounded-full bg-evergreen px-5 text-sm font-semibold text-text-dark hover:brightness-110 transition"
+        >
+          Review pipeline
+        </Link>
+      </div>
     </div>
   );
 }

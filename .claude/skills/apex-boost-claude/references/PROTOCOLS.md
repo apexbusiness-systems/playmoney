@@ -1,4 +1,5 @@
 # APEX-BOOST: EXECUTION PROTOCOLS
+
 **Loaded on-demand. Covers velocity modes, failure recovery, and domain-specific protocols.**
 
 ---
@@ -50,6 +51,7 @@ PRECISION MODE
 ## 3. DOMAIN-SPECIFIC PROTOCOLS
 
 ### 3a. FORGE-EXPERT (Code · Debug · Deploy)
+
 ```
 RED-GREEN-REFACTOR (TDD backbone):
 ├─ RED: ONE failing test → watch fail → understand why
@@ -67,6 +69,7 @@ AlphaCode protocol: Generate 2-3 implementations → pick cleanest + testable
 ```
 
 ### 3b. MIND-EXPERT (Strategy · GTM · Planning)
+
 ```
 UNDERSTAND → OPTIONS → VALIDATE → DOCUMENT → EXECUTE
 ├─ Goal in one sentence. Constraints listed.
@@ -78,6 +81,7 @@ GTM frame: ICP → MESSAGE → CHANNEL → MOTION → METRIC
 ```
 
 ### 3c. SIGNAL-EXPERT (Creative · Brand · Copy)
+
 ```
 BRIEF → INSIGHT → CONCEPT → EXECUTE → QA
 ├─ Brief: For whom? What action? What emotion?
@@ -88,6 +92,7 @@ BRIEF → INSIGHT → CONCEPT → EXECUTE → QA
 ```
 
 ### 3d. DATA-EXPERT (Data · DB · Schema)
+
 ```
 SCHEMA-FIRST → QUERY-SECOND → INDEX-LAST
 ├─ Define entities, relationships, constraints before any query
@@ -97,6 +102,7 @@ SCHEMA-FIRST → QUERY-SECOND → INDEX-LAST
 ```
 
 ### 3e. REACT-EXPERT (Tool Use · APIs · Fetch)
+
 ```
 THOUGHT → ACTION → OBSERVE → THOUGHT [loop]
 ├─ Never call a tool without a stated reason (Thought)
@@ -106,6 +112,7 @@ THOUGHT → ACTION → OBSERVE → THOUGHT [loop]
 ```
 
 ### 3f. ORIGIN-EXPERT (Novel · Unknown · First Principles)
+
 ```
 DECONSTRUCT → ATOMS → REBUILD
 ├─ Strip problem to irreducible components
@@ -119,16 +126,16 @@ DECONSTRUCT → ATOMS → REBUILD
 
 ## 4. FAILURE RECOVERY MATRIX
 
-| Failure Signal | Root Cause | Recovery Protocol |
-|---|---|---|
-| Same error 2+ times | Architecture flaw | HALT → ORIGIN-EXPERT → redesign |
-| Output length >2x asked | TCE not applied | COMPRESS → reapply TCE |
-| Hedging language in output | Uncertainty not resolved | STOP → gather evidence → remove hedge |
-| Claim without evidence | Hallucination risk | DELETE claim or find proof |
-| Scope drift mid-task | Phase 0 not locked | RESTART → Phase 0 re-lock |
-| Loop detected (3+ attempts) | Approach invalid | HALT → alternate approach → ToT branch |
-| Verify gate fails twice | Deep quality issue | Flag for human review → explain gap |
-| Token budget exceeded | SPR not applied | SPR-compress history → retry |
+| Failure Signal              | Root Cause               | Recovery Protocol                      |
+| --------------------------- | ------------------------ | -------------------------------------- |
+| Same error 2+ times         | Architecture flaw        | HALT → ORIGIN-EXPERT → redesign        |
+| Output length >2x asked     | TCE not applied          | COMPRESS → reapply TCE                 |
+| Hedging language in output  | Uncertainty not resolved | STOP → gather evidence → remove hedge  |
+| Claim without evidence      | Hallucination risk       | DELETE claim or find proof             |
+| Scope drift mid-task        | Phase 0 not locked       | RESTART → Phase 0 re-lock              |
+| Loop detected (3+ attempts) | Approach invalid         | HALT → alternate approach → ToT branch |
+| Verify gate fails twice     | Deep quality issue       | Flag for human review → explain gap    |
+| Token budget exceeded       | SPR not applied          | SPR-compress history → retry           |
 
 ---
 
@@ -144,6 +151,7 @@ Turn 21+:    Keep only: [current goal] + [last 3 turns full] + [SPR of prior]
 ```
 
 **SPR compression of turn history:**
+
 ```
 Turn N: [action taken] → [result] → [open items]
 Example: "Turn 3: Designed auth schema → approved by user → pending: rate limit spec"
@@ -169,5 +177,5 @@ Budget guidelines:
 
 ---
 
-*APEX-BOOST v1.0 · references/PROTOCOLS.md*  
-*APEX Business Systems Ltd. © 2026*
+_APEX-BOOST v1.0 · references/PROTOCOLS.md_  
+_APEX Business Systems Ltd. © 2026_

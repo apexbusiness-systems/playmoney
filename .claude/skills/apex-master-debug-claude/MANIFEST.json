@@ -9,11 +9,29 @@
   "supersedes": ["one-pass-debug"],
   "install_path": "/mnt/skills/user/apex-master-debug/",
   "triggers": [
-    "debug", "fix bug", "error", "crash", "exception", "stack trace",
-    "not working", "broken code", "failing test", "troubleshoot", "diagnose",
-    "predict bugs", "proactive review", "code audit", "pre-release check",
-    "refactor risk", "performance issue", "memory leak", "race condition",
-    "silent failure", "regression", "investigate", "root cause"
+    "debug",
+    "fix bug",
+    "error",
+    "crash",
+    "exception",
+    "stack trace",
+    "not working",
+    "broken code",
+    "failing test",
+    "troubleshoot",
+    "diagnose",
+    "predict bugs",
+    "proactive review",
+    "code audit",
+    "pre-release check",
+    "refactor risk",
+    "performance issue",
+    "memory leak",
+    "race condition",
+    "silent failure",
+    "regression",
+    "investigate",
+    "root cause"
   ],
   "modes": ["reactive", "predictive", "performance", "omega_scan"],
   "tools_required": ["bash_tool", "view", "str_replace", "create_file"],
@@ -30,9 +48,29 @@
     "post_edit": ["bash_tool(tests)", "create_file(regression_test)"]
   },
   "phases": {
-    "reactive": ["scope_lock", "context_harvest_tools", "temporal_rca", "blast_radius_grep", "simulation", "preflight", "str_replace_fix", "closure_shield"],
-    "predictive": ["automated_scan", "pattern_recognition", "risk_scoring", "proactive_fix", "threat_report"],
-    "performance": ["baseline_bash", "bottleneck_isolation", "targeted_str_replace", "performance_closure"]
+    "reactive": [
+      "scope_lock",
+      "context_harvest_tools",
+      "temporal_rca",
+      "blast_radius_grep",
+      "simulation",
+      "preflight",
+      "str_replace_fix",
+      "closure_shield"
+    ],
+    "predictive": [
+      "automated_scan",
+      "pattern_recognition",
+      "risk_scoring",
+      "proactive_fix",
+      "threat_report"
+    ],
+    "performance": [
+      "baseline_bash",
+      "bottleneck_isolation",
+      "targeted_str_replace",
+      "performance_closure"
+    ]
   },
   "success_criteria": {
     "reactive": "Bug fixed in ONE str_replace. All tests pass. Regression test committed.",

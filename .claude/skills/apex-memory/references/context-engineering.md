@@ -41,11 +41,11 @@ Maintain a moving window of recent context.
 
 ### Window Types
 
-| Window | Size | Use Case |
-|--------|------|----------|
-| Micro | 5 turns | Immediate coherence |
-| Standard | 20 turns | Working memory |
-| Macro | 50 turns | Session context |
+| Window   | Size     | Use Case            |
+| -------- | -------- | ------------------- |
+| Micro    | 5 turns  | Immediate coherence |
+| Standard | 20 turns | Working memory      |
+| Macro    | 50 turns | Session context     |
 
 ### Implementation
 
@@ -79,19 +79,23 @@ Maintain external scratchpads for evolving constraints.
 # Session Notes
 
 ## Active Constraints
+
 - Deploy to AWS us-west-2
 - Python 3.11+
 - Docker containerization
 
 ## Open Questions
+
 - [ ] Database migration strategy?
 - [ ] Authentication method?
 
 ## Decisions Made
+
 1. Use FastAPI (performance requirements)
 2. PostgreSQL over MongoDB (relational needs)
 
 ## Technical Stack
+
 - Framework: FastAPI
 - Database: PostgreSQL
 - Container: Docker

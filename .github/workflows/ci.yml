@@ -84,3 +84,11 @@ jobs:
       # needs no secrets and stays fork-safe. PLAYMONEY_MODE is unset → BUILT.
       - name: Build (Cloudflare Workers · Nitro)
         run: bun run build
+
+      - name: Verify RLS Policies
+        # Only run this step if the service role key is available in the environment
+        if: env.SUPABASE_SERVICE_ROLE_KEY != ''
+        run: bun run db:verify-rls
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

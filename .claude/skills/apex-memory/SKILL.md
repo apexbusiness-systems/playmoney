@@ -51,6 +51,7 @@ CONTEXT STATE?
 ### Common Failures
 
 ❌ **NEVER**:
+
 - Summarize code blocks (keep verbatim with line refs)
 - Compress user instructions (keep verbatim)
 - Remove "Attention Sinks" (first 4 tokens of conversation)
@@ -58,6 +59,7 @@ CONTEXT STATE?
 - Merge distinct topics into a single summary
 
 ✅ **ALWAYS**:
+
 - Primacy-Recency Split: Preserve first 20% + last 10% verbatim
 - Semantic Dedup: Scan for >80% similar blocks
 - Map-Reduce: Chunk middle context (1000 tok/chunk)
@@ -75,13 +77,13 @@ const middle = conversation.slice(primacy.length, -recency.length);
 
 // Compress middle only
 const compressed = {
-  primacy: primacy,  // Keep verbatim
+  primacy: primacy, // Keep verbatim
   middle: compress(middle, {
     ratio: 5,
     preserveEntities: true,
-    dedupThreshold: 0.8
+    dedupThreshold: 0.8,
   }),
-  recency: recency  // Keep verbatim
+  recency: recency, // Keep verbatim
 };
 ```
 
@@ -131,6 +133,7 @@ CLAIM TYPE?
 ### Common Failures
 
 ❌ **Hallucination Traps**:
+
 - Making up specific details not in context
 - Confusing conversations or mixing sessions
 - Inferring without evidence flags
@@ -185,21 +188,25 @@ python scripts/apex_verify.py response.txt --context conversation.txt
 **Narrative**: Built authentication system for APEX-OmniHub. Implemented JWT tokens with Redis caching. Deployed to staging environment.
 
 **Critical Facts**:
+
 - JWT expiry: 24h (Source: Turn #12)
 - Redis host: redis.apex.internal:6379 (Source: Turn #18)
 - Staging URL: https://staging.omnihub.io (Source: Turn #23)
 
-**Entities**: 
+**Entities**:
+
 - People: [Sarah Chen - Product Manager, Mike Rodriguez - DevOps]
 - Systems: [Redis, PostgreSQL, NGINX]
 - Files: [auth.service.ts, redis.config.js, deploy.yaml]
 
 **Pending Actions**:
+
 - [ ] Set up production Redis cluster
 - [ ] Document JWT refresh flow
 - [ ] Run load tests on staging
 
-**Constraints**: 
+**Constraints**:
+
 - Must support 10k concurrent users
 - GDPR compliance required for EU users
 - Zero downtime deployments mandatory
@@ -263,6 +270,7 @@ Load these references on-demand for complex scenarios:
 ### Auto-Activation (No Manual Invocation)
 
 This skill automatically activates during:
+
 - Long conversations (>10 messages)
 - Complex multi-step reasoning
 - Information-dense interactions

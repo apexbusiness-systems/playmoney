@@ -21,7 +21,7 @@ apex-master-debug-claude/       ← Claude native (Capabilities section)
 1. Copy `apex-master-debug-universal/SKILL.md` content
 2. Paste as a system prompt, custom instruction, or knowledge base entry
 3. Activation: Mention any trigger word (debug, fix bug, crash, etc.)
-4. Manual: *"Apply apex-master-debug protocol"*
+4. Manual: _"Apply apex-master-debug protocol"_
 
 ---
 
@@ -38,20 +38,23 @@ cp -r apex-master-debug-claude/ /mnt/skills/user/apex-master-debug/
 ```
 
 **Verify installation:**
+
 ```bash
 ls /mnt/skills/user/apex-master-debug/SKILL.md
 # Expected: file exists
 ```
 
 **Activate in Claude:**
+
 - Automatic: Triggers on any debug-related request
-- Manual: *"Apply apex-master-debug protocol"* or *"Use APEX-MASTER-DEBUG"*
+- Manual: _"Apply apex-master-debug protocol"_ or _"Use APEX-MASTER-DEBUG"_
 
 ---
 
 ## Quick-Start Examples
 
 ### Reactive (Fix a live bug):
+
 ```
 User: "Getting TypeError: Cannot read property 'id' of undefined at line 47"
 → Claude auto-activates REACTIVE MODE
@@ -60,6 +63,7 @@ User: "Getting TypeError: Cannot read property 'id' of undefined at line 47"
 ```
 
 ### Predictive (Pre-release audit):
+
 ```
 User: "Can you review this PR before we ship to production?"
 → Claude auto-activates PREDICTIVE MODE
@@ -68,6 +72,7 @@ User: "Can you review this PR before we ship to production?"
 ```
 
 ### Performance:
+
 ```
 User: "Our API endpoint is taking 8 seconds to respond"
 → Claude auto-activates PERFORMANCE MODE
@@ -79,9 +84,9 @@ User: "Our API endpoint is taking 8 seconds to respond"
 
 ## Versioning
 
-| Version | Supersedes | Key Additions |
-|---|---|---|
-| 1.0.0 | one-pass-debug (all) | Predictive mode, temporal RCA, blast radius, 4-pass simulation, automated threat scanning, risk scoring, proactive fix generation |
+| Version | Supersedes           | Key Additions                                                                                                                     |
+| ------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | one-pass-debug (all) | Predictive mode, temporal RCA, blast radius, 4-pass simulation, automated threat scanning, risk scoring, proactive fix generation |
 
 ---
 

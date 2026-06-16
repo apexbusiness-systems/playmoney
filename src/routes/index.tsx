@@ -78,10 +78,10 @@ function Nav() {
             Wins
           </a>
           <Link
-            to="/app"
+            to="/auth/sign-in"
             className="inline-flex h-10 items-center rounded-full bg-gold px-5 text-sm font-semibold text-ink hover:brightness-95"
           >
-            Open app
+            Get started
           </Link>
         </nav>
       </div>
@@ -466,7 +466,7 @@ function FinalCta() {
           <span style={{ color: "#F2C24B" }}>You just play with the money.</span>
         </h2>
         <div className="mt-10 flex flex-col items-center gap-3">
-          <Link to="/app/onboarding">
+          <Link to="/auth/sign-in">
             <PMButton variant="primaryDark">
               Start finding money — free <PMIcon name="arrow" stroke="#1C1813" />
             </PMButton>

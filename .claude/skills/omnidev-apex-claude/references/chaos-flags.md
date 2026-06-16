@@ -1,6 +1,7 @@
 # CHAOS SOVEREIGN — OMNIDEV-APEX Reference
 
 ## Feature Flag Protocol
+
 ```
 DEFINE:   Register flag in config system (LaunchDarkly/Unleash/env) BEFORE code ships
 DEFAULT:  Always OFF for risk > low — never ship a new flag defaulting ON in prod
@@ -10,6 +11,7 @@ CLEANUP:  Flag removed in code within 2 sprints of 100% rollout (tech debt timer
 ```
 
 ## Feature Flag Code Pattern
+
 ```typescript
 // Abstract the flag — never use provider SDK directly in business logic
 interface FeatureFlags {
@@ -18,7 +20,7 @@ interface FeatureFlags {
 
 // Usage: always async, always with fallback
 async function processPayment(payment: Payment) {
-  const useNewProcessor = await flags.isEnabled('new-payment-processor', {
+  const useNewProcessor = await flags.isEnabled("new-payment-processor", {
     userId: payment.userId,
     tenantId: payment.tenantId,
   });
@@ -31,6 +33,7 @@ async function processPayment(payment: Payment) {
 ```
 
 ## Chaos Test Invariants
+
 ```
 Service down:        System degrades gracefully — no cascading failure
                      Circuit breaker trips → fallback activated
@@ -42,20 +45,23 @@ Memory pressure:     OOM kill → graceful shutdown hook runs → no data loss
 ```
 
 ## Circuit Breaker Pattern
+
 ```typescript
 const breaker = new CircuitBreaker(externalServiceCall, {
-  timeout: 3_000,                    // fail after 3s — never hang
-  errorThresholdPercentage: 50,      // open at 50% error rate
-  resetTimeout: 30_000,              // half-open after 30s
-  volumeThreshold: 10,               // minimum calls before evaluation
+  timeout: 3_000, // fail after 3s — never hang
+  errorThresholdPercentage: 50, // open at 50% error rate
+  resetTimeout: 30_000, // half-open after 30s
+  volumeThreshold: 10, // minimum calls before evaluation
   fallback: async () => {
-    return cachedResult              // serve stale cache
-      ?? { status: 'degraded', data: [] }; // graceful degradation
+    return (
+      cachedResult ?? { status: "degraded", data: [] } // serve stale cache
+    ); // graceful degradation
   },
 });
 ```
 
 ## Rollback Protocol
+
 ```
 Every deploy: rollback script written BEFORE deploy begins
 

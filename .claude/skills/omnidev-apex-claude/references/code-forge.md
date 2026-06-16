@@ -1,9 +1,11 @@
 # CODE FORGE — OMNIDEV-APEX Reference
 
 ## Activation
+
 Triggered by: write code, build, create, implement, add feature
 
 ## TDD Enforcement (bash_tool mandatory)
+
 ```
 1. bash_tool → write failing test → confirm red
 2. create_file → minimal green code only
@@ -16,6 +18,7 @@ NEVER write implementation before test exists.
 ## Language Contracts
 
 ### TypeScript / JavaScript
+
 - `"strict": true` — non-negotiable
 - No `any` — use `unknown` + type guard
 - Zod schema at every API boundary (input + output)
@@ -24,6 +27,7 @@ NEVER write implementation before test exists.
 - Tests: Vitest or Jest, 100% new code coverage
 
 ### Python
+
 - Ruff: `ruff check . && ruff format .` — zero violations
 - mypy: `--strict` mode
 - Pydantic v2 models at every boundary
@@ -31,6 +35,7 @@ NEVER write implementation before test exists.
 - Type stubs for all third-party libs
 
 ### Go
+
 - `go vet ./...` — zero issues
 - `staticcheck ./...` — zero issues
 - Explicit error handling — no `_` discard of errors
@@ -38,6 +43,7 @@ NEVER write implementation before test exists.
 - Table-driven tests, `testify/assert`
 
 ### Rust
+
 - `cargo clippy -- -D warnings` — zero warnings
 - No `unwrap()` or `expect()` in production paths
 - `thiserror` for error types, `anyhow` for applications
@@ -45,13 +51,14 @@ NEVER write implementation before test exists.
 - `cargo audit` — no known CVEs
 
 ## OTel Span — Write This First
+
 ```typescript
-import { trace, SpanStatusCode } from '@opentelemetry/api';
-const tracer = trace.getTracer('service-name', '1.0.0');
+import { trace, SpanStatusCode } from "@opentelemetry/api";
+const tracer = trace.getTracer("service-name", "1.0.0");
 
 async function operation(input: ValidatedInput): Promise<Output> {
-  const span = tracer.startSpan('domain.operation', {
-    attributes: { 'input.id': input.id, 'operation.type': 'write' }
+  const span = tracer.startSpan("domain.operation", {
+    attributes: { "input.id": input.id, "operation.type": "write" },
   });
   try {
     const result = await businessLogic(input);
@@ -68,6 +75,7 @@ async function operation(input: ValidatedInput): Promise<Output> {
 ```
 
 ## Security Baked In (not bolted on)
+
 ```typescript
 // Input validation — Zod at ingress
 const schema = z.object({
@@ -78,16 +86,17 @@ const schema = z.object({
 
 // SQL — parameterized only, never interpolated
 const result = await db.query(
-  'SELECT * FROM users WHERE id = $1',
-  [userId]  // never: `WHERE id = '${userId}'`
+  "SELECT * FROM users WHERE id = $1",
+  [userId], // never: `WHERE id = '${userId}'`
 );
 
 // Secrets — env only
 const apiKey = process.env.API_KEY;
-if (!apiKey) throw new Error('API_KEY not configured'); // fail-closed
+if (!apiKey) throw new Error("API_KEY not configured"); // fail-closed
 ```
 
 ## Verification Evidence Template
+
 ```
 bash_tool output:
 $ npm test -- --coverage

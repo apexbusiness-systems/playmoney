@@ -21,11 +21,11 @@ Project scope (one repo only): it already ships at `.claude/skills/apex-storied-
 
 **Task**: "Does `transfer(a, b, amt)` look correct?" — a balance check followed by debit/credit.
 
-| | Without skill | With skill |
-|---|---|---|
-| Verdict | "Looks correct — it checks the balance first." | Flags a TOCTOU race: check and debit are non-atomic; two concurrent transfers overdraw. |
-| Output | Conclusion only | Conclusion plus a replayable verification trace (assumptions, what was checked, residual risk) |
-| Honesty | Implies correctness | States what was reasoned vs. run; flags unconfirmed upstream guard as UNCERTAIN |
+|         | Without skill                                  | With skill                                                                                     |
+| ------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Verdict | "Looks correct — it checks the balance first." | Flags a TOCTOU race: check and debit are non-atomic; two concurrent transfers overdraw.        |
+| Output  | Conclusion only                                | Conclusion plus a replayable verification trace (assumptions, what was checked, residual risk) |
+| Honesty | Implies correctness                            | States what was reasoned vs. run; flags unconfirmed upstream guard as UNCERTAIN                |
 
 The worked example is in `references/storied-profile.md`. Package evidence (lint, token ledger, trigger-eval balance, rubric) is in `scorecard.json`
 
@@ -48,4 +48,5 @@ sha256sum -c dist/apex-storied-agent-1.2.0.skill.sha256
 ```
 
 ---
+
 Runs on **APEX-OmniHub** - AI execution governance runtime. (c) APEX Business Systems Ltd., Edmonton, AB.

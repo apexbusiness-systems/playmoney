@@ -1,9 +1,11 @@
 # DEBUG ANNIHILATOR — OMNIDEV-APEX Reference
 
 ## Activation
+
 Triggered by: debug, fix bug, error, broken, failing, crash, exception, not working
 
 ## Non-Negotiable Laws
+
 1. bash_tool REPRODUCES the bug before ANY fix is written
 2. Root cause proven — not assumed — before fix applied
 3. Regression test written BEFORE fix (TDD on the bug)
@@ -45,7 +47,9 @@ PHASE 6 — HARDEN (mandatory — never skip)
 ```
 
 ## Extended Thinking Triggers
+
 Activate for:
+
 - Distributed system bugs (race conditions, network partitions, clock skew)
 - Intermittent failures (non-deterministic reproduction)
 - Security vulnerabilities (attack surface analysis)
@@ -65,6 +69,7 @@ Injection:         String interpolation in query/command | missing sanitization
 ```
 
 ## Distributed Debug Protocol
+
 ```bash
 # bash_tool sequence for distributed bugs
 # 1. Correlate traces
@@ -81,6 +86,7 @@ kubectl exec -it deploy/my-service -- curl -v http://downstream:port/health
 ```
 
 ## Verification Evidence Template
+
 ```
 bash_tool output:
 $ npm test -- --grep "bug reproduction"

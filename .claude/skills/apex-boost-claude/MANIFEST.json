@@ -13,7 +13,13 @@
     "node_type": "meta_amplifier",
     "accepts": {
       "mime_types": ["text/plain", "application/json", "text/markdown"],
-      "event_types": ["task.start", "session.init", "performance.degrade", "token.waste", "drift.detected"]
+      "event_types": [
+        "task.start",
+        "session.init",
+        "performance.degrade",
+        "token.waste",
+        "drift.detected"
+      ]
     },
     "emits": {
       "on_success": ["boost.active", "output.amplified", "tokens.compressed"],

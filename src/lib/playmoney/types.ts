@@ -109,13 +109,24 @@ export interface ApiClient {
   totals(): Promise<{ foundTotal: number; landedTotal: number; ourFeeTotal: number }>;
   exportData(): Promise<Blob>;
   deleteAllData(): Promise<void>;
+
+  /** Saga pipeline: convert a detected situation into an active recovery pipeline */
+  initiateRecovery(input: { situationId: string }): Promise<{ recoveryId: string }>;
 }
 
 export interface AuthClient {
   getProfile(): Promise<Profile | null>;
   signIn(input: { email: string }): Promise<Profile>;
+  /** Confirm a magic-link OTP code. On success the Supabase session is established. */
+  verifyOtp(input: { email: string; token: string }): Promise<void>;
+  /** Handle a Supabase magic-link redirect (PKCE flow — token_hash from URL). */
+  verifyOtpHash(input: { tokenHash: string; type: string }): Promise<void>;
   signOut(): Promise<void>;
   updateProfile(patch: Partial<Profile>): Promise<Profile>;
   saveContext(context: OccupationContext): Promise<Profile>;
   submitOnboarding(input: OnboardingInput): Promise<OnboardingResult>;
+  getFlinksConnectUrl(): Promise<{ connectUrl: string }>;
+  ingestTransactions(input: {
+    aggregatorToken: string;
+  }): Promise<{ success: boolean; situationCount: number }>;
 }

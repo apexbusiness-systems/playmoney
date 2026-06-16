@@ -1,4 +1,5 @@
 # APEX-BOOST: QUICK-START TEMPLATES
+
 **Copy-paste ready. Zero setup required.**
 
 ---
@@ -98,5 +99,5 @@ TOTAL: __/100 → PASS (≥99) or REGENERATE
 
 ---
 
-*APEX-BOOST v1.0 · templates/quick-start.md*  
-*APEX Business Systems Ltd. © 2026*
+_APEX-BOOST v1.0 · templates/quick-start.md_  
+_APEX Business Systems Ltd. © 2026_

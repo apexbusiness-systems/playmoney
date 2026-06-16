@@ -46,12 +46,12 @@ Every fact receives a confidence score.
 
 ### Scoring Criteria
 
-| Factor | Weight | Description |
-|--------|--------|-------------|
-| Exact match | 1.0 | Verbatim in source |
-| Semantic match | 0.8 | Paraphrased but accurate |
-| Inferred | 0.6 | Derived from evidence |
-| Unknown | 0.0 | Not in source |
+| Factor         | Weight | Description              |
+| -------------- | ------ | ------------------------ |
+| Exact match    | 1.0    | Verbatim in source       |
+| Semantic match | 0.8    | Paraphrased but accurate |
+| Inferred       | 0.6    | Derived from evidence    |
+| Unknown        | 0.0    | Not in source            |
 
 ### Thresholds
 

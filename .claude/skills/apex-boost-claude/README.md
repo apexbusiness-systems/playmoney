@@ -1,4 +1,5 @@
 # APEX-BOOST v1.0 — Claude Edition
+
 **Omnipotent AI performance amplifier. 20x speed · quality · efficiency · reasoning.**
 
 ---
@@ -40,22 +41,22 @@ apex-boost/
 
 ## RESEARCH GROUNDING
 
-| Technique | Source |
-|-----------|--------|
-| Chain-of-Thought | Wei et al. 2022, Google Brain |
-| Tree of Thoughts | Yao et al. 2023, Princeton + Google DeepMind |
-| Self-Consistency | Wang et al. 2022, Google Brain |
-| ReAct | Yao et al. 2022, Princeton + Google |
-| SPR | Shapiro/LAION 2023 |
-| LLMLingua | Jiang et al. 2023, Microsoft |
-| Skeleton-of-Thought | Ning et al. 2023, Tsinghua + MSRA |
-| Constitutional AI | Bai et al. 2022, Anthropic |
-| Antigravity Routing | Gemini 1.5 MoE, Google DeepMind 2024 |
-| Test-Time Compute | Snell et al. 2024, Google DeepMind |
+| Technique           | Source                                       |
+| ------------------- | -------------------------------------------- |
+| Chain-of-Thought    | Wei et al. 2022, Google Brain                |
+| Tree of Thoughts    | Yao et al. 2023, Princeton + Google DeepMind |
+| Self-Consistency    | Wang et al. 2022, Google Brain               |
+| ReAct               | Yao et al. 2022, Princeton + Google          |
+| SPR                 | Shapiro/LAION 2023                           |
+| LLMLingua           | Jiang et al. 2023, Microsoft                 |
+| Skeleton-of-Thought | Ning et al. 2023, Tsinghua + MSRA            |
+| Constitutional AI   | Bai et al. 2022, Anthropic                   |
+| Antigravity Routing | Gemini 1.5 MoE, Google DeepMind 2024         |
+| Test-Time Compute   | Snell et al. 2024, Google DeepMind           |
 
 ## COMPATIBILITY
 
-- Claude 3.5, 4.x (native — optimal)  
+- Claude 3.5, 4.x (native — optimal)
 - All APEX skills (amplifies, never conflicts)
 
 ---

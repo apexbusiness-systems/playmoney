@@ -19,13 +19,14 @@ license: "Proprietary - APEX Business Systems Ltd. Edmonton, AB, Canada. https:/
 Interpret `$ARGUMENTS` to select a mode. If mode is not explicit, infer from intent.
 
 **Modes** (first word in arguments):
-- `design`  → new flow/screen design
-- `audit`   → UX teardown + prioritized fixes
+
+- `design` → new flow/screen design
+- `audit` → UX teardown + prioritized fixes
 - `implement` → component/screen implementation plan + architecture + tests
-- `debug`   → root-cause + patch + prevention
-- `perf`    → measure → hot path → fix → re-measure
-- `a11y`    → accessibility audit + fixes
-- `system`  → tokens + components + governance
+- `debug` → root-cause + patch + prevention
+- `perf` → measure → hot path → fix → re-measure
+- `a11y` → accessibility audit + fixes
+- `system` → tokens + components + governance
 - `migrate` → framework/platform migration plan
 
 If multiple apply, pick the highest-leverage order:
@@ -35,38 +36,44 @@ If multiple apply, pick the highest-leverage order:
 
 Return exactly these sections:
 
-1) **Mode + Assumptions**
-2) **Failure Patterns (❌)**
-3) **Plan (steps with deliverables)**
-4) **Executable Artifacts** (tables/specs/checklists/code/pseudocode)
-5) **Verification Package**
+1. **Mode + Assumptions**
+2. **Failure Patterns (❌)**
+3. **Plan (steps with deliverables)**
+4. **Executable Artifacts** (tables/specs/checklists/code/pseudocode)
+5. **Verification Package**
    - UX gate
    - A11y gate
    - State gate
    - Perf gate
    - Ship gate
-6) **Next Actions (minimum 3)**
+6. **Next Actions (minimum 3)**
 
 ## GLOBAL GATES (Always apply)
 
 ### State completeness
+
 Every screen/component must define: `loading | empty | error | success | disabled | offline/timeout | permission-denied (if relevant)`.
 
 ### Mobile UX
+
 - Primary actions reachable (thumb-first), targets ≥ 44×44, clear back navigation, immediate feedback.
 
 ### Accessibility
+
 - Roles/labels, focus order, contrast, text scaling, no color-only meaning.
 
 ### Performance
+
 - Define budgets; measure before optimizing; fix hot path; re-measure; add regression guard.
 
 ### Quality
+
 - Separate view from state/business logic; add at least one regression test for critical behavior.
 
 ## SUPPORTING FILES (Load when needed)
 
 **Playbooks**
+
 - Design: [references/design-playbook.md](references/design-playbook.md)
 - Audit: [references/audit-playbook.md](references/audit-playbook.md)
 - Implementation: [references/implementation-playbook.md](references/implementation-playbook.md)
@@ -77,6 +84,7 @@ Every screen/component must define: `loading | empty | error | success | disable
 - Migration: [references/migration-playbook.md](references/migration-playbook.md)
 
 **Templates**
+
 - UX brief: [templates/ux-brief.md](templates/ux-brief.md)
 - Screen spec: [templates/screen-spec.md](templates/screen-spec.md)
 - Component spec: [templates/component-spec.md](templates/component-spec.md)
@@ -86,10 +94,12 @@ Every screen/component must define: `loading | empty | error | success | disable
 - Design system: [templates/design-system.md](templates/design-system.md)
 
 **Examples**
+
 - Design: [examples/design-example.md](examples/design-example.md)
 - Debug: [examples/debug-example.md](examples/debug-example.md)
 - Perf: [examples/perf-example.md](examples/perf-example.md)
 - A11y: [examples/a11y-example.md](examples/a11y-example.md)
 
 **Optional validator (Claude Code)**
+
 - `scripts/validate_artifact.py` validates a markdown output against required sections.
