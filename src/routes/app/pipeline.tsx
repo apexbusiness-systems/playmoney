@@ -2,7 +2,8 @@ import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { api, auth, formatMoney } from "@/lib/playmoney/client";
+import { api, auth } from "@/lib/playmoney/client";
+import { useFormatMoney } from "@/lib/playmoney/currency";
 import { rankByContextKey } from "@/lib/engine/situation";
 import { PMButton } from "@/components/pm/Button";
 
@@ -24,6 +25,7 @@ function PipelinePage() {
   });
 
   const context = profile.data?.context;
+  const fmt = useFormatMoney();
   const orderedSituations = React.useMemo(() => {
     if (!situations.data) return [];
     if (!context) return situations.data;
@@ -77,7 +79,7 @@ function PipelinePage() {
               <p className="text-sm text-ink-muted">{sit.situation.summary}</p>
             </div>
             <div className="flex items-center gap-4">
-              <p className="font-display text-xl font-semibold">{formatMoney(sit.amountCents)}</p>
+              <p className="font-display text-xl font-semibold">{fmt(sit.amountCents)}</p>
               <PMButton
                 variant="primaryLight"
                 onClick={() => initiate.mutate(sit.situation.id)}

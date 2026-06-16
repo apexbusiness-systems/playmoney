@@ -1,22 +1,28 @@
 // M2 · Eligibility / Geofence gate (Control #8) [GATE]
 //
-// Hard signup gate: Alberta only at MVP. Every other province + country flag is
-// OFF. Quebec is a SEPARATE gated project (never enabled here). US is deferred.
+// Enabled jurisdictions: Alberta (CA/AB) + all US states.
+// Quebec is a SEPARATE gated project (distinct consumer-law regime).
+// All other Canadian provinces are OFF until individually gated.
 // Enforcement: onboarding cannot create an account outside the enabled set.
 //
-// Note: enabling the Alberta geofence does NOT make the app LIVE — real
-// onboarding remains sealed by PLAYMONEY_MODE + canGoLive(). This module only
-// decides *which jurisdiction* is permissible once the system does go live.
+// Note: enabling jurisdictions does NOT make the app LIVE — real onboarding
+// remains sealed by PLAYMONEY_MODE + canGoLive(). This module only decides
+// *which jurisdictions* are permissible once the system does go live.
 
 export type Jurisdiction = { country: string; province: string | null };
 
-/** The ONLY enabled jurisdiction at MVP. Everything else is OFF. */
-export const ENABLED_JURISDICTIONS: readonly Jurisdiction[] = [{ country: "CA", province: "AB" }];
+/**
+ * Enabled jurisdictions. A null province means "any province/state" for that
+ * country — used for the US where all states are equally in scope.
+ */
+export const ENABLED_JURISDICTIONS: readonly Jurisdiction[] = [
+  { country: "CA", province: "AB" }, // Canada: Alberta only
+  { country: "US", province: null }, // United States: all states
+];
 
 /** Explicitly deferred/blocked, with the reason surfaced for audit + UX. */
 export const BLOCKED_JURISDICTIONS: Readonly<Record<string, string>> = {
   "CA/QC": "Quebec is a separate gated project (distinct consumer-law regime); not enabled.",
-  US: "United States is deferred; not in scope at MVP.",
 };
 
 export type EligibilityResult =
@@ -39,19 +45,17 @@ export function checkEligibility(country: string, province: string | null): Elig
       reason: BLOCKED_JURISDICTIONS["CA/QC"],
     };
   }
-  if (c === "US") {
-    return { eligible: false, code: "jurisdiction_blocked", reason: BLOCKED_JURISDICTIONS["US"] };
-  }
 
+  // A null province in ENABLED_JURISDICTIONS means "any province/state".
   const match = ENABLED_JURISDICTIONS.some(
-    (j) => norm(j.country) === c && norm(j.province) === norm(p),
+    (j) => norm(j.country) === c && (j.province === null || norm(j.province) === norm(p)),
   );
   if (match) return { eligible: true, jurisdiction: { country: c, province: p } };
 
   return {
     eligible: false,
     code: "jurisdiction_blocked",
-    reason: `Not available in ${[p, c].filter(Boolean).join(", ")}. PlayMoney is Alberta-only at launch.`,
+    reason: `Not available in ${[p, c].filter(Boolean).join(", ")} yet. Supported: Alberta (CA) and all US states.`,
   };
 }
 

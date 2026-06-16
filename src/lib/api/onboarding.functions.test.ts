@@ -39,10 +39,11 @@ describe("P6 · processOnboarding: consent records written, gates satisfied", ()
     expect(io.updateProfile).toHaveBeenCalledWith("Maya Chen", "tok_payout_***z29x", "AB");
   });
 
-  it("rejects a user outside Alberta (geofence #8)", async () => {
+  it("rejects a user in a non-enabled jurisdiction (geofence #8)", async () => {
     const io = makeIO();
+    // Ontario is still disabled (Canadian expansion is Alberta-only at MVP).
     const result = await processOnboarding({
-      parsedInput: { ...BASE_INPUT, country: "US", province: null },
+      parsedInput: { ...BASE_INPUT, country: "CA", province: "ON" },
       ...io,
     });
     expect(result.ok).toBe(false);

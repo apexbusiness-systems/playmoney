@@ -69,6 +69,7 @@ const ProfileRow = z.object({
   payout_ref: z.string().nullable(),
   user_context: z.unknown().optional(),
   created_at: z.string(),
+  jurisdiction_country: z.string().nullable().optional(),
 });
 type ProfileRow = z.infer<typeof ProfileRow>;
 
@@ -140,6 +141,7 @@ export function rowToProfile(row: unknown, email: string): Profile {
     identityVerified: false,
     createdAt: r.created_at,
     context: parsedCtx,
+    country: r.jurisdiction_country ?? undefined,
   });
 }
 
@@ -250,7 +252,7 @@ export class SupabaseAuthClient implements AuthClient {
 
     const { data, error } = await this.sb
       .from("profiles")
-      .select("id, display_name, payout_ref, user_context, created_at")
+      .select("id, display_name, payout_ref, user_context, created_at, jurisdiction_country")
       .eq("id", user.id)
       .maybeSingle();
     if (error) throw new Error(`getProfile failed: ${error.message}`);
@@ -260,7 +262,7 @@ export class SupabaseAuthClient implements AuthClient {
       const created = await this.sb
         .from("profiles")
         .insert({ id: user.id, display_name: email.split("@")[0] || "" })
-        .select("id, display_name, payout_ref, user_context, created_at")
+        .select("id, display_name, payout_ref, user_context, created_at, jurisdiction_country")
         .single();
       if (created.error) throw new Error(`profile bootstrap failed: ${created.error.message}`);
       return rowToProfile(created.data, email);
@@ -318,7 +320,7 @@ export class SupabaseAuthClient implements AuthClient {
       .from("profiles")
       .update({ user_context: context })
       .eq("id", user.id)
-      .select("id, display_name, payout_ref, user_context, created_at")
+      .select("id, display_name, payout_ref, user_context, created_at, jurisdiction_country")
       .single();
     if (error) throw new Error(`saveContext failed: ${error.message}`);
     return rowToProfile(data, email);
@@ -390,7 +392,7 @@ export class SupabaseAuthClient implements AuthClient {
       .from("profiles")
       .update(dbPatch)
       .eq("id", user.id)
-      .select("id, display_name, payout_ref, user_context, created_at")
+      .select("id, display_name, payout_ref, user_context, created_at, jurisdiction_country")
       .single();
     if (error) throw new Error(`updateProfile failed: ${error.message}`);
     return rowToProfile(data, email);
