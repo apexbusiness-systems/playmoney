@@ -1,6 +1,7 @@
 # REVIEW PROTOCOL — OMNIDEV-APEX Reference
 
 ## Pre-Ship Checklist (every PR, zero exceptions)
+
 - [ ] Tests written BEFORE code (TDD — bash_tool proves RED first)
 - [ ] 100% coverage on new code (bash_tool captures report)
 - [ ] Zero linter warnings (tsc --noEmit | eslint | ruff | go vet)
@@ -12,6 +13,7 @@
 - [ ] SBOM updated if dependencies changed
 
 ## Review Evidence Template
+
 ```
 bash_tool captures — attach to PR:
 
@@ -25,6 +27,7 @@ $ git rev-parse HEAD          → <commit SHA>
 ```
 
 ## Code Review Lens (in order)
+
 1. **Correctness** — does it do what the spec says?
 2. **Security** — injection, auth, secrets, OWASP Top 10
 3. **Observability** — OTel spans on every I/O?

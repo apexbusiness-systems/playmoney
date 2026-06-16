@@ -1,4 +1,5 @@
 # OMNIDEV-APEX v3.0 — Claude-Native Edition
+
 **APEX Business Systems Ltd. | Proprietary © 2026**
 
 ## Installation
@@ -42,13 +43,13 @@ omnidev-v2 | omnidev-v1 | omnidev-apex v1.x | omnidev-apex v2.x
 
 ## Quality Gates (non-negotiable)
 
-| Gate | Target |
-|------|--------|
-| First-pass success | ≥97% |
-| Test coverage (new code) | 100% |
-| Regressions | 0 |
-| Security findings (high/crit) | 0 |
-| OTel span coverage | 100% I/O |
-| SonarCloud grade | A |
+| Gate                          | Target   |
+| ----------------------------- | -------- |
+| First-pass success            | ≥97%     |
+| Test coverage (new code)      | 100%     |
+| Regressions                   | 0        |
+| Security findings (high/crit) | 0        |
+| OTel span coverage            | 100% I/O |
+| SonarCloud grade              | A        |
 
 **https://apexbusiness-systems.com**

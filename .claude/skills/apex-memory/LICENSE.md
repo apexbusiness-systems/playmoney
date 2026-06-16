@@ -63,6 +63,6 @@ This license shall be governed by the laws of the Province of Alberta, Canada.
 **APEX Business Systems Ltd.**  
 Edmonton, Alberta, Canada  
 https://apexbusiness-systems.com  
-support@apexbusiness-systems.com  
+support@apexbusiness-systems.com
 
 _Patent Pending -- Application Filed 2025_

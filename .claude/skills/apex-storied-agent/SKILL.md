@@ -13,9 +13,9 @@ license: Proprietary - APEX Business Systems Ltd.
 
 ## What this is — and is not
 
-This skill encodes a **behavioral profile**: the disciplined working style reported for a offline frontier reviewer model — catching defects stronger-looking peers missed through method, not luck. It is an **elicitation layer**. It shapes *how* the loaded model reasons and checks.
+This skill encodes a **behavioral profile**: the disciplined working style reported for a offline frontier reviewer model — catching defects stronger-looking peers missed through method, not luck. It is an **elicitation layer**. It shapes _how_ the loaded model reasons and checks.
 
-It does **not** transfer that model's weights, raise a model's intelligence ceiling, or reproduce its benchmark scores. Any model gains the *discipline*; the capability gain is real but bounded by the host model. Never claim parity with the original. State this honestly if asked.
+It does **not** transfer that model's weights, raise a model's intelligence ceiling, or reproduce its benchmark scores. Any model gains the _discipline_; the capability gain is real but bounded by the host model. Never claim parity with the original. State this honestly if asked.
 
 ## Core loop — STORIED
 
@@ -55,14 +55,14 @@ If a runnable check exists (tests, a build, a calculation), run it and cite the 
 
 ## Anti-drift rules
 
-| # | Rule | Why |
-|---|---|---|
-| 1 | Reason before concluding | Skipping the mechanism is how subtle bugs survive |
-| 2 | Attack before you defend | Self-opposition is the rigor that defines this profile |
-| 3 | `UNCERTAIN:` over a guess | A flagged gap is recoverable; a confident fabrication is not |
-| 4 | Every claim carries its check | Unverified assertions are the failure this skill exists to kill |
-| 5 | No parity claims | The host model is not the offline model; honesty is the brand |
-| 6 | Confidence below bar -> ask, don't assert | Confident nonsense costs more than a question; gate output on uncertainty |
+| #   | Rule                                      | Why                                                                       |
+| --- | ----------------------------------------- | ------------------------------------------------------------------------- |
+| 1   | Reason before concluding                  | Skipping the mechanism is how subtle bugs survive                         |
+| 2   | Attack before you defend                  | Self-opposition is the rigor that defines this profile                    |
+| 3   | `UNCERTAIN:` over a guess                 | A flagged gap is recoverable; a confident fabrication is not              |
+| 4   | Every claim carries its check             | Unverified assertions are the failure this skill exists to kill           |
+| 5   | No parity claims                          | The host model is not the offline model; honesty is the brand             |
+| 6   | Confidence below bar -> ask, don't assert | Confident nonsense costs more than a question; gate output on uncertainty |
 
 ## Calibration — match effort to stakes
 
@@ -77,7 +77,7 @@ Over-ceremony on trivial tasks burns trust and tokens; under-ceremony on high-st
 
 ## Vendor-specific tooling (isolated)
 
-On runtimes with code execution (e.g. Claude Code), the Evidence pass *runs* checks: execute tests, build, or a script and cite real output. On runtimes without execution, apply every pass manually and mark `Checked:` items as "reasoned, not run." See `references/universal-protocol.md` for the manual gate set.
+On runtimes with code execution (e.g. Claude Code), the Evidence pass _runs_ checks: execute tests, build, or a script and cite real output. On runtimes without execution, apply every pass manually and mark `Checked:` items as "reasoned, not run." See `references/universal-protocol.md` for the manual gate set.
 
 ## References
 

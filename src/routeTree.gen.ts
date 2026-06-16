@@ -9,13 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PaymentRouteImport } from './routes/payment'
+import { Route as BankRouteImport } from './routes/bank'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as PaymentSetupRouteImport } from './routes/payment/setup'
+import { Route as BankConnectRouteImport } from './routes/bank/connect'
+import { Route as BankCallbackRouteImport } from './routes/bank/callback'
+import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as AuthCheckEmailRouteImport } from './routes/auth/check-email'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppPipelineRouteImport } from './routes/app/pipeline'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 
+const PaymentRoute = PaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BankRoute = BankRouteImport.update({
+  id: '/bank',
+  path: '/bank',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -31,9 +57,44 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const PaymentSetupRoute = PaymentSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => PaymentRoute,
+} as any)
+const BankConnectRoute = BankConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
+  getParentRoute: () => BankRoute,
+} as any)
+const BankCallbackRoute = BankCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => BankRoute,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthCheckEmailRoute = AuthCheckEmailRouteImport.update({
+  id: '/check-email',
+  path: '/check-email',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPipelineRoute = AppPipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOnboardingRoute = AppOnboardingRouteImport.update({
@@ -46,29 +107,67 @@ const AppActivityRoute = AppActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRouteWithChildren
+  '/bank': typeof BankRouteWithChildren
+  '/payment': typeof PaymentRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/app/activity': typeof AppActivityRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pipeline': typeof AppPipelineRoute
   '/app/settings': typeof AppSettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/bank/callback': typeof BankCallbackRoute
+  '/bank/connect': typeof BankConnectRoute
+  '/payment/setup': typeof PaymentSetupRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/bank': typeof BankRouteWithChildren
+  '/payment': typeof PaymentRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/app/activity': typeof AppActivityRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pipeline': typeof AppPipelineRoute
   '/app/settings': typeof AppSettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/bank/callback': typeof BankCallbackRoute
+  '/bank/connect': typeof BankConnectRoute
+  '/payment/setup': typeof PaymentSetupRoute
   '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRouteWithChildren
+  '/bank': typeof BankRouteWithChildren
+  '/payment': typeof PaymentRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/app/activity': typeof AppActivityRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pipeline': typeof AppPipelineRoute
   '/app/settings': typeof AppSettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/bank/callback': typeof BankCallbackRoute
+  '/bank/connect': typeof BankConnectRoute
+  '/payment/setup': typeof PaymentSetupRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -76,29 +175,92 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/auth'
+    | '/bank'
+    | '/payment'
+    | '/api/health'
     | '/app/activity'
     | '/app/onboarding'
+    | '/app/pipeline'
     | '/app/settings'
+    | '/auth/callback'
+    | '/auth/check-email'
+    | '/auth/sign-in'
+    | '/bank/callback'
+    | '/bank/connect'
+    | '/payment/setup'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app/activity' | '/app/onboarding' | '/app/settings' | '/app'
+  to:
+    | '/'
+    | '/auth'
+    | '/bank'
+    | '/payment'
+    | '/api/health'
+    | '/app/activity'
+    | '/app/onboarding'
+    | '/app/pipeline'
+    | '/app/settings'
+    | '/auth/callback'
+    | '/auth/check-email'
+    | '/auth/sign-in'
+    | '/bank/callback'
+    | '/bank/connect'
+    | '/payment/setup'
+    | '/app'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/auth'
+    | '/bank'
+    | '/payment'
+    | '/api/health'
     | '/app/activity'
     | '/app/onboarding'
+    | '/app/pipeline'
     | '/app/settings'
+    | '/auth/callback'
+    | '/auth/check-email'
+    | '/auth/sign-in'
+    | '/bank/callback'
+    | '/bank/connect'
+    | '/payment/setup'
     | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  BankRoute: typeof BankRouteWithChildren
+  PaymentRoute: typeof PaymentRouteWithChildren
+  ApiHealthRoute: typeof ApiHealthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/payment': {
+      id: '/payment'
+      path: '/payment'
+      fullPath: '/payment'
+      preLoaderRoute: typeof PaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bank': {
+      id: '/bank'
+      path: '/bank'
+      fullPath: '/bank'
+      preLoaderRoute: typeof BankRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -120,11 +282,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/payment/setup': {
+      id: '/payment/setup'
+      path: '/setup'
+      fullPath: '/payment/setup'
+      preLoaderRoute: typeof PaymentSetupRouteImport
+      parentRoute: typeof PaymentRoute
+    }
+    '/bank/connect': {
+      id: '/bank/connect'
+      path: '/connect'
+      fullPath: '/bank/connect'
+      preLoaderRoute: typeof BankConnectRouteImport
+      parentRoute: typeof BankRoute
+    }
+    '/bank/callback': {
+      id: '/bank/callback'
+      path: '/callback'
+      fullPath: '/bank/callback'
+      preLoaderRoute: typeof BankCallbackRouteImport
+      parentRoute: typeof BankRoute
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/check-email': {
+      id: '/auth/check-email'
+      path: '/check-email'
+      fullPath: '/auth/check-email'
+      preLoaderRoute: typeof AuthCheckEmailRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
       fullPath: '/app/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pipeline': {
+      id: '/app/pipeline'
+      path: '/pipeline'
+      fullPath: '/app/pipeline'
+      preLoaderRoute: typeof AppPipelineRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/onboarding': {
@@ -141,12 +352,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
+  AppPipelineRoute: typeof AppPipelineRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -154,15 +373,57 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
   AppOnboardingRoute: AppOnboardingRoute,
+  AppPipelineRoute: AppPipelineRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthCheckEmailRoute: typeof AuthCheckEmailRoute
+  AuthSignInRoute: typeof AuthSignInRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+  AuthCheckEmailRoute: AuthCheckEmailRoute,
+  AuthSignInRoute: AuthSignInRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface BankRouteChildren {
+  BankCallbackRoute: typeof BankCallbackRoute
+  BankConnectRoute: typeof BankConnectRoute
+}
+
+const BankRouteChildren: BankRouteChildren = {
+  BankCallbackRoute: BankCallbackRoute,
+  BankConnectRoute: BankConnectRoute,
+}
+
+const BankRouteWithChildren = BankRoute._addFileChildren(BankRouteChildren)
+
+interface PaymentRouteChildren {
+  PaymentSetupRoute: typeof PaymentSetupRoute
+}
+
+const PaymentRouteChildren: PaymentRouteChildren = {
+  PaymentSetupRoute: PaymentSetupRoute,
+}
+
+const PaymentRouteWithChildren =
+  PaymentRoute._addFileChildren(PaymentRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  BankRoute: BankRouteWithChildren,
+  PaymentRoute: PaymentRouteWithChildren,
+  ApiHealthRoute: ApiHealthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -44,12 +44,12 @@ Handle conflicting information from multiple agents.
 
 ### Resolution Strategies
 
-| Strategy | When to Use | Implementation |
-|----------|-------------|----------------|
-| Latest Wins | Time-sensitive data | Use most recent timestamp |
-| Highest Confidence | Factual claims | Compare confidence scores |
-| Consensus | Critical decisions | Require 2/3 agent agreement |
-| Human Override | Ambiguous cases | Escalate to user |
+| Strategy           | When to Use         | Implementation              |
+| ------------------ | ------------------- | --------------------------- |
+| Latest Wins        | Time-sensitive data | Use most recent timestamp   |
+| Highest Confidence | Factual claims      | Compare confidence scores   |
+| Consensus          | Critical decisions  | Require 2/3 agent agreement |
+| Human Override     | Ambiguous cases     | Escalate to user            |
 
 ### Example
 

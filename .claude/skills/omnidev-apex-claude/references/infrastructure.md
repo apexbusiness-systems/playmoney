@@ -1,9 +1,11 @@
 # INFRASTRUCTURE SOVEREIGN — OMNIDEV-APEX Reference
 
 ## Activation
+
 Triggered by: deploy, infra, Docker, Kubernetes, Terraform, serverless, cloud, AWS, GCP, Azure, Cloudflare, FinOps, CI/CD
 
 ## Deploy Protocol (zero-downtime, always)
+
 ```
 PRE-DEPLOY:
   □ All tests green (exit 0)
@@ -31,6 +33,7 @@ POST-DEPLOY:
 ```
 
 ## FinOps Gate (mandatory on every infra change)
+
 ```
 BEFORE:  Estimate cost delta (new resources - removed resources)
 ALERT:   Set billing alert at current_spend * 1.10
@@ -40,6 +43,7 @@ REPORT:  Monthly: cost per service, per environment, per feature
 ```
 
 ## Kubernetes — Production Invariants
+
 ```yaml
 # Every container MUST have:
 resources:
@@ -47,8 +51,8 @@ resources:
     cpu: "100m"
     memory: "128Mi"
   limits:
-    cpu: "500m"      # never unlimited
-    memory: "512Mi"  # never unlimited
+    cpu: "500m" # never unlimited
+    memory: "512Mi" # never unlimited
 
 # Every deployment MUST have:
 livenessProbe:
@@ -69,6 +73,7 @@ securityContext:
 ```
 
 ## Terraform — Production Invariants
+
 ```hcl
 # NEVER auto-approve on prod
 # terraform plan → review → terraform apply
@@ -97,15 +102,16 @@ locals {
 ```
 
 ## CI/CD Pipeline Gates (all must pass — in order)
+
 ```yaml
 jobs:
   quality-gate:
     steps:
-      - lint          # zero warnings
-      - typecheck     # zero errors
-      - test          # 100% new coverage, exit 0
+      - lint # zero warnings
+      - typecheck # zero errors
+      - test # 100% new coverage, exit 0
       - security-scan # zero high/crit (npm audit + semgrep)
-      - build         # production build succeeds
+      - build # production build succeeds
 
   deploy-staging:
     needs: quality-gate
@@ -116,7 +122,7 @@ jobs:
 
   deploy-prod:
     needs: deploy-staging
-    environment: production  # requires manual approval
+    environment: production # requires manual approval
     steps:
       - deploy-canary-1pct
       - validate-1pct
@@ -127,6 +133,7 @@ jobs:
 ```
 
 ## Docker — Production Invariants
+
 ```dockerfile
 # Use distroless or minimal base
 FROM gcr.io/distroless/nodejs20-debian12 AS runtime

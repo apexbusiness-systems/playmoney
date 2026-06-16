@@ -225,6 +225,11 @@ export class MockApiClient implements ApiClient {
     this.notifications = [];
     this.approvals = [];
   }
+  async initiateRecovery(input: { situationId: string }) {
+    await this.delay();
+    // Simply mock returning an existing recovery id so the UI can redirect
+    return { recoveryId: this.recoveries[0]?.id ?? "rec_0001" };
+  }
   private delay(ms = 120) {
     return new Promise((r) => setTimeout(r, ms));
   }
@@ -238,6 +243,15 @@ export class MockAuthClient implements AuthClient {
   async signIn({ email }: { email: string }) {
     this.profile = { ...seededProfile, email };
     return this.profile;
+  }
+  /** Mock: OTP verify is instant; sets a mock session (profile already in state). */
+  async verifyOtp(_input: { email: string; token: string }): Promise<void> {
+    // In mock mode there is no real session; profile is already in memory from signIn.
+    // This is a no-op so UI flows can complete end-to-end without a real Supabase project.
+  }
+  /** Mock: magic-link hash verify is instant (same as verifyOtp in mock). */
+  async verifyOtpHash(_input: { tokenHash: string; type: string }): Promise<void> {
+    // No-op in mock mode.
   }
   async signOut() {
     this.profile = null;
@@ -263,6 +277,13 @@ export class MockAuthClient implements AuthClient {
         this.profile = { ...(this.profile ?? seededProfile), context };
       },
     });
+  }
+  async getFlinksConnectUrl() {
+    return { connectUrl: "https://mock.flinks.com/connect?token=mock_url_token" };
+  }
+  async ingestTransactions(_input: { aggregatorToken: string }) {
+    // In mock mode, we just pretend the ingestion was successful.
+    return { success: true, situationCount: 3 };
   }
 }
 

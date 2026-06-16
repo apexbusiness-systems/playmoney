@@ -96,6 +96,7 @@ bash_tool: [add strategic logging if needed, re-run]
 ```
 
 **Evidence Sufficiency Gate**:
+
 ```
 Without guessing:
 ├─ Exact line that fails?           NO → bash_tool: add print/log, re-run
@@ -109,6 +110,7 @@ Without guessing:
 ## PHASE 3: TEMPORAL ROOT CAUSE ANALYSIS
 
 **Step 3A — Causal Chain (work backward)**:
+
 ```
 Symptom at [Layer N]
 ↑ caused by → [Layer N-1]: view [file], bash_tool [trace]
@@ -117,6 +119,7 @@ Symptom at [Layer N]
 ```
 
 **Step 3B — Deduction Matrix**:
+
 ```
 H1: [obvious surface cause]
   For: [...] | Against: [...] | Verdict: ✓ | ✗ | ?
@@ -131,6 +134,7 @@ H3: [environmental / config cause]
 ```
 
 **Certainty Gate**:
+
 ```
 ⛔ BLOCKED UNTIL:
 □ ONE hypothesis remains with overwhelming evidence
@@ -240,6 +244,7 @@ create_file: docs/bug-reports/[YYYY-MM-DD]-[bug-slug].md
 ```
 
 **Closure Template**:
+
 ```
 ROOT CAUSE:      [one sentence]
 FIX:             [file:line — what str_replace changed]
@@ -337,25 +342,25 @@ create_file: [performance_regression_test]
 
 ## ANTI-PATTERNS
 
-| Anti-Pattern | Action |
-|---|---|
-| "Let me try this" | Return to Phase 3. NO exceptions. |
-| "It might be..." | Return to Phase 2. Collect evidence with bash_tool. |
-| Multiple str_replace calls for one bug | One change. Re-read Phase 7. |
-| Skipping view before str_replace | MANDATORY. Always view first. |
-| Test suite not run after fix | MANDATORY. Always validate. |
+| Anti-Pattern                           | Action                                              |
+| -------------------------------------- | --------------------------------------------------- |
+| "Let me try this"                      | Return to Phase 3. NO exceptions.                   |
+| "It might be..."                       | Return to Phase 2. Collect evidence with bash_tool. |
+| Multiple str_replace calls for one bug | One change. Re-read Phase 7.                        |
+| Skipping view before str_replace       | MANDATORY. Always view first.                       |
+| Test suite not run after fix           | MANDATORY. Always validate.                         |
 
 ---
 
 ## DOMAIN MATRIX
 
-| Domain | Phase 2 Claude Tools | Phase 3 Focus |
-|---|---|---|
-| **Frontend** | `bash_tool: npm test`, `view [component]` | State, async, render |
-| **Backend** | `bash_tool: logs`, `view [controller]` | Request lifecycle, auth |
-| **Database** | `bash_tool: EXPLAIN ANALYZE`, `view [schema]` | Indexes, joins, N+1 |
-| **Infra** | `bash_tool: systemctl`, `view [config]` | Resources, permissions |
-| **ML/AI** | `bash_tool: python [eval]`, `view [model]` | Data pipeline, shapes |
+| Domain       | Phase 2 Claude Tools                          | Phase 3 Focus           |
+| ------------ | --------------------------------------------- | ----------------------- |
+| **Frontend** | `bash_tool: npm test`, `view [component]`     | State, async, render    |
+| **Backend**  | `bash_tool: logs`, `view [controller]`        | Request lifecycle, auth |
+| **Database** | `bash_tool: EXPLAIN ANALYZE`, `view [schema]` | Indexes, joins, N+1     |
+| **Infra**    | `bash_tool: systemctl`, `view [config]`       | Resources, permissions  |
+| **ML/AI**    | `bash_tool: python [eval]`, `view [model]`    | Data pipeline, shapes   |
 
 ---
 

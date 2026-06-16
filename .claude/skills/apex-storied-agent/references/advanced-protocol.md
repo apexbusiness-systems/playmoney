@@ -41,6 +41,7 @@ missing assumptions · circular logic · hidden dependencies · security risk ·
 ## 6. Domain modules
 
 Apply the relevant checklist:
+
 - **Security**: trust boundaries, input validation, authN/authZ, race conditions, secrets handling.
 - **Business**: market fit, margins, acquisition, retention, key risks.
 - **Software**: complexity, maintainability, test coverage, observability, performance.
@@ -52,18 +53,21 @@ For each recommended option, record: expected benefit, expected cost, reversibil
 ## 8. Tool-verified evidence (highest-leverage)
 
 Self-verification cannot eliminate self-confirmation error. When tools exist, route the claim through an **independent** validator before asserting it:
+
 - **Code** -> run linter, unit tests, static analysis; cite real output.
 - **Facts** -> search, compare sources, scan for contradiction before stating.
 - **Strategy** -> validate against market/competitor data, not intuition.
-Record the tool and its result in the Evidence trace. If no tool is available, label the check "reasoned, not run" — never imply you ran it.
+  Record the tool and its result in the Evidence trace. If no tool is available, label the check "reasoned, not run" — never imply you ran it.
 
 ## 9. Knowledge Delta (memory + meta-learning)
 
 At the end of a major task, emit a compact delta the host or user can persist:
+
 ```
 - Learned: <new fact/pattern>
 - Changed: <assumption corrected>
 - Persist: <what should carry to next session>
 - Next time: <what to do differently>
 ```
+
 Continuity depends on the host having memory; if it does not, hand the delta to the user. This turns repeated work into compounding improvement rather than re-learning.

@@ -5,10 +5,10 @@ edition: claude-native
 compatibility: "Claude Sonnet 4.6 / Opus 4.6 / Haiku 4.5 — claude.ai + Claude Code + API"
 supersedes: "web-art-generator, apex-frontend (extends, does not replace)"
 orchestrates:
-  - apex-frontend       # Defers to for component debugging, a11y audits, performance
-  - web-art-generator   # Defers to for icon, OG card, screenshot, video generation
-  - apex-power-20x      # Meta-execution protocol (always active)
-  - apex-prompt-v2      # When crafting agent/system prompts for web design workflows
+  - apex-frontend # Defers to for component debugging, a11y audits, performance
+  - web-art-generator # Defers to for icon, OG card, screenshot, video generation
+  - apex-power-20x # Meta-execution protocol (always active)
+  - apex-prompt-v2 # When crafting agent/system prompts for web design workflows
 description: >
   APEX-WEBDESIGN-SOVEREIGN (Claude Native): Omnipotent production-house web design
   intelligence for Claude. Instantly transforms Claude into the world's most formidable
@@ -26,6 +26,7 @@ author: "APEX Business Systems Ltd."
 ---
 
 # APEX-WEBDESIGN-SOVEREIGN
+
 ## Claude-Native Edition — Production House Web Design Sovereignty
 
 > _"Every pixel earns its place. Every interaction has a purpose. Every line of copy converts."_
@@ -49,7 +50,7 @@ Real work. Named references. Production outcomes. Not AI training averages.
 
 YOUR REFERENCES (lock these into every design decision):
 Dark systems:    Linear, Vercel, Raycast, Resend, Neon
-Light systems:   Stripe, Apple, Framer, Craft, Notion  
+Light systems:   Stripe, Apple, Framer, Craft, Notion
 Bold systems:    Arc, Superhuman, Loom (done right), Figma, Read.cv
 Award studios:   Locomotive, Active Theory, AKQA, Fantasy, Instrument
 
@@ -66,7 +67,7 @@ Decorative glassmorphism → REJECTED
 ```
 Design task detected →
   FIRST: APEX-WEBDESIGN-SOVEREIGN activates (this skill)
-  
+
   Then route sub-tasks:
   ├─ Component engineering, debug, a11y → apex-frontend
   ├─ Icon, OG card, animation, screenshot → web-art-generator
@@ -100,14 +101,14 @@ What is the primary task?
 
 Before any design work begins, Claude will identify the reference cluster:
 
-| If the product is... | Use this reference cluster | Signature moves |
-|---|---|---|
-| Developer tool / infra | Linear + Vercel + Resend | Dark bg, monospace accents, dense data |
-| SaaS dashboard | Stripe + Notion + Figma | Clean white, data density, grid precision |
-| Consumer app | Arc + Framer + Loom | Personality, color, motion-forward |
-| Enterprise / B2B | Superhuman + Craft + Read.cv | Restraint, trust signals, editorial type |
-| Creative / portfolio | Locomotive + AKQA + Active Theory | WebGL, cinematic pacing, full-screen type |
-| Marketplace / commerce | Figma + Apple + Linear | Clarity, product photography, minimal chrome |
+| If the product is...   | Use this reference cluster        | Signature moves                              |
+| ---------------------- | --------------------------------- | -------------------------------------------- |
+| Developer tool / infra | Linear + Vercel + Resend          | Dark bg, monospace accents, dense data       |
+| SaaS dashboard         | Stripe + Notion + Figma           | Clean white, data density, grid precision    |
+| Consumer app           | Arc + Framer + Loom               | Personality, color, motion-forward           |
+| Enterprise / B2B       | Superhuman + Craft + Read.cv      | Restraint, trust signals, editorial type     |
+| Creative / portfolio   | Locomotive + AKQA + Active Theory | WebGL, cinematic pacing, full-screen type    |
+| Marketplace / commerce | Figma + Apple + Linear            | Clarity, product photography, minimal chrome |
 
 </decision_tree>
 
@@ -124,7 +125,7 @@ Before any design work begins, Claude will identify the reference cluster:
   <brand_extraction>
     Input: logo, brief, competitor URLs, or verbal description
     Output: extracted palette (oklch), font pairing, spacing personality, motion character
-    
+
     EXTRACTION PROTOCOL:
     1. Identify the PRIMARY EMOTION the brand must evoke
     2. Map emotion to color temperature (warm/cool/neutral) + saturation level
@@ -151,7 +152,7 @@ PAIR 1 — TECHNICAL AUTHORITY
   Mono:    Geist Mono
   Refs:    Vercel, Linear, Resend
 
-PAIR 2 — EDITORIAL WARMTH  
+PAIR 2 — EDITORIAL WARMTH
   Display: Bricolage Grotesque (Variable)
   Body:    Plus Jakarta Sans
   Accent:  Instrument Serif (editorial callouts)
@@ -180,34 +181,34 @@ PAIR 5 — CINEMATIC / CREATIVE
 ```css
 /* Import: Load via local files or Fontsource — not Google Fonts in prod */
 :root {
-  --font-display: 'PP Neue Montreal', 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-body:    'Inter', 'DM Sans', system-ui, sans-serif;
-  --font-mono:    'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: "PP Neue Montreal", "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Inter", "DM Sans", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
 
   /* Fluid scale: min @ 375px → max @ 1440px */
-  --text-xs:   clamp(0.75rem,  0.72rem  + 0.156vw,  0.875rem);
-  --text-sm:   clamp(0.875rem, 0.835rem + 0.208vw,  1rem);
-  --text-base: clamp(1rem,     0.96rem  + 0.208vw,  1.125rem);
-  --text-lg:   clamp(1.125rem, 1.045rem + 0.416vw,  1.375rem);
-  --text-xl:   clamp(1.25rem,  1.1rem   + 0.78vw,   1.75rem);
-  --text-2xl:  clamp(1.5rem,   1.24rem  + 1.35vw,   2.25rem);
-  --text-3xl:  clamp(1.875rem, 1.455rem + 2.187vw,  3rem);
-  --text-4xl:  clamp(2.25rem,  1.6rem   + 3.385vw,  4.5rem);
-  --text-5xl:  clamp(3rem,     1.8rem   + 6.25vw,   7rem);
-  --text-hero: clamp(3.5rem,   1.5rem   + 10.416vw, 10rem);
+  --text-xs: clamp(0.75rem, 0.72rem + 0.156vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.835rem + 0.208vw, 1rem);
+  --text-base: clamp(1rem, 0.96rem + 0.208vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1.045rem + 0.416vw, 1.375rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.78vw, 1.75rem);
+  --text-2xl: clamp(1.5rem, 1.24rem + 1.35vw, 2.25rem);
+  --text-3xl: clamp(1.875rem, 1.455rem + 2.187vw, 3rem);
+  --text-4xl: clamp(2.25rem, 1.6rem + 3.385vw, 4.5rem);
+  --text-5xl: clamp(3rem, 1.8rem + 6.25vw, 7rem);
+  --text-hero: clamp(3.5rem, 1.5rem + 10.416vw, 10rem);
 
   /* Tracking — exact values, not 'tighter' */
-  --tracking-hero:    -0.05em;
+  --tracking-hero: -0.05em;
   --tracking-display: -0.03em;
   --tracking-heading: -0.02em;
-  --tracking-body:     0em;
-  --tracking-label:    0.08em;
+  --tracking-body: 0em;
+  --tracking-label: 0.08em;
 
   /* Leading */
-  --leading-display: 0.95;  /* Yes, below 1 for large display — intentional */
+  --leading-display: 0.95; /* Yes, below 1 for large display — intentional */
   --leading-heading: 1.1;
-  --leading-body:    1.6;
-  --leading-code:    1.7;
+  --leading-body: 1.6;
+  --leading-code: 1.7;
 }
 ```
 
@@ -233,46 +234,46 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
   /* EXAMPLE: Blue brand system (adjust hue + chroma for any brand) */
 
   /* ── BRAND PRIMITIVES ── */
-  --brand-50:  oklch(0.97 0.025 264);
+  --brand-50: oklch(0.97 0.025 264);
   --brand-100: oklch(0.93 0.055 264);
-  --brand-200: oklch(0.86 0.090 264);
-  --brand-300: oklch(0.75 0.140 264);
-  --brand-400: oklch(0.62 0.190 264);
-  --brand-500: oklch(0.52 0.220 264);  /* ← Primary brand color */
-  --brand-600: oklch(0.44 0.210 264);
-  --brand-700: oklch(0.36 0.190 264);
-  --brand-800: oklch(0.27 0.150 264);
-  --brand-900: oklch(0.18 0.100 264);
-  --brand-950: oklch(0.11 0.060 264);
+  --brand-200: oklch(0.86 0.09 264);
+  --brand-300: oklch(0.75 0.14 264);
+  --brand-400: oklch(0.62 0.19 264);
+  --brand-500: oklch(0.52 0.22 264); /* ← Primary brand color */
+  --brand-600: oklch(0.44 0.21 264);
+  --brand-700: oklch(0.36 0.19 264);
+  --brand-800: oklch(0.27 0.15 264);
+  --brand-900: oklch(0.18 0.1 264);
+  --brand-950: oklch(0.11 0.06 264);
 
   /* ── SEMANTIC TOKENS (use these in components, never primitives) ── */
-  --color-primary:         var(--brand-500);
-  --color-primary-hover:   var(--brand-600);
-  --color-primary-active:  var(--brand-700);
-  --color-primary-subtle:  var(--brand-50);
-  --color-primary-muted:   var(--brand-100);
-  --color-primary-border:  var(--brand-200);
-  --color-primary-text:    var(--brand-700);
+  --color-primary: var(--brand-500);
+  --color-primary-hover: var(--brand-600);
+  --color-primary-active: var(--brand-700);
+  --color-primary-subtle: var(--brand-50);
+  --color-primary-muted: var(--brand-100);
+  --color-primary-border: var(--brand-200);
+  --color-primary-text: var(--brand-700);
 
   /* ── NEUTRALS ── */
-  --color-bg:           oklch(1.00 0.000 0);
-  --color-bg-subtle:    oklch(0.985 0.003 264);
-  --color-bg-muted:     oklch(0.965 0.005 264);
-  --color-border:       oklch(0.91 0.007 264);
-  --color-border-strong:oklch(0.82 0.010 264);
-  --color-text-muted:   oklch(0.58 0.012 264);
-  --color-text:         oklch(0.15 0.006 264);
+  --color-bg: oklch(1 0 0);
+  --color-bg-subtle: oklch(0.985 0.003 264);
+  --color-bg-muted: oklch(0.965 0.005 264);
+  --color-border: oklch(0.91 0.007 264);
+  --color-border-strong: oklch(0.82 0.01 264);
+  --color-text-muted: oklch(0.58 0.012 264);
+  --color-text: oklch(0.15 0.006 264);
 
   /* ── DARK MODE ── */
   @media (prefers-color-scheme: dark) {
-    --color-bg:            oklch(0.098 0.006 264);
-    --color-bg-subtle:     oklch(0.130 0.008 264);
-    --color-bg-muted:      oklch(0.160 0.010 264);
-    --color-border:        oklch(0.220 0.012 264);
-    --color-border-strong: oklch(0.300 0.015 264);
-    --color-text-muted:    oklch(0.550 0.014 264);
-    --color-text:          oklch(0.960 0.004 264);
-    --color-primary:       var(--brand-400);
+    --color-bg: oklch(0.098 0.006 264);
+    --color-bg-subtle: oklch(0.13 0.008 264);
+    --color-bg-muted: oklch(0.16 0.01 264);
+    --color-border: oklch(0.22 0.012 264);
+    --color-border-strong: oklch(0.3 0.015 264);
+    --color-text-muted: oklch(0.55 0.014 264);
+    --color-text: oklch(0.96 0.004 264);
+    --color-primary: var(--brand-400);
   }
 }
 ```
@@ -283,30 +284,23 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
 /* ── LINEAR-STYLE: Dark ambient glow ── */
 .bg-linear {
   background:
-    radial-gradient(ellipse 70% 50% at 50% -5%,
-      oklch(0.52 0.22 264 / 0.45) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 80% 90%,
-      oklch(0.52 0.22 300 / 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 50% -5%, oklch(0.52 0.22 264 / 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 80% 90%, oklch(0.52 0.22 300 / 0.2) 0%, transparent 50%),
     oklch(0.098 0.006 264);
 }
 
 /* ── STRIPE-STYLE: Light mesh gradient ── */
 .bg-stripe {
   background:
-    radial-gradient(ellipse 80% 70% at 15% 35%,
-      oklch(0.65 0.20 264 / 0.30) 0%, transparent 60%),
-    radial-gradient(ellipse 65% 55% at 85% 15%,
-      oklch(0.55 0.25 300 / 0.22) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 60% at 60% 85%,
-      oklch(0.70 0.18 195 / 0.18) 0%, transparent 52%),
+    radial-gradient(ellipse 80% 70% at 15% 35%, oklch(0.65 0.2 264 / 0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 55% at 85% 15%, oklch(0.55 0.25 300 / 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 60% 85%, oklch(0.7 0.18 195 / 0.18) 0%, transparent 52%),
     oklch(0.985 0.003 264);
 }
 
 /* ── VERCEL-STYLE: Pure dark, zero color ── */
 .bg-vercel {
-  background: linear-gradient(to bottom,
-    oklch(0.12 0 0) 0%,
-    oklch(0.07 0 0) 100%);
+  background: linear-gradient(to bottom, oklch(0.12 0 0) 0%, oklch(0.07 0 0) 100%);
 }
 ```
 
@@ -332,14 +326,12 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
   </div>
 
   <!-- HEADLINE: One idea. Max 12 words. Fluid display size. -->
-  <h1 id="hero-headline" class="hero-headline">
-    Ship faster.<br>Break nothing.
-  </h1>
+  <h1 id="hero-headline" class="hero-headline">Ship faster.<br />Break nothing.</h1>
 
   <!-- SUBHEADLINE: Expand the promise. Address next objection. Max 25 words. -->
   <p class="hero-sub">
-    The only deployment platform that catches regressions before your users do —
-    with zero config and 90-second setup.
+    The only deployment platform that catches regressions before your users do — with zero config
+    and 90-second setup.
   </p>
 
   <!-- CTA: ONE action. No secondary link competing for attention. -->
@@ -355,18 +347,22 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
     <div class="trust-logos" aria-label="Used by">
       <!-- Max 6 logos. Grayscale. 28px height normalized. -->
     </div>
-    <p class="trust-text">
-      <strong>No credit card required</strong> · Free tier, always
-    </p>
+    <p class="trust-text"><strong>No credit card required</strong> · Free tier, always</p>
   </div>
 
   <!-- VISUAL: Product proof, not decorative illustration -->
   <div class="hero-visual" aria-hidden="true">
     <picture>
-      <source srcset="/hero-screenshot.avif" type="image/avif">
-      <source srcset="/hero-screenshot.webp" type="image/webp">
-      <img src="/hero-screenshot.png" alt="Dashboard showing deployment pipeline"
-           width="1280" height="720" loading="eager" fetchpriority="high">
+      <source srcset="/hero-screenshot.avif" type="image/avif" />
+      <source srcset="/hero-screenshot.webp" type="image/webp" />
+      <img
+        src="/hero-screenshot.png"
+        alt="Dashboard showing deployment pipeline"
+        width="1280"
+        height="720"
+        loading="eager"
+        fetchpriority="high"
+      />
     </picture>
   </div>
 </section>
@@ -405,7 +401,9 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
   margin-block-end: 2.5rem;
 }
 
-.hero-cta { margin-block-end: 3rem; }
+.hero-cta {
+  margin-block-end: 3rem;
+}
 
 /* Button — full production spec */
 .btn-primary.btn-lg {
@@ -428,9 +426,9 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
   text-decoration: none;
   cursor: pointer;
   transition:
-    background var(--duration-fast, 150ms) var(--ease-out-expo, cubic-bezier(0.16,1,0.3,1)),
-    box-shadow  var(--duration-fast, 150ms) var(--ease-out-expo, cubic-bezier(0.16,1,0.3,1)),
-    transform   var(--duration-fast, 150ms) var(--ease-out-expo, cubic-bezier(0.16,1,0.3,1));
+    background var(--duration-fast, 150ms) var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow var(--duration-fast, 150ms) var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform var(--duration-fast, 150ms) var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
   -webkit-font-smoothing: antialiased;
 }
 
@@ -507,17 +505,17 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
 
 ```css
 :root {
-  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
-  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-in-expo:    cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-smooth:     cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-smooth: cubic-bezier(0.45, 0, 0.55, 1);
 
   --duration-instant: 50ms;
-  --duration-fast:    150ms;
-  --duration-normal:  250ms;
-  --duration-slow:    400ms;
-  --duration-xslow:   700ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-xslow: 700ms;
 }
 ```
 
@@ -529,35 +527,38 @@ Hue: 0–360 (red=29, orange=60, yellow=95, green=142, teal=178, blue=264, purpl
 
 const REVEAL_CONFIG = {
   threshold: 0.12,
-  rootMargin: '0px 0px -72px 0px',
+  rootMargin: "0px 0px -72px 0px",
   staggerDelay: 80, // ms between each child
 };
 
 function initReveal() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const target = entry.target;
-      const delay = parseInt(target.dataset.revealDelay ?? '0', 10);
-      
-      setTimeout(() => {
-        target.classList.add('revealed');
-      }, delay);
-      
-      observer.unobserve(target);
-    });
-  }, {
-    threshold: REVEAL_CONFIG.threshold,
-    rootMargin: REVEAL_CONFIG.rootMargin,
-  });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const target = entry.target;
+        const delay = parseInt(target.dataset.revealDelay ?? "0", 10);
 
-  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+        setTimeout(() => {
+          target.classList.add("revealed");
+        }, delay);
+
+        observer.unobserve(target);
+      });
+    },
+    {
+      threshold: REVEAL_CONFIG.threshold,
+      rootMargin: REVEAL_CONFIG.rootMargin,
+    },
+  );
+
+  document.querySelectorAll("[data-reveal]").forEach((el, i) => {
     el.dataset.revealDelay = String(i * REVEAL_CONFIG.staggerDelay);
     observer.observe(el);
   });
 }
 
-document.addEventListener('DOMContentLoaded', initReveal);
+document.addEventListener("DOMContentLoaded", initReveal);
 ```
 
 ```css
@@ -566,9 +567,9 @@ document.addEventListener('DOMContentLoaded', initReveal);
   transform: translateY(24px);
   filter: blur(2px);
   transition:
-    opacity    var(--duration-slow) var(--ease-out-expo),
-    transform  var(--duration-slow) var(--ease-out-expo),
-    filter     var(--duration-slow) var(--ease-out-expo);
+    opacity var(--duration-slow) var(--ease-out-expo),
+    transform var(--duration-slow) var(--ease-out-expo),
+    filter var(--duration-slow) var(--ease-out-expo);
   will-change: opacity, transform, filter;
 }
 
@@ -611,11 +612,11 @@ SECTION 1 — FIRST SCROLL
   Lead feature: most cinematic capability first
   Bento grid or asymmetric cards — NOT uniform 3-col
 
-SECTION 2 — SOCIAL PROOF CONCENTRATION  
+SECTION 2 — SOCIAL PROOF CONCENTRATION
   Testimonials: real name + real title + real company + real photo
   Metric proof: "4.9/5 from 2,400 reviews" or "847% faster deployment"
   Objection removal #1: address the primary reason NOT to buy
-  
+
 SECTION 3 — PRICING / COMMITMENT
   Risk removal: "No credit card" / "14-day free trial" / "Money-back guarantee"
   Comparison: clearly outperform the alternative (table if needed)
@@ -673,7 +674,7 @@ CHECK 1: GRADIENT AUDIT
   Open DevTools. Search CSS for: linear-gradient, radial-gradient
   Flag: any gradient without a named reference or brand rationale
 
-CHECK 2: TYPOGRAPHY WEIGHT AUDIT  
+CHECK 2: TYPOGRAPHY WEIGHT AUDIT
   Check: h1, h2, h3, h4, p, label computed font-weight values
   Flag: if max_weight - min_weight < 200 (insufficient contrast)
 
@@ -857,7 +858,7 @@ ls /mnt/skills/user/apex-webdesign-sovereign/SKILL.md
 
 ---
 
-*APEX-WEBDESIGN-SOVEREIGN — Claude-Native Edition v1.0.0*
-*Extends: apex-frontend v1.0.0 + web-art-generator v1.0.0*
-*Proprietary — APEX Business Systems Ltd. Edmonton, AB, Canada — 2026*
+_APEX-WEBDESIGN-SOVEREIGN — Claude-Native Edition v1.0.0_
+_Extends: apex-frontend v1.0.0 + web-art-generator v1.0.0_
+_Proprietary — APEX Business Systems Ltd. Edmonton, AB, Canada — 2026_
 *https://apexbusiness-systems.com*

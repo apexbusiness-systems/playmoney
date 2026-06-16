@@ -17,13 +17,14 @@ export const Route = createFileRoute("/app/onboarding")({
 type Step = 1 | 2 | 3 | 4;
 const TOTAL_STEPS = 4;
 
+import { TOS_LATEST } from "@/legal/terms-of-service";
+import { PRIVACY_LATEST } from "@/legal/privacy-policy";
+import { PAD_LATEST } from "@/legal/pad-agreement";
+
 // Currently-published agreement versions the user accepts on the consent step.
-const TOS = { version: "1.0", hash: "sha256_tos_v1" };
-const PRIVACY = { version: "1.0", hash: "sha256_priv_v1" };
-const PAD = {
-  amountBasis: "25% of recovered amount, charged after successful recovery",
-  cancellationPath: "Email cancel@playmoney.app or call 1-800-PLAYMONEY",
-};
+const TOS = TOS_LATEST;
+const PRIVACY = PRIVACY_LATEST;
+const PAD = PAD_LATEST;
 
 function Onboarding() {
   const [step, setStep] = useState<Step>(1);

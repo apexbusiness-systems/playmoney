@@ -36,4 +36,7 @@ export interface PayoutPort {
     customerRef: string; // tokenised PSP customer ref — never raw card data
     idempotencyKey: string;
   }): Promise<{ pspChargeRef: string }>;
+
+  /** Create a new customer in Stripe for future fee charging. */
+  createStripeCustomer(input: { email: string; name: string }): Promise<{ customerRef: string }>;
 }

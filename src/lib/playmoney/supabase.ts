@@ -233,6 +233,10 @@ export class SupabaseApiClient implements ApiClient {
     const { error } = await this.sb.from("recoveries").delete().eq("owner_id", ownerId);
     if (error) throw new Error(`deleteAllData failed: ${error.message}`);
   }
+
+  async initiateRecovery(_input: { situationId: string }): Promise<{ recoveryId: string }> {
+    throw new Error("initiateRecovery not implemented in SupabaseApiClient yet.");
+  }
 }
 
 export class SupabaseAuthClient implements AuthClient {
@@ -279,6 +283,25 @@ export class SupabaseAuthClient implements AuthClient {
     });
     if (error) throw new Error(`signIn failed: ${error.message}`);
     throw new MagicLinkSentError(email);
+  }
+
+  /** Verify a 6-digit OTP code entered by the user after signInWithOtp. */
+  async verifyOtp(input: { email: string; token: string }): Promise<void> {
+    const { error } = await this.sb.auth.verifyOtp({
+      email: input.email,
+      token: input.token,
+      type: "email",
+    });
+    if (error) throw new Error(`verifyOtp failed: ${error.message}`);
+  }
+
+  /** Verify a magic-link token_hash from the URL redirect (Supabase PKCE flow). */
+  async verifyOtpHash(input: { tokenHash: string; type: string }): Promise<void> {
+    const { error } = await this.sb.auth.verifyOtp({
+      token_hash: input.tokenHash,
+      type: input.type as "email" | "magiclink",
+    });
+    if (error) throw new Error(`verifyOtpHash failed: ${error.message}`);
   }
 
   async signOut(): Promise<void> {
@@ -371,5 +394,15 @@ export class SupabaseAuthClient implements AuthClient {
       .single();
     if (error) throw new Error(`updateProfile failed: ${error.message}`);
     return rowToProfile(data, email);
+  }
+
+  async getFlinksConnectUrl(): Promise<{ connectUrl: string }> {
+    throw new Error("getFlinksConnectUrl not implemented in SupabaseAuthClient yet.");
+  }
+
+  async ingestTransactions(_input: {
+    aggregatorToken: string;
+  }): Promise<{ success: boolean; situationCount: number }> {
+    throw new Error("ingestTransactions not implemented in SupabaseAuthClient yet.");
   }
 }

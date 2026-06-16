@@ -59,6 +59,40 @@ export class StripePayoutAdapter implements PayoutPort {
     const charge = (await res.json()) as StripeChargeResponse;
     return { pspChargeRef: charge.id };
   }
+
+  async createStripeCustomer(input: {
+    email: string;
+    name: string;
+  }): Promise<{ customerRef: string }> {
+    assertModeIsLive();
+    const gates = await loadGateStatus();
+    assertLiveAllowed(gates);
+
+    const body = new URLSearchParams({
+      email: input.email,
+      name: input.name,
+      description: "PlayMoney user",
+    });
+
+    const res = await fetch("https://api.stripe.com/v1/customers", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.secretKey}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body,
+    });
+
+    if (!res.ok) {
+      const err = (await res.json()) as StripeErrorResponse;
+      throw new Error(
+        `StripePayoutAdapter.createStripeCustomer: ${err.error?.message ?? `HTTP ${res.status}`}`,
+      );
+    }
+
+    const customer = (await res.json()) as { id: string };
+    return { customerRef: customer.id };
+  }
 }
 
 /** Sealed stub: in BUILT assertLiveAllowed throws before any real call. */
@@ -69,6 +103,12 @@ export function createPayoutAdapter(config: { stripeSecretKey?: string }): Payou
   return {
     async chargeFee() {
       assertModeIsLive(); // fast I/O-free BUILT seal; avoids Supabase call in CI
+      const gates = await loadGateStatus();
+      assertLiveAllowed(gates);
+      throw new Error("No PayoutPort adapter configured");
+    },
+    async createStripeCustomer() {
+      assertModeIsLive();
       const gates = await loadGateStatus();
       assertLiveAllowed(gates);
       throw new Error("No PayoutPort adapter configured");

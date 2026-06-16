@@ -47,12 +47,12 @@ APEX-Memory(TM) activates **automatically** on every turn. No setup required.
 
 **Manual Controls** (Optional):
 
-| Command | Action |
-|---------|--------|
+| Command                  | Action                              |
+| ------------------------ | ----------------------------------- |
 | `"APEX-Memory compress"` | Force immediate context compression |
-| `"APEX-Memory persist"` | Generate session memory dump |
-| `"APEX-Memory stats"` | Display optimization metrics |
-| `"APEX-Memory verify"` | Audit response for hallucinations |
+| `"APEX-Memory persist"`  | Generate session memory dump        |
+| `"APEX-Memory stats"`    | Display optimization metrics        |
+| `"APEX-Memory verify"`   | Audit response for hallucinations   |
 
 ---
 

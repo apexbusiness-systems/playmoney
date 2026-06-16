@@ -1,9 +1,11 @@
 # PERFORMANCE ALCHEMIST — OMNIDEV-APEX Reference
 
 ## Activation
+
 Triggered by: optimize, performance, slow, latency, profil, benchmark, memory leak, CPU, throughput, FinOps cost
 
 ## Law: Measure Before Optimizing (no exceptions)
+
 ```
 NEVER optimize based on intuition.
 ALWAYS capture baseline metric before ANY change.
@@ -12,6 +14,7 @@ ALWAYS state improvement as a concrete delta (e.g., "p99 reduced from 450ms to 8
 ```
 
 ## Profiling — By Language
+
 ```bash
 # Node.js / TypeScript
 node --cpu-prof --cpu-prof-dir=./profiles server.js
@@ -33,6 +36,7 @@ k6 run --vus 100 --duration 30s loadtest.js
 ```
 
 ## Optimization Priority Order
+
 ```
 1. ALGORITHM   O(n²) → O(n log n) beats any infra spend. Check complexity first.
 2. DATABASE    Indexes | query plans | N+1 elimination | connection pooling
@@ -42,6 +46,7 @@ k6 run --vus 100 --duration 30s loadtest.js
 ```
 
 ## Database Optimization Checklist
+
 ```sql
 -- 1. Check query plan BEFORE optimizing
 EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = $1;
@@ -61,6 +66,7 @@ CREATE INDEX CONCURRENTLY idx_orders_user_id ON orders(user_id);
 ```
 
 ## Caching Strategy
+
 ```typescript
 // Cache-aside pattern (most common — explicit control)
 async function getUser(id: string): Promise<User> {
@@ -93,12 +99,13 @@ async function getOrCompute(key: string, computeFn: () => Promise<string>): Prom
 ```
 
 ## OTel Performance Tracking
+
 ```typescript
 // Every slow operation: histogram + span
 const httpDuration = new Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'HTTP request duration',
-  labelNames: ['method', 'route', 'status'],
+  name: "http_request_duration_seconds",
+  help: "HTTP request duration",
+  labelNames: ["method", "route", "status"],
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
 });
 
@@ -108,6 +115,7 @@ const httpDuration = new Histogram({
 ```
 
 ## FinOps Integration
+
 ```
 Every optimization decision must quantify:
   - Cost before ($/month)

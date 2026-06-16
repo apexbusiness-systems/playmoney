@@ -13,28 +13,32 @@ Generate portable memory dumps for handover between sessions.
 **Duration**: 2 hours 15 minutes
 **Turn Count**: 47
 
-**Narrative**: 
+**Narrative**:
 User requested help with FastAPI deployment to AWS. We designed a Docker-based
-architecture with PostgreSQL, configured CI/CD pipelines, and resolved 
+architecture with PostgreSQL, configured CI/CD pipelines, and resolved
 authentication issues. Project is deployment-ready.
 
 **Critical Facts**:
+
 - Deploy target: AWS us-west-2 (Source: Turn #3)
 - Python version: 3.11+ required (Source: Turn #5)
 - Database: PostgreSQL 15 (Source: Turn #12)
 - Auth method: OAuth2 with JWT (Source: Turn #23)
 
 **Entities**:
+
 - Systems: AWS, Docker, PostgreSQL, FastAPI, GitHub Actions
 - Files: Dockerfile, docker-compose.yml, .github/workflows/deploy.yml
 - APIs: FastAPI app, OAuth2 endpoints
 
 **Pending Actions**:
+
 - [ ] Set up AWS RDS instance
 - [ ] Configure domain DNS
 - [ ] Run load tests
 
 **Constraints**:
+
 - Budget: <$100/month AWS costs
 - Timeline: Deploy by end of week
 - Security: Must pass OWASP top 10

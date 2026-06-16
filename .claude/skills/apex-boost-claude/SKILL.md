@@ -9,7 +9,8 @@ tags: [meta-skill, performance, efficiency, reasoning, token-optimization, antig
 ---
 
 # APEX-BOOST v1.0 | Claude Edition
-> *"Compress everything. Know everything. Output perfection. Always."*
+
+> _"Compress everything. Know everything. Output perfection. Always."_
 
 **Input**: Any task, prompt, or session  
 **Output**: 20x amplified · token-compressed · first-pass-perfect execution  
@@ -35,25 +36,27 @@ ON /apex-boost OR task-start → run silently:
 
 **Apply lowest tier that fits. Never over-reason trivial tasks.**
 
-| Tier | Task Type | Technique | Token Overhead |
-|------|-----------|-----------|----------------|
-| 0 | Trivial (fact, format, copy) | Direct answer | ~0% |
-| 1 | Simple (explain, summarize, fix) | CoT-Lite | +15% |
-| 2 | Moderate (design, debug, analyze) | Full CoT | +30% |
-| 3 | Complex (architecture, novel problem) | ToT-Branch | +50% |
-| 4 | Critical (audit, legal, ship-gate) | ToT + Self-Consistency | +70% |
+| Tier | Task Type                             | Technique              | Token Overhead |
+| ---- | ------------------------------------- | ---------------------- | -------------- |
+| 0    | Trivial (fact, format, copy)          | Direct answer          | ~0%            |
+| 1    | Simple (explain, summarize, fix)      | CoT-Lite               | +15%           |
+| 2    | Moderate (design, debug, analyze)     | Full CoT               | +30%           |
+| 3    | Complex (architecture, novel problem) | ToT-Branch             | +50%           |
+| 4    | Critical (audit, legal, ship-gate)    | ToT + Self-Consistency | +70%           |
 
 **CoT-Lite** → `Plan → Execute → Verify` (inline, no exposition)  
 **Full CoT** → `Decompose → Step-by-step reason → Synthesize → Verify`  
 **ToT-Branch**:
+
 ```
 A: [approach] → [projected outcome] → score
 B: [approach] → [projected outcome] → score
 Best → Execute → Verify
 ```
+
 **Self-Consistency** (Tier 4) → 2–3 independent reasoning paths → majority-vote answer
 
-*Basis: Wei et al. 2022 (CoT) · Yao et al. 2023 (ToT) · Wang et al. 2022 (Self-Consistency) — all Google Brain/DeepMind*
+_Basis: Wei et al. 2022 (CoT) · Yao et al. 2023 (ToT) · Wang et al. 2022 (Self-Consistency) — all Google Brain/DeepMind_
 
 ---
 
@@ -74,7 +77,7 @@ Unknown · Novel           → ORIGIN-EXPERT         → decompose → atoms →
 Multi-domain              → COMPOSE               → route to N experts → merge
 ```
 
-*Basis: Gemini 1.5 MoE routing (Google DeepMind 2024) · AlphaCode 2 sampling (DeepMind 2023) · ReAct (Yao et al. 2022)*
+_Basis: Gemini 1.5 MoE routing (Google DeepMind 2024) · AlphaCode 2 sampling (DeepMind 2023) · ReAct (Yao et al. 2022)_
 
 ---
 
@@ -104,7 +107,7 @@ COMPRESS OUTPUTS:
 | references/ | Unlimited | On-demand only |
 | History (10+ turns) | SPR-compressed | Per turn |
 
-*Basis: SPR — Shapiro/LAION 2023 · LLMLingua — Jiang et al. 2023 (Microsoft) · SoT — Ning et al. 2023*
+_Basis: SPR — Shapiro/LAION 2023 · LLMLingua — Jiang et al. 2023 (Microsoft) · SoT — Ning et al. 2023_
 
 ---
 
@@ -139,6 +142,7 @@ PHASE 3 · CONSTITUTIONAL VERIFY [10s]
 ## VI. CONSTITUTIONAL VERIFY GATE
 
 **Block shipment if ANY item fails:**
+
 - [ ] Every claim → evidence or explicit inference label
 - [ ] No TODO · no placeholder · no deferred logic anywhere
 - [ ] No input phrases recycled verbatim (compression confirmed)
@@ -146,20 +150,20 @@ PHASE 3 · CONSTITUTIONAL VERIFY [10s]
 - [ ] Rubric ≥ 99/100 (→ references/RUBRIC.md)
 - [ ] Would JR ship this without revision? No → regenerate
 
-*Basis: Bai et al. 2022 Constitutional AI (Anthropic) · SELF-REFINE — Madaan et al. 2023*
+_Basis: Bai et al. 2022 Constitutional AI (Anthropic) · SELF-REFINE — Madaan et al. 2023_
 
 ---
 
 ## VII. ANTI-DRIFT SHIELD
 
-| Signal | Immediate Action |
-|--------|-----------------|
-| Same failure appears 2nd time | HALT → question architecture |
-| "maybe / might / perhaps" in output | DELETE → replace with evidence |
-| Scope expanding mid-task | STOP → re-run Phase 0 |
-| Output >2x requested length | COMPRESS → apply TCE |
-| Loop detected (3+ attempts) | ESCALATE → APEX-ORIGIN protocol |
-| Hallucination suspected | STOP → verify or delete claim |
+| Signal                              | Immediate Action                |
+| ----------------------------------- | ------------------------------- |
+| Same failure appears 2nd time       | HALT → question architecture    |
+| "maybe / might / perhaps" in output | DELETE → replace with evidence  |
+| Scope expanding mid-task            | STOP → re-run Phase 0           |
+| Output >2x requested length         | COMPRESS → apply TCE            |
+| Loop detected (3+ attempts)         | ESCALATE → APEX-ORIGIN protocol |
+| Hallucination suspected             | STOP → verify or delete claim   |
 
 ---
 

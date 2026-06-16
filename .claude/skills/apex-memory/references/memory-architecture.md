@@ -7,17 +7,20 @@ APEX-Memory implements a hierarchical memory architecture inspired by human cogn
 ### Tier 1: Short-Term Memory (Working Memory)
 
 **Characteristics**:
+
 - Holds the last 10-20 conversation turns
 - 100% fidelity preservation
 - Real-time updates with every turn
 - No compression applied
 
 **Promotion Criteria**:
+
 - Referenced 3+ times across turns
 - Explicitly flagged as important by user
 - Contains critical constraints or decisions
 
 **Implementation**:
+
 ```python
 class ShortTermMemory:
     def __init__(self, capacity=20):
@@ -35,17 +38,20 @@ class ShortTermMemory:
 ### Tier 2: Medium-Term Memory (Session Memory)
 
 **Characteristics**:
+
 - Compressed summaries of earlier turns
 - ~90% accuracy target
 - Key facts and entities only
 - Updated every 10 turns
 
 **Promotion Criteria**:
+
 - Cross-topic relevance
 - User preferences and constraints
 - Frequently accessed information
 
 **Compression Method**:
+
 - Primacy-recency split
 - Semantic deduplication
 - Entity extraction and indexing
@@ -53,21 +59,21 @@ class ShortTermMemory:
 ### Tier 3: Long-Term Memory (Persistent Memory)
 
 **Characteristics**:
+
 - Critical entities and constraints
 - 95%+ accuracy requirement
 - External storage (files, databases)
 - Append-only (never deleted)
 
 **Storage Format**:
+
 ```json
 {
   "session_id": "abc123",
   "timestamp": "2025-02-12T22:00:00Z",
   "entities": ["AWS", "Python", "Docker"],
   "constraints": ["Deploy to us-west-2", "Use Python 3.11+"],
-  "decisions": [
-    {"decision": "Use FastAPI", "rationale": "Performance requirements"}
-  ]
+  "decisions": [{ "decision": "Use FastAPI", "rationale": "Performance requirements" }]
 }
 ```
 
