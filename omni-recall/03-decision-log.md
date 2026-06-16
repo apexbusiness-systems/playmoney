@@ -230,3 +230,28 @@ Added real GitHub Actions CI gating every PR + push to `main`, without weakening
   workflow prose reworded so the gate doesn't self-trip).
 - **Remaining P7**: a go-live health-check endpoint/job (confirm all 10 gates + BUILT default at
   deploy time) is still pending; `db:verify-rls` in CI awaits the SECURITY-001 key rotation.
+
+### 2026-06-16 · D-013 · Responsive UI/UX pass — mobile/tablet/desktop verified with screenshots (BUILT)
+
+Full visual QA across the 5 surfaces (`/`, `/app`, `/app/activity`, `/app/settings`,
+`/app/onboarding`) × 3 viewports (mobile 390, tablet 820, desktop 1440) using a headless
+Chromium harness that measured `scrollWidth` vs `clientWidth` per page and captured full-page +
+viewport screenshots. Two **measured** mobile defects were found and fixed; everything else passed.
+
+- **AppShell header overflow (all `/app` pages, +46px @390px)**: the center pill nav was always
+  `flex`, so logo + 3 pills + bell + avatar exceeded the viewport and pushed the avatar off-screen.
+  Fix: collapse the inline nav to `hidden sm:flex` (matching the already-responsive landing nav)
+  and add an iOS-native **bottom tab bar** (`sm:hidden`, `fixed bottom-0`) with icon+label tabs,
+  active-state coloring, `aria-current`, and `env(safe-area-inset-bottom)` padding. `main` gets
+  bottom padding on mobile so content clears the bar.
+- **Activity table overflow (mobile, +97px, clipped by `overflow-hidden`)**: a 4-column table can't
+  fit 390px. Fix: render a **stacked card list** below `sm` (merchant + amount, reason + status)
+  and keep the auditable `<table>` at `sm+` inside an `overflow-x-auto` guard.
+- **Route-tree warning cleared**: `app.onboarding.seam.test.ts` (a co-located source-level guard,
+  not a route) was renamed `-app.onboarding.seam.test.ts` (the router's `routeFileIgnorePrefix`),
+  so it's excluded from route generation while Vitest still collects it (its relative read of
+  `./app.onboarding.tsx` is unchanged).
+- **Verified**: re-shot all 15 surface×viewport combos → **0 horizontal overflow, 0 console
+  errors**; tablet/desktop show the inline header nav, mobile shows the pinned tab bar.
+  `lint` exit 0 · `typecheck` clean · **139 tests / 23 files** · `build` green. (The Playwright
+  harness was used locally for evidence only — not added as a dependency or wired into CI.)

@@ -21,13 +21,40 @@ function Activity() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[3fr_2fr]">
         <div>
           <h2 className="font-display text-xl font-semibold">Recovery events</h2>
-          <div className="mt-4 overflow-hidden rounded-[20px] border border-border-l bg-card shadow-card-l">
+
+          {/* Mobile: stacked cards — a 4-column table can't fit 390px without a
+              sideways scroll, so below sm we render each event as its own card. */}
+          <div className="mt-4 space-y-3 sm:hidden">
+            {recs.data?.map((r) => (
+              <div
+                key={r.id}
+                className="rounded-[16px] border border-border-l bg-card p-4 shadow-card-l"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 font-semibold">{r.merchant}</p>
+                  <p className="shrink-0 font-display tabular font-semibold">
+                    {formatMoney(r.userNet)}
+                  </p>
+                </div>
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="min-w-0 text-sm text-ink-muted">{r.reason}</p>
+                  <span className="shrink-0">
+                    <StatusPill status={r.status} />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* sm+ : the auditable table. overflow-x-auto is a belt-and-braces
+              guard so even very long reasons scroll the table, never the page. */}
+          <div className="mt-4 hidden overflow-x-auto rounded-[20px] border border-border-l bg-card shadow-card-l sm:block">
             <table className="w-full text-left text-sm">
               <thead className="bg-sand text-ink-muted">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Merchant</th>
                   <th className="px-5 py-3 font-semibold">Reason</th>
-                  <th className="whitespace-nowrap px-5 py-3 font-semibold text-right">
+                  <th className="whitespace-nowrap px-5 py-3 text-right font-semibold">
                     Net to you
                   </th>
                   <th className="px-5 py-3 font-semibold">Status</th>
