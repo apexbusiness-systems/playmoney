@@ -18,8 +18,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-sand text-ink">
       <header className="sticky top-0 z-30 border-b border-border-l bg-card/80 backdrop-blur">
         <div className="container-pm flex h-16 items-center justify-between">
-          <Link to="/" className="font-display text-xl font-semibold">
-            PlayMoney
+          <Link to="/" className="inline-flex items-center" aria-label="PlayMoney home">
+            <img
+              src="/wordmark.png"
+              alt="PlayMoney"
+              className="h-8 w-auto"
+              width={148}
+              height={32}
+            />
           </Link>
           {/* Desktop/tablet: inline pill nav. On mobile this collapses to the
               bottom tab bar below so the header never overflows. */}
