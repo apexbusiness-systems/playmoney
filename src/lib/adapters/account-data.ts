@@ -14,11 +14,7 @@ import { assertLiveAllowed } from "@/lib/compliance/mode";
 import { loadGateStatus } from "@/lib/compliance/gates.server";
 
 // ── Shared HTTP helper (typed, no `any`) ──────────────────────────────────────
-async function fetchJson<T>(
-  url: string,
-  init: RequestInit,
-  label: string,
-): Promise<T> {
+async function fetchJson<T>(url: string, init: RequestInit, label: string): Promise<T> {
   const res = await fetch(url, init);
   if (!res.ok) {
     throw new Error(`${label}: HTTP ${res.status} — ${await res.text()}`);

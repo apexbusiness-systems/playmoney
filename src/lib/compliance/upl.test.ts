@@ -16,7 +16,9 @@ describe("T6 · UPL linter blocks legal-advice / demand / litigation copy (#10)"
   });
 
   it("blocks demand-letter language", () => {
-    const r = lintCopy("This is a formal demand letter; failure to comply will result in penalties.");
+    const r = lintCopy(
+      "This is a formal demand letter; failure to comply will result in penalties.",
+    );
     expect(r.clean).toBe(false);
     expect(r.violations.map((v) => v.rule)).toContain("demand_letter");
   });
@@ -28,7 +30,9 @@ describe("T6 · UPL linter blocks legal-advice / demand / litigation copy (#10)"
   });
 
   it("blocks offers of court/tribunal representation", () => {
-    const r = lintCopy("Our team can represent you before the tribunal and appear in court on your behalf.");
+    const r = lintCopy(
+      "Our team can represent you before the tribunal and appear in court on your behalf.",
+    );
     expect(r.clean).toBe(false);
     expect(r.violations.map((v) => v.rule)).toContain("court_representation");
   });

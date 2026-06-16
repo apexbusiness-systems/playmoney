@@ -36,7 +36,12 @@ export type SettleFeeInput = z.infer<typeof SettleFeeInput>;
 
 export type SettleFeeResult =
   | { ok: true; entry: FeeLedgerEntry; pspChargeRef: string }
-  | { ok: false; code: "fee_not_allowed" | "already_settled" | "idempotent_return"; reason: string; entry?: FeeLedgerEntry };
+  | {
+      ok: false;
+      code: "fee_not_allowed" | "already_settled" | "idempotent_return";
+      reason: string;
+      entry?: FeeLedgerEntry;
+    };
 
 /**
  * Pure fee-settlement logic. All I/O is injected so this is unit-testable
@@ -60,7 +65,12 @@ export async function applySettleFee(input: {
   // Idempotency: existing charge → return it without re-running.
   const existing = await input.readExistingCharge();
   if (existing) {
-    return { ok: false, code: "idempotent_return", reason: "Fee already settled for this key.", entry: existing };
+    return {
+      ok: false,
+      code: "idempotent_return",
+      reason: "Fee already settled for this key.",
+      entry: existing,
+    };
   }
 
   // Causation gate (Control #13). PURE — never throws, returns typed decision.
@@ -112,7 +122,11 @@ export const settleFeeRecoveryFn = createServerFn({ method: "POST" })
     const sb = getAdminClient();
 
     // Resolve owner from the recovery row (never trust from client).
-    const recRow = await sb.from("recoveries").select("owner_id").eq("id", data.recoveryId).single();
+    const recRow = await sb
+      .from("recoveries")
+      .select("owner_id")
+      .eq("id", data.recoveryId)
+      .single();
     if (recRow.error) throw new Error(`settleFee: recovery lookup failed: ${recRow.error.message}`);
     const ownerId: string = (recRow.data as Record<string, unknown>).owner_id as string;
 

@@ -20,14 +20,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { buildLoa, type ESignature, type LoaScope } from "@/lib/compliance/loa";
-import { enqueueForReview, approveReview, type LegitimacyAttestation } from "@/lib/compliance/review";
+import {
+  enqueueForReview,
+  approveReview,
+  type LegitimacyAttestation,
+} from "@/lib/compliance/review";
 import { executeRecoveryAction, type ExecOutcome } from "@/lib/compliance/executor";
 import type { GateStatus } from "@/lib/compliance/gates";
 import { PROBLEM_TYPE_TO_AVENUE } from "@/lib/engine/router";
 import { Approval, Recovery, type RecoveryAvenue } from "@/lib/playmoney/types";
 
-export type ApprovalOutcome =
-  | { approval: Approval; outcome: ExecOutcome<void>; idempotent: boolean };
+export type ApprovalOutcome = {
+  approval: Approval;
+  outcome: ExecOutcome<void>;
+  idempotent: boolean;
+};
 
 /** Builds the e-LOA from a user's explicit click-accept (ETA SA 2001). */
 export function buildApprovalLoa(input: {
@@ -90,7 +97,8 @@ export async function processApproval(input: {
   const attestation: LegitimacyAttestation = {
     attestedBy: input.userId,
     attestedAt: now.toISOString(),
-    statement: "I confirm this claim is legitimate and that I will not file a frivolous or friendly chargeback.",
+    statement:
+      "I confirm this claim is legitimate and that I will not file a frivolous or friendly chargeback.",
     isLegitimate: true,
     noFrivolousChargeback: true,
   };
@@ -148,12 +156,9 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
     const sb = getAdminClient();
 
     // ── Resolve owner from DB (never trust userId from client) ────────────────
-    const recRow = await sb
-      .from("recoveries")
-      .select("*")
-      .eq("id", data.recoveryId)
-      .maybeSingle();
-    if (recRow.error) throw new Error(`approveRecovery: recovery lookup failed: ${recRow.error.message}`);
+    const recRow = await sb.from("recoveries").select("*").eq("id", data.recoveryId).maybeSingle();
+    if (recRow.error)
+      throw new Error(`approveRecovery: recovery lookup failed: ${recRow.error.message}`);
     if (!recRow.data) throw new Error(`approveRecovery: recovery ${data.recoveryId} not found`);
     const recovery = rowToRecovery(recRow.data);
     const userId: string = (recRow.data as Record<string, unknown>).owner_id as string;
@@ -164,7 +169,8 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
       .select("*")
       .eq("approval_token", data.idempotencyKey)
       .maybeSingle();
-    if (existing.error) throw new Error(`approveRecovery: idempotency lookup failed: ${existing.error.message}`);
+    if (existing.error)
+      throw new Error(`approveRecovery: idempotency lookup failed: ${existing.error.message}`);
     if (existing.data) return rowToApproval(existing.data);
 
     // ── Load go-live gate status (ops-set, never auto) ────────────────────────
@@ -211,7 +217,8 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
       })
       .select("id")
       .single();
-    if (eventRow.error) throw new Error(`approveRecovery: event write failed: ${eventRow.error.message}`);
+    if (eventRow.error)
+      throw new Error(`approveRecovery: event write failed: ${eventRow.error.message}`);
 
     // Append to the ops audit log as well.
     await appendAudit({
@@ -239,7 +246,8 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
       })
       .select("*")
       .single();
-    if (approvalRow.error) throw new Error(`approveRecovery: approval write failed: ${approvalRow.error.message}`);
+    if (approvalRow.error)
+      throw new Error(`approveRecovery: approval write failed: ${approvalRow.error.message}`);
 
     return rowToApproval(approvalRow.data);
   });

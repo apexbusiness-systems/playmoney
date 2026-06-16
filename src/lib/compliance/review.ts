@@ -99,11 +99,21 @@ function decide(
   });
 }
 
-export function approveReview(item: ReviewItem, reviewer: string, note?: string, now: Date = new Date()): ReviewItem {
+export function approveReview(
+  item: ReviewItem,
+  reviewer: string,
+  note?: string,
+  now: Date = new Date(),
+): ReviewItem {
   return decide(item, "approved", reviewer, note, now);
 }
 
-export function rejectReview(item: ReviewItem, reviewer: string, note?: string, now: Date = new Date()): ReviewItem {
+export function rejectReview(
+  item: ReviewItem,
+  reviewer: string,
+  note?: string,
+  now: Date = new Date(),
+): ReviewItem {
   return decide(item, "rejected", reviewer, note, now);
 }
 

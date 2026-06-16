@@ -87,7 +87,12 @@ describe("P1 · DB row -> domain mappers are Zod-validated at the boundary", () 
 
   it("maps a profile row + session email; identity is truthfully false pre-onboarding", () => {
     const prof = rowToProfile(
-      { id: "user-1", display_name: "Maya", payout_ref: null, created_at: "2026-05-01T00:00:00.000Z" },
+      {
+        id: "user-1",
+        display_name: "Maya",
+        payout_ref: null,
+        created_at: "2026-05-01T00:00:00.000Z",
+      },
       "maya@example.com",
     );
     expect(prof.email).toBe("maya@example.com");
