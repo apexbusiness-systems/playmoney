@@ -255,3 +255,26 @@ viewport screenshots. Two **measured** mobile defects were found and fixed; ever
   errors**; tablet/desktop show the inline header nav, mobile shows the pinned tab bar.
   `lint` exit 0 · `typecheck` clean · **139 tests / 23 files** · `build` green. (The Playwright
   harness was used locally for evidence only — not added as a dependency or wired into CI.)
+
+### 2026-06-16 · D-014 · Release-blocker follow-up after PR #14 (BUILT, not release-ready)
+
+PR #14 only added Node setup and swapped the header wordmark. This follow-up closed the real release
+blockers it left untouched, while keeping `PLAYMONEY_MODE` unset/default `BUILT`:
+
+- **Production mock-client safety**: `playmoney/client.ts` now has a pure
+  `assertSupabaseConfigWhenRequired(cfg, require)` guard. The deploy workflow sets
+  `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` and passes only public `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY` into the build, so a production deploy build fails instead of silently
+  selecting `MockApiClient`. Offline/local/PR CI mock fallback remains available because that guard
+  flag is not set outside deploy.
+- **RLS CI env correctness**: CI now maps `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional
+  `SUPABASE_PUBLISHABLE_KEY`, and server-only `SUPABASE_SERVICE_ROLE_KEY` into the RLS step. The step
+  emits explicit skip notices when required secrets are unavailable; when present it runs
+  `bun run db:verify-rls`.
+- **Alberta-only launch geofence**: `ENABLED_JURISDICTIONS` is exactly `CA/AB`; all U.S. states are
+  blocked/deferred. Onboarding no longer offers the U.S. as an active selectable launch jurisdiction.
+- **Docs**: `.env.example` and `DEPLOY.md` now distinguish build-time public Vite variables,
+  server/runtime Supabase variables, and service-role/management secrets, and explicitly avoid any
+  release-readiness claim.
+- **Residual**: release still requires real GitHub/Cloudflare/Supabase secrets, RLS verification
+  against the live project, external go-live gates, and the existing ops/legal blockers before LIVE.

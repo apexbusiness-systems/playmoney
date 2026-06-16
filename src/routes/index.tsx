@@ -67,8 +67,8 @@ function Nav() {
       }}
     >
       <div className="container-pm flex h-16 items-center justify-between">
-        <Link to="/" className="font-display text-xl font-semibold text-text-dark">
-          PlayMoney
+        <Link to="/" className="inline-flex items-center" aria-label="PlayMoney home">
+          <img src="/wordmark.png" alt="PlayMoney" className="h-8 w-auto" width={148} height={32} />
         </Link>
         <nav className="hidden items-center gap-7 sm:flex">
           <a href="#how" className="text-sm text-text-dark/85 hover:text-text-dark">

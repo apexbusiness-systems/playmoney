@@ -4,14 +4,9 @@ name: CI
 # (typecheck · lint · test · build) plus the BUILT-default invariant guard.
 # Canonical stack: Cloudflare + GitHub + Supabase. Runtime: Bun.
 #
-# Deliberately NOT run here:
-#   - db:verify-rls — requires SUPABASE_SERVICE_ROLE_KEY, which SECURITY-001
-#     flags for rotation. Wiring a live service-role key into Actions before
-#     rotation would itself be a compromise. It stays an ops/local check until
-#     the key is rotated into a secret store. The suite already proves RLS
-#     intent offline against the mock client.
-#   - Any real outbound effect — the app defaults to BUILT and no step sets
-#     the live mode (see the invariant-guard job below).
+# db:verify-rls runs only when the required GitHub secrets are available;
+# otherwise it exits successfully with an explicit skip notice.
+# The app defaults to BUILT and no step sets live mode (see invariant guard).
 
 on:
   pull_request:
@@ -29,6 +24,7 @@ permissions:
 
 env:
   BUN_VERSION: "1.3.11"
+  NODE_VERSION: "22"
 
 jobs:
   # Fast, secret-free static guard that the BUILT default is never weakened:
@@ -63,6 +59,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -80,15 +81,25 @@ jobs:
       - name: Test
         run: bun run test
 
-      # Build runs against the mock client (no VITE_SUPABASE_* present), so it
-      # needs no secrets and stays fork-safe. PLAYMONEY_MODE is unset → BUILT.
+      # PR/main CI stays fork-safe: no production guard flag is set here, so local/mock
+      # builds remain available outside the deploy workflow. PLAYMONEY_MODE is unset → BUILT.
       - name: Build (Cloudflare Workers · Nitro)
         run: bun run build
 
       - name: Verify RLS Policies
-        # Only run this step if the service role key is available in the environment
-        if: env.SUPABASE_SERVICE_ROLE_KEY != ''
-        run: bun run db:verify-rls
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY}" ]; then
+            echo "::notice::Skipping db:verify-rls because SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY is unavailable."
+            exit 0
+          fi
+          if [ -z "${SUPABASE_ANON_KEY}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY}" ]; then
+            echo "::notice::Skipping db:verify-rls because neither SUPABASE_ANON_KEY nor SUPABASE_PUBLISHABLE_KEY is available."
+            exit 0
+          fi
+          bun run db:verify-rls
         env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

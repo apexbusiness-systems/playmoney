@@ -26,61 +26,8 @@ const TOS = TOS_LATEST;
 const PRIVACY = PRIVACY_LATEST;
 const PAD = PAD_LATEST;
 
-// CA provinces and US states for the jurisdiction selector.
-const CA_PROVINCES = [{ label: "Alberta", value: "AB" }] as const; // only AB enabled at MVP
-const US_STATES = [
-  { label: "Alabama", value: "AL" },
-  { label: "Alaska", value: "AK" },
-  { label: "Arizona", value: "AZ" },
-  { label: "Arkansas", value: "AR" },
-  { label: "California", value: "CA" },
-  { label: "Colorado", value: "CO" },
-  { label: "Connecticut", value: "CT" },
-  { label: "Delaware", value: "DE" },
-  { label: "Florida", value: "FL" },
-  { label: "Georgia", value: "GA" },
-  { label: "Hawaii", value: "HI" },
-  { label: "Idaho", value: "ID" },
-  { label: "Illinois", value: "IL" },
-  { label: "Indiana", value: "IN" },
-  { label: "Iowa", value: "IA" },
-  { label: "Kansas", value: "KS" },
-  { label: "Kentucky", value: "KY" },
-  { label: "Louisiana", value: "LA" },
-  { label: "Maine", value: "ME" },
-  { label: "Maryland", value: "MD" },
-  { label: "Massachusetts", value: "MA" },
-  { label: "Michigan", value: "MI" },
-  { label: "Minnesota", value: "MN" },
-  { label: "Mississippi", value: "MS" },
-  { label: "Missouri", value: "MO" },
-  { label: "Montana", value: "MT" },
-  { label: "Nebraska", value: "NE" },
-  { label: "Nevada", value: "NV" },
-  { label: "New Hampshire", value: "NH" },
-  { label: "New Jersey", value: "NJ" },
-  { label: "New Mexico", value: "NM" },
-  { label: "New York", value: "NY" },
-  { label: "North Carolina", value: "NC" },
-  { label: "North Dakota", value: "ND" },
-  { label: "Ohio", value: "OH" },
-  { label: "Oklahoma", value: "OK" },
-  { label: "Oregon", value: "OR" },
-  { label: "Pennsylvania", value: "PA" },
-  { label: "Rhode Island", value: "RI" },
-  { label: "South Carolina", value: "SC" },
-  { label: "South Dakota", value: "SD" },
-  { label: "Tennessee", value: "TN" },
-  { label: "Texas", value: "TX" },
-  { label: "Utah", value: "UT" },
-  { label: "Vermont", value: "VT" },
-  { label: "Virginia", value: "VA" },
-  { label: "Washington", value: "WA" },
-  { label: "West Virginia", value: "WV" },
-  { label: "Wisconsin", value: "WI" },
-  { label: "Wyoming", value: "WY" },
-] as const;
-
+// Alberta is the only active launch jurisdiction.
+const CA_PROVINCES = [{ label: "Alberta", value: "AB" }] as const;
 function Onboarding() {
   const [step, setStep] = useState<Step>(1);
   const [saving, setSaving] = useState(false);
@@ -88,7 +35,7 @@ function Onboarding() {
   const [capturedContext, setCapturedContext] = useState<OccupationContext | null>(null);
   const [payoutToken, setPayoutToken] = useState("");
   const [legalName, setLegalName] = useState("");
-  const [country, setCountry] = useState<"CA" | "US">("CA");
+  const [country] = useState<"CA">("CA");
   const [province, setProvince] = useState("AB");
   const [tosAccepted, setTosAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -208,48 +155,35 @@ function Onboarding() {
                   A tokenised payout reference — never raw bank credentials.
                 </p>
                 <div className="mt-5 grid gap-3">
-                  {/* Jurisdiction — determines which currency and legal regime applies */}
+                  {/* Jurisdiction — determines which currency and legal regime applies. */}
                   <div>
                     <label className="eyebrow block text-ink-muted">Country</label>
                     <select
                       className="mt-1.5 h-11 w-full rounded-[12px] border border-border-l bg-card px-3 text-ink focus-visible:border-evergreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-evergreen"
                       value={country}
-                      onChange={(e) => {
-                        const c = e.target.value as "CA" | "US";
-                        setCountry(c);
-                        setProvince(c === "CA" ? "AB" : "");
-                      }}
+                      disabled
+                      aria-describedby="launch-jurisdiction-note"
                     >
                       <option value="CA">Canada</option>
-                      <option value="US">United States</option>
                     </select>
                   </div>
                   <div>
-                    <label className="eyebrow block text-ink-muted">
-                      {country === "CA" ? "Province" : "State"}
-                    </label>
+                    <label className="eyebrow block text-ink-muted">Province</label>
                     <select
                       className="mt-1.5 h-11 w-full rounded-[12px] border border-border-l bg-card px-3 text-ink focus-visible:border-evergreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-evergreen"
                       value={province}
                       onChange={(e) => setProvince(e.target.value)}
+                      aria-describedby="launch-jurisdiction-note"
                     >
-                      {country === "CA"
-                        ? CA_PROVINCES.map((p) => (
-                            <option key={p.value} value={p.value}>
-                              {p.label}
-                            </option>
-                          ))
-                        : US_STATES.map((s) => (
-                            <option key={s.value} value={s.value}>
-                              {s.label}
-                            </option>
-                          ))}
+                      {CA_PROVINCES.map((p) => (
+                        <option key={p.value} value={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
                     </select>
-                    {country === "CA" && (
-                      <p className="mt-1 text-xs text-ink-muted">
-                        Alberta only during our Canadian launch.
-                      </p>
-                    )}
+                    <p id="launch-jurisdiction-note" className="mt-1 text-xs text-ink-muted">
+                      Alberta only during launch. United States access is deferred.
+                    </p>
                   </div>
                   <Field
                     label="Routing token"
@@ -275,8 +209,8 @@ function Onboarding() {
                   One last thing — your agreement.
                 </h2>
                 <p className="mt-2 text-ink-muted">
-                  {country === "US" ? `${province || "US"} · United States` : "Alberta, Canada"} ·
-                  non-custodial. We charge a fee only after we recover money for you.
+                  Alberta, Canada · non-custodial. We charge a fee only after we recover money for
+                  you.
                 </p>
                 <div className="mt-5 space-y-2">
                   <Consent checked={tosAccepted} onChange={setTosAccepted}>

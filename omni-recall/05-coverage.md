@@ -48,14 +48,16 @@ T1 ✅ · T2 ✅ · T3 ✅ · T4 ✅ · T5 ✅ · T6 ✅ · T7 ✅ · T8 ✅ · 
   band. Adapters (Flinks/Stripe concrete impls) are interfaces only — not yet wired to real APIs.
 - **Legal copy not drafted:** ToS/Privacy/PAD text is counsel's; M3 enforces required-field structure,
   not final wording.
-- **UI wiring:** enforcement lives in the domain/service layer + DB; onboarding/settings React routes
-  still use the mock client and are not yet wired to the geofence/consent/causation guards.
-- **CI (2026-06-16, D-012):** `.github/workflows/ci.yml` gates every PR + push to `main` on
-  Bun-run `typecheck` · `lint` · `test` · `build`, behind a secret-free BUILT-invariant guard
-  (fails if any non-test file seeds the live mode). Prettier debt cleared → `lint` green (0
-  errors; 6 non-failing react-refresh warnings in vendored `ui/`). `db:verify-rls` is
-  intentionally excluded from CI (needs the SECURITY-001 service-role key; stays ops/local
-  until rotated). Go-live health check still pending (P7).
+- **UI wiring:** enforcement lives in the domain/service layer + DB; onboarding now exposes only
+  Alberta as the active launch jurisdiction, but settings and other app routes can still run against
+  the mock client outside guarded production deploy builds.
+- **CI/deploy (2026-06-16, D-014):** `.github/workflows/ci.yml` still gates every PR + push to
+  `main` on Bun-run `typecheck` · `lint` · `test` · `build`, behind the secret-free BUILT-invariant
+  guard. `db:verify-rls` now has correct CI env names (`SUPABASE_URL`, anon/publishable key,
+  server-only `SUPABASE_SERVICE_ROLE_KEY`) and skips explicitly when secrets are absent. Deploy builds
+  set `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` and pass public `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY`, so production cannot silently compile against `MockApiClient`. Go-live
+  health check still pending (P7).
 - **Stack (2026-06-15, D-009):** Lovable scaffold purged; canonical stack = Cloudflare + GitHub +
   Supabase; deploy via Cloudflare Workers (Nitro `cloudflare-module`).
 - **P6 onboarding seam (RESOLVED 2026-06-15, D-010/D-011):** `OccupationStep` now rendered + seam-

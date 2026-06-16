@@ -1,8 +1,8 @@
 // M2 · Eligibility / Geofence gate (Control #8) [GATE]
 //
-// Enabled jurisdictions: Alberta (CA/AB) + all US states.
+// Enabled jurisdictions: Alberta (CA/AB) only.
 // Quebec is a SEPARATE gated project (distinct consumer-law regime).
-// All other Canadian provinces are OFF until individually gated.
+// All other Canadian provinces and all U.S. states are OFF until individually gated.
 // Enforcement: onboarding cannot create an account outside the enabled set.
 //
 // Note: enabling jurisdictions does NOT make the app LIVE — real onboarding
@@ -11,18 +11,15 @@
 
 export type Jurisdiction = { country: string; province: string | null };
 
-/**
- * Enabled jurisdictions. A null province means "any province/state" for that
- * country — used for the US where all states are equally in scope.
- */
+/** Enabled launch jurisdictions. */
 export const ENABLED_JURISDICTIONS: readonly Jurisdiction[] = [
   { country: "CA", province: "AB" }, // Canada: Alberta only
-  { country: "US", province: null }, // United States: all states
 ];
 
 /** Explicitly deferred/blocked, with the reason surfaced for audit + UX. */
 export const BLOCKED_JURISDICTIONS: Readonly<Record<string, string>> = {
   "CA/QC": "Quebec is a separate gated project (distinct consumer-law regime); not enabled.",
+  US: "United States launch is deferred; not enabled for the Alberta-only MVP.",
 };
 
 export type EligibilityResult =
@@ -38,6 +35,14 @@ export function checkEligibility(country: string, province: string | null): Elig
   const p = norm(province) || null;
 
   // Explicit blocks first, so the reason is precise.
+  if (c === "US") {
+    return {
+      eligible: false,
+      code: "jurisdiction_blocked",
+      reason: BLOCKED_JURISDICTIONS.US,
+    };
+  }
+
   if (c === "CA" && p === "QC") {
     return {
       eligible: false,
@@ -46,16 +51,15 @@ export function checkEligibility(country: string, province: string | null): Elig
     };
   }
 
-  // A null province in ENABLED_JURISDICTIONS means "any province/state".
   const match = ENABLED_JURISDICTIONS.some(
-    (j) => norm(j.country) === c && (j.province === null || norm(j.province) === norm(p)),
+    (j) => norm(j.country) === c && norm(j.province) === norm(p),
   );
   if (match) return { eligible: true, jurisdiction: { country: c, province: p } };
 
   return {
     eligible: false,
     code: "jurisdiction_blocked",
-    reason: `Not available in ${[p, c].filter(Boolean).join(", ")} yet. Supported: Alberta (CA) and all US states.`,
+    reason: `Not available in ${[p, c].filter(Boolean).join(", ")} yet. Supported launch jurisdiction: Alberta (CA/AB).`,
   };
 }
 
