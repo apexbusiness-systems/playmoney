@@ -1,0 +1,86 @@
+name: CI
+
+# Gates every PR and every push to main on the four canonical checks
+# (typecheck · lint · test · build) plus the BUILT-default invariant guard.
+# Canonical stack: Cloudflare + GitHub + Supabase. Runtime: Bun.
+#
+# Deliberately NOT run here:
+#   - db:verify-rls — requires SUPABASE_SERVICE_ROLE_KEY, which SECURITY-001
+#     flags for rotation. Wiring a live service-role key into Actions before
+#     rotation would itself be a compromise. It stays an ops/local check until
+#     the key is rotated into a secret store. The suite already proves RLS
+#     intent offline against the mock client.
+#   - Any real outbound effect — the app defaults to BUILT and no step sets
+#     the live mode (see the invariant-guard job below).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Newer pushes supersede in-flight runs on the same ref; main never cancels.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# Least privilege: CI only needs to read the checked-out tree.
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: "1.3.11"
+
+jobs:
+  # Fast, secret-free static guard that the BUILT default is never weakened:
+  # no production code path, env file, workflow, seed, or config may seed
+  # the live mode. Test files set it transiently to PROVE the seal (T10)
+  # and are intentionally excluded.
+  invariant-guard:
+    name: BUILT invariant guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert no LIVE mode is seeded outside tests
+        run: |
+          set -euo pipefail
+          matches="$(grep -rEn 'PLAYMONEY_MODE[[:space:]]*[:=][[:space:]]*"?LIVE' \
+            --include='*.ts' --include='*.tsx' --include='*.yml' \
+            --include='*.yaml' --include='*.env*' --include='*.sh' \
+            --include='*.toml' --include='*.json' . \
+            | grep -v '===' | grep -v '\.test\.' || true)"
+          if [ -n "$matches" ]; then
+            echo "::error::live mode seeded outside a test — BUILT default compromised."
+            echo "$matches"
+            exit 1
+          fi
+          echo "BUILT default intact: no LIVE mode seeded outside tests."
+
+  verify:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    needs: invariant-guard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test
+        run: bun run test
+
+      # Build runs against the mock client (no VITE_SUPABASE_* present), so it
+      # needs no secrets and stays fork-safe. PLAYMONEY_MODE is unset → BUILT.
+      - name: Build (Cloudflare Workers · Nitro)
+        run: bun run build

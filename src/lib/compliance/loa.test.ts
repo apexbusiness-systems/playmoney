@@ -9,7 +9,11 @@ const sig: ESignature = {
   consentElectronic: true,
 };
 
-const scope: LoaScope = { avenue: "merchant_refund", merchant: "Delta Airlines", maxAmountCents: 24000 };
+const scope: LoaScope = {
+  avenue: "merchant_refund",
+  merchant: "Delta Airlines",
+  maxAmountCents: 24000,
+};
 
 function makeToken(over: Partial<Parameters<typeof buildLoa>[0]> = {}) {
   return buildLoa({
@@ -24,7 +28,12 @@ function makeToken(over: Partial<Parameters<typeof buildLoa>[0]> = {}) {
   });
 }
 
-const action = { recoveryId: "rec_0004", avenue: "merchant_refund", merchant: "Delta Airlines", amountCents: 24000 };
+const action = {
+  recoveryId: "rec_0004",
+  avenue: "merchant_refund",
+  merchant: "Delta Airlines",
+  amountCents: 24000,
+};
 const NOW = new Date("2026-06-14T12:10:00Z");
 
 describe("T3 · execute requires a valid, scoped, unexpired, unrevoked e-LOA (#6/#7)", () => {

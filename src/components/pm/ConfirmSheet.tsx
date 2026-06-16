@@ -68,8 +68,7 @@ export function ConfirmSheet({
             >
               <p className="eyebrow text-ink-muted">Awaiting your OK</p>
               <p id="confirm-sheet-title" className="mt-3 font-display text-2xl font-semibold">
-                Found you{" "}
-                <span className="text-mint">{formatMoney(recovery.grossAmount)}</span>{" "}
+                Found you <span className="text-mint">{formatMoney(recovery.grossAmount)}</span>{" "}
                 from {recovery.merchant}.
               </p>
 
@@ -79,7 +78,11 @@ export function ConfirmSheet({
               <div className="mt-5 rounded-[14px] bg-sand p-4 text-sm">
                 <Row k="Target platform sends you" v={formatMoney(recovery.grossAmount)} strong />
                 <div className="mt-2 border-t border-border-l pt-2">
-                  <Row k="PlayMoney success fee (20%)" v={`− ${formatMoney(recovery.ourFee)}`} muted />
+                  <Row
+                    k="PlayMoney success fee (20%)"
+                    v={`− ${formatMoney(recovery.ourFee)}`}
+                    muted
+                  />
                 </div>
               </div>
 
@@ -97,8 +100,8 @@ export function ConfirmSheet({
 
               {/* ── 1-click e-LOA consent copy + button ──────────────────────── */}
               <p className="mt-6 mb-2 text-center text-[11px] leading-tight text-ink-muted">
-                By continuing, you authorize PlayMoney to route these funds on your behalf
-                and agree to the success fee charged separately to your card.
+                By continuing, you authorize PlayMoney to route these funds on your behalf and agree
+                to the success fee charged separately to your card.
               </p>
               <div className="flex items-center gap-3">
                 <PMButton

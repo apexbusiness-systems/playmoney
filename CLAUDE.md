@@ -7,7 +7,7 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
 ## Stack — canonical: **Cloudflare + GitHub + Supabase** (do NOT introduce Temporal or Lovable)
 
 - **Frontend**: TanStack Start (React 19) + TanStack Router + React Query + Vite + Tailwind v4
-  + shadcn/Radix + framer-motion. Tooling/test runtime: **Bun**. TS **strict**.
+  - shadcn/Radix + framer-motion. Tooling/test runtime: **Bun**. TS **strict**.
 - **Deploy**: **Cloudflare Workers** via Nitro `cloudflare-module` preset (`vite.config.ts`);
   `bun run build && wrangler deploy --config .output/server/wrangler.json`. CI/CD on **GitHub**.
 - **Backend**: Supabase (Postgres + RLS + Auth). Server logic = TanStack Start
@@ -67,16 +67,16 @@ external effects); **LIVE** is physically sealed behind 10 go-live gates.
 
 ## Phase plan & status
 
-| Phase | Scope | Status |
-|------:|-------|--------|
-| P0 | Compliance spine (money/mode/gates/executor/loa/review/causation/avenues/contract/upl/geofence/ports) + `0001–0005` | ✅ done (D-004/D-005) |
-| **P1** | Real Supabase `ApiClient`/`AuthClient` behind the contract + env selector + `0006` recovery domain; routes repointed; mock fallback intact | ✅ **done (D-006)** |
-| **P2** | Route `approveRecovery` through `executeRecoveryAction` (LOA + review + mode/gates), write `recovery_events`, persist truthful status | ✅ **done (D-008)** |
-| **P3** | Recovery engine (SituationModel / AvenueRouter / LearningLoop), pure + tested | ✅ **done (D-007)** |
-| P4 | Real adapters behind ports (Flinks/Plaid read-only, Stripe fee-only) + OCR/email ingest; all guarded by `assertLiveAllowed` | ⬜ todo |
-| P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | 🟡 partial — `0007_recovery_saga` + `lifecycle.functions` (`settleFee`) built & tested; end-to-end `fee_reversal` wiring pending |
-| P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data | 🟢 mostly wired — onboarding persists ToS/Privacy/PAD + profile + occupation context via `auth.submitOnboarding` (contract seam, RLS-owner writes; broken admin path removed); dashboard consumes `rankByContext`. Remaining: live Supabase needs the passwordless OTP session flow; consent versions are placeholders pending counsel |
-| P7 | CI: lint+typecheck+build+test green; go-live health check; confirm BUILT default + every live path sealed | ⬜ todo |
+|  Phase | Scope                                                                                                                                                      | Status                                                                                                                                                                                                                                                                                                                                 |
+| -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     P0 | Compliance spine (money/mode/gates/executor/loa/review/causation/avenues/contract/upl/geofence/ports) + `0001–0005`                                        | ✅ done (D-004/D-005)                                                                                                                                                                                                                                                                                                                  |
+| **P1** | Real Supabase `ApiClient`/`AuthClient` behind the contract + env selector + `0006` recovery domain; routes repointed; mock fallback intact                 | ✅ **done (D-006)**                                                                                                                                                                                                                                                                                                                    |
+| **P2** | Route `approveRecovery` through `executeRecoveryAction` (LOA + review + mode/gates), write `recovery_events`, persist truthful status                      | ✅ **done (D-008)**                                                                                                                                                                                                                                                                                                                    |
+| **P3** | Recovery engine (SituationModel / AvenueRouter / LearningLoop), pure + tested                                                                              | ✅ **done (D-007)**                                                                                                                                                                                                                                                                                                                    |
+|     P4 | Real adapters behind ports (Flinks/Plaid read-only, Stripe fee-only) + OCR/email ingest; all guarded by `assertLiveAllowed`                                | ⬜ todo                                                                                                                                                                                                                                                                                                                                |
+|     P5 | Recovery lifecycle saga (server fns + job/saga table, idempotent, compensating); wire `fee_reversal` end-to-end; `settleFee` via causation → `fee_charges` | 🟡 partial — `0007_recovery_saga` + `lifecycle.functions` (`settleFee`) built & tested; end-to-end `fee_reversal` wiring pending                                                                                                                                                                                                       |
+|     P6 | Onboarding/consent end-to-end (internet-sales e-contract + Rule H1 PAD + identity); gates read real captured data                                          | 🟢 mostly wired — onboarding persists ToS/Privacy/PAD + profile + occupation context via `auth.submitOnboarding` (contract seam, RLS-owner writes; broken admin path removed); dashboard consumes `rankByContext`. Remaining: live Supabase needs the passwordless OTP session flow; consent versions are placeholders pending counsel |
+|     P7 | CI: lint+typecheck+build+test green; go-live health check; confirm BUILT default + every live path sealed                                                  | 🟢 mostly — `ci.yml` gates PR+main on all four checks + BUILT-invariant guard (D-012); go-live health check pending                                                                                                                                                                                                                    |
 
 ## Project memory
 
@@ -90,9 +90,13 @@ Append decisions there; never store secrets in it.
   visible env field); relocate to a secret store.
 - **Stack**: Lovable scaffold fully purged (D-009). Deploy target is **Cloudflare Workers**
   (Nitro `cloudflare-module` preset); canonical stack = Cloudflare + GitHub + Supabase.
-- **lint debt**: ~130 auto-fixable prettier errors + 6 `react-refresh` warnings. The one real
-  error (`no-unused-expressions`) is fixed. `bun run lint` not yet green project-wide (prettier
-  only); `typecheck` · `test` (139) · `build` are green.
+- **lint**: prettier debt cleared (D-012) — `bun run lint` is now green project-wide (0 errors;
+  6 non-failing `react-refresh` warnings in vendored shadcn `ui/` components remain). All four
+  checks pass: `lint` · `typecheck` · `test` (139) · `build`.
+- **CI (D-012)**: `.github/workflows/ci.yml` gates every PR + push to `main` on Bun-run
+  typecheck/lint/test/build, behind a secret-free BUILT-invariant guard (fails if any non-test
+  file seeds the live mode). `db:verify-rls` is intentionally NOT in CI — it needs the
+  service-role key flagged by SECURITY-001; it stays an ops/local check until that key is rotated.
 - **P6 onboarding (D-011)**: end-to-end through the contract seam. `app.onboarding.tsx` (4 steps)
   collects occupation context (step 2), payout token + legal name (step 3, controlled), and
   ToS/Privacy/PAD consent (step 4), then calls `auth.submitOnboarding`. Supabase impl resolves the

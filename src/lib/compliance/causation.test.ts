@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  decideFee,
-  computeFee,
-  validateFeeRate,
-  FEE_RATE,
-  DIY_FREE_DISCLOSURE,
-} from "./causation";
+import { decideFee, computeFee, validateFeeRate, FEE_RATE, DIY_FREE_DISCLOSURE } from "./causation";
 
 const confirmed = {
   recoveryId: "rec_0001",
@@ -22,7 +16,11 @@ describe("T2 · fee impossible without confirmed recovery + causation + disclosu
   });
 
   it("blocks when the recovery is not confirmed", () => {
-    const d = decideFee({ recovery: { recoveryId: "x" }, causedByPlaymoney: true, disclosureAcked: true });
+    const d = decideFee({
+      recovery: { recoveryId: "x" },
+      causedByPlaymoney: true,
+      disclosureAcked: true,
+    });
     expect(d.allowed).toBe(false);
     if (!d.allowed) expect(d.code).toBe("not_confirmed_recovery");
   });

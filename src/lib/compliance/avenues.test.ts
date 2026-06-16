@@ -9,7 +9,12 @@ import {
 describe("T5 · disabled avenues are unreachable, not hidden (#9)", () => {
   it("exactly the 4 administrative avenues are enabled", () => {
     expect([...ENABLED_AVENUES].sort()).toEqual(
-      ["billing_error_correction", "fee_reversal", "merchant_refund", "subscription_cancellation"].sort(),
+      [
+        "billing_error_correction",
+        "fee_reversal",
+        "merchant_refund",
+        "subscription_cancellation",
+      ].sort(),
     );
   });
 

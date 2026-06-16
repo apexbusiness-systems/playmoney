@@ -28,7 +28,9 @@ export interface SelectedClients {
 }
 
 /** True only when both public Supabase values are present and non-empty. */
-export function hasSupabaseConfig(cfg: PublicSupabaseConfig): cfg is Required<PublicSupabaseConfig> {
+export function hasSupabaseConfig(
+  cfg: PublicSupabaseConfig,
+): cfg is Required<PublicSupabaseConfig> {
   return Boolean(cfg.supabaseUrl && cfg.supabaseAnonKey);
 }
 

@@ -71,7 +71,11 @@ export class LearningLoop {
   rankings(): OutcomeReport[] {
     return this.store
       .entries()
-      .map(([avenue, stat]) => ({ avenue, stat, winRate: stat.wins + stat.losses === 0 ? 0 : stat.wins / (stat.wins + stat.losses) }))
+      .map(([avenue, stat]) => ({
+        avenue,
+        stat,
+        winRate: stat.wins + stat.losses === 0 ? 0 : stat.wins / (stat.wins + stat.losses),
+      }))
       .sort((a, b) => b.winRate - a.winRate);
   }
 }

@@ -2,9 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { getMode, isLiveEnabled, assertLiveAllowed, LiveModeBlockedError } from "./mode";
 import { GATE_KEYS, canGoLive, EMPTY_GATE_STATUS, type GateStatus } from "./gates";
 
-const ALL_GREEN: GateStatus = Object.fromEntries(
-  GATE_KEYS.map((k) => [k, true]),
-) as GateStatus;
+const ALL_GREEN: GateStatus = Object.fromEntries(GATE_KEYS.map((k) => [k, true])) as GateStatus;
 
 afterEach(() => {
   delete process.env.PLAYMONEY_MODE;

@@ -16,8 +16,7 @@ const variants: Record<Variant, string> = {
     "h-[52px] px-7 rounded-[12px] bg-gold text-ink hover:translate-y-[-1px] hover:brightness-95 active:translate-y-0",
   ghostDark:
     "h-[44px] px-5 rounded-full border border-border-d text-text-dark hover:bg-evergreen/60",
-  ghostLight:
-    "h-[44px] px-5 rounded-full border border-border-l text-ink hover:bg-card",
+  ghostLight: "h-[44px] px-5 rounded-full border border-border-l text-ink hover:bg-card",
 };
 
 export const PMButton = forwardRef<HTMLButtonElement, Props>(function PMButton(

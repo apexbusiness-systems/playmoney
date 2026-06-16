@@ -50,7 +50,9 @@ export class StripePayoutAdapter implements PayoutPort {
 
     if (!res.ok) {
       const err = (await res.json()) as StripeErrorResponse;
-      throw new Error(`StripePayoutAdapter.chargeFee: ${err.error?.message ?? `HTTP ${res.status}`}`);
+      throw new Error(
+        `StripePayoutAdapter.chargeFee: ${err.error?.message ?? `HTTP ${res.status}`}`,
+      );
     }
 
     const charge = (await res.json()) as StripeChargeResponse;

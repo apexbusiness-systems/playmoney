@@ -1,6 +1,7 @@
 # 02 · Architecture Invariants & Execution Lanes
 
 ## Non-negotiable invariants (apply to every file)
+
 1. **Non-custodial by type.** Recovery destination = `UserPayoutRef` only. No type/table
    lets PlayMoney hold or route user funds. Custody is a compile-time impossibility.
 2. **Fee ↔ recovery separation.** `FeeLedger` and the payout path share no FK that could
@@ -16,6 +17,7 @@
 7. **Flags default OFF.** Every capability touching "going live" is a flag defaulting OFF (§6).
 
 ## Execution lanes
+
 - **GREEN (act autonomously):** repo recon; read/update omni-recall; build/extend the 7
   modules; write schema/migrations/types/guards/tests; run typecheck + tests; keep all
   live flags OFF.
@@ -29,6 +31,7 @@
   RLS or multi-tenant isolation; commit secrets.
 
 ## Abort triggers (STOP and report)
+
 - Change creates a money-custody path → "BLOCKED: would introduce fund custody (#1)."
 - Execute action could run without a valid e-LOA token → STOP (#7).
 - Change enables a deferred avenue or non-Alberta signup pre-gate → STOP (#8/#9).
@@ -36,6 +39,7 @@
   → STOP and report; do not re-implement blindly.
 
 ## Hallucination firewall
+
 - Open/run before claiming a file/table/test exists; cite the path.
 - Unverifiable fact → output `[UNVERIFIED: <reason>]`, proceed via YELLOW; never invent.
 - Never report a test passing without showing the run.

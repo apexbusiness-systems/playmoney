@@ -80,7 +80,12 @@ describe("P6 · processOnboarding: consent records written, gates satisfied", ()
   it("accepts PAD consent when advance notice waived", async () => {
     const io = makeIO();
     const result = await processOnboarding({
-      parsedInput: { ...BASE_INPUT, padMethod: "pad", padAdvanceNoticeDays: 0, padWaiveAdvanceNotice: true },
+      parsedInput: {
+        ...BASE_INPUT,
+        padMethod: "pad",
+        padAdvanceNoticeDays: 0,
+        padWaiveAdvanceNotice: true,
+      },
       ...io,
     });
     expect(result.ok).toBe(true);
