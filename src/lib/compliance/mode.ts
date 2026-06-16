@@ -35,6 +35,17 @@ export class LiveModeBlockedError extends Error {
 }
 
 /**
+ * Fast mode-only guard — no I/O. Throws in BUILT without loading gate status
+ * from the DB. Call this before any async DB/network operation so live-only
+ * paths seal cheaply in CI / BUILT environments (no SUPABASE_URL needed).
+ */
+export function assertModeIsLive(): void {
+  if (getMode() !== "LIVE") {
+    throw new LiveModeBlockedError(`mode is ${getMode()} (default BUILT); live paths are sealed`);
+  }
+}
+
+/**
  * Hard guard for live-only call sites. Throws unless mode === LIVE AND all gates
  * are green. Call this at the top of any real onboarding / execution / fee
  * capture path. Zero silent failures.
