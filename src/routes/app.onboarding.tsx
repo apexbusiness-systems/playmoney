@@ -100,7 +100,7 @@ function Onboarding() {
   const [capturedContext, setCapturedContext] = useState<OccupationContext | null>(null);
   const [payoutToken, setPayoutToken] = useState("");
   const [legalName, setLegalName] = useState("");
-  const [country, setCountry] = useState<"CA" | "US">("CA");
+  const [country] = useState<"CA">("CA");
   const [province, setProvince] = useState("AB");
   const nav = useNavigate();
 
@@ -236,7 +236,7 @@ function Onboarding() {
                   A tokenised payout reference — never raw bank credentials.
                 </p>
                 <div className="mt-5 grid gap-3">
-                  {/* Jurisdiction — determines which currency and legal regime applies */}
+                  {/* Jurisdiction — determines which currency and legal regime applies. */}
                   <div>
                     <label className="eyebrow block text-ink-muted">Country</label>
                     <select
@@ -249,30 +249,21 @@ function Onboarding() {
                       }}
                     >
                       <option value="CA">Canada</option>
-                      <option value="US">United States</option>
                     </select>
                   </div>
                   <div>
-                    <label className="eyebrow block text-ink-muted">
-                      {country === "CA" ? "Province" : "State"}
-                    </label>
+                    <label className="eyebrow block text-ink-muted">Province</label>
                     <select
                       className="mt-1.5 h-11 w-full rounded-[12px] border border-border-l bg-card px-3 text-ink focus-visible:border-evergreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-evergreen"
                       value={province}
                       onChange={(e) => setProvince(e.target.value)}
                       aria-describedby="jurisdiction-status-note"
                     >
-                      {country === "CA"
-                        ? CA_PROVINCES.map((p) => (
-                            <option key={p.value} value={p.value}>
-                              {p.label}
-                            </option>
-                          ))
-                        : US_STATES.map((s) => (
-                            <option key={s.value} value={s.value}>
-                              {s.label}
-                            </option>
-                          ))}
+                      {CA_PROVINCES.map((p) => (
+                        <option key={p.value} value={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
                     </select>
                     {/* Eligibility status — shown inline so users understand their options */}
                     {jurisdictionEligibility.eligible ? (
