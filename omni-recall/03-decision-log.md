@@ -255,3 +255,37 @@ viewport screenshots. Two **measured** mobile defects were found and fixed; ever
   errors**; tablet/desktop show the inline header nav, mobile shows the pinned tab bar.
   `lint` exit 0 · `typecheck` clean · **139 tests / 23 files** · `build` green. (The Playwright
   harness was used locally for evidence only — not added as a dependency or wired into CI.)
+
+### 2026-06-17 · D-014 · Production Supabase guard + controlled jurisdiction policy
+
+Closes release blockers introduced in PR #15, while preserving production-safety fixes and
+correcting the Alberta-only product decision to a scalable jurisdiction policy model.
+
+- **Production mock-client safety** (kept from PR #15): `playmoney/client.ts` now exports
+  `assertSupabaseConfigWhenRequired(cfg, require)`. The deploy workflow sets
+  `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` and passes public `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY` into the build, so a production deploy build fails instead of
+  silently selecting `MockApiClient`. Offline/local/PR CI mock fallback is unchanged.
+  `vite.config.ts` enforces the same at build time via `assertProductionSupabaseBuildConfig`.
+- **RLS CI env correctness** (kept from PR #15): CI now maps `SUPABASE_URL`,
+  `SUPABASE_ANON_KEY`, optional `SUPABASE_PUBLISHABLE_KEY`, and server-only
+  `SUPABASE_SERVICE_ROLE_KEY` into the RLS step. The step emits explicit skip notices when
+  required secrets are unavailable; when present it runs `bun run db:verify-rls`.
+- **Jurisdiction policy model** (replaces PR #15's hardcoded Alberta-only geofence):
+  `compliance/geofence.ts` now uses a 4-state policy registry (`enabled` / `pilot` /
+  `waitlist` / `blocked`). Alberta (CA/AB) is `pilot` — the controlled launch jurisdiction.
+  Quebec (CA/QC) is `blocked` with its distinct legal reason. U.S. (all states) is
+  `waitlist` — deferred pending legal/compliance gates, not erased from product code.
+  Other Canadian provinces default to `waitlist`. `checkEligibility` returns `status` on
+  both the eligible and ineligible branches for UI/audit differentiation.
+- **Onboarding** (replaces PR #15's disabled country selector): Country and province/state
+  selectors are restored and active. For non-eligible jurisdictions the eligibility status
+  note ("Not yet available here") is shown inline and the Continue button is disabled —
+  users see the waitlist/blocked reason without being able to proceed. Alberta still
+  proceeds as the only active pilot jurisdiction.
+- **Docs**: `.env.example` and `DEPLOY.md` distinguish build-time public Vite variables,
+  server/runtime Supabase variables, and service-role/management secrets, and explicitly
+  avoid any release-readiness claim.
+- **Residual**: release still requires real GitHub/Cloudflare/Supabase secrets, RLS
+  verification against the live project, external go-live gates (counsel + insurance),
+  and ops/legal approval before `PLAYMONEY_MODE=LIVE`.

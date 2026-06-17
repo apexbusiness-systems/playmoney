@@ -41,6 +41,10 @@ jobs:
 
       - name: Build
         run: bun run build
+        env:
+          VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG: "true"
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3

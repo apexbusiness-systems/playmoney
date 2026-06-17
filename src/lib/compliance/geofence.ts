@@ -1,61 +1,88 @@
 // M2 · Eligibility / Geofence gate (Control #8) [GATE]
 //
-// Enabled jurisdictions: Alberta (CA/AB) + all US states.
-// Quebec is a SEPARATE gated project (distinct consumer-law regime).
-// All other Canadian provinces are OFF until individually gated.
-// Enforcement: onboarding cannot create an account outside the enabled set.
+// Jurisdiction policy: Alberta (CA/AB) is the controlled pilot launch.
+// Quebec has a distinct legal regime and is explicitly blocked.
+// U.S. and remaining Canadian provinces are on the waitlist pending legal/compliance gates.
+// Enforcement: onboarding cannot complete outside pilot/enabled jurisdictions.
 //
 // Note: enabling jurisdictions does NOT make the app LIVE — real onboarding
 // remains sealed by PLAYMONEY_MODE + canGoLive(). This module only decides
 // *which jurisdictions* are permissible once the system does go live.
 
 export type Jurisdiction = { country: string; province: string | null };
+export type JurisdictionStatus = "enabled" | "pilot" | "waitlist" | "blocked";
+
+export interface JurisdictionPolicy {
+  readonly status: JurisdictionStatus;
+  readonly reason: string;
+}
 
 /**
- * Enabled jurisdictions. A null province means "any province/state" for that
- * country — used for the US where all states are equally in scope.
+ * Per-jurisdiction policy registry. Keys are "CC/PP" for province-level or "CC" for
+ * country-level. Province-level takes precedence; country-level applies to unlisted
+ * provinces in that country. Jurisdictions absent from this map default to "waitlist".
  */
-export const ENABLED_JURISDICTIONS: readonly Jurisdiction[] = [
-  { country: "CA", province: "AB" }, // Canada: Alberta only
-  { country: "US", province: null }, // United States: all states
-];
-
-/** Explicitly deferred/blocked, with the reason surfaced for audit + UX. */
-export const BLOCKED_JURISDICTIONS: Readonly<Record<string, string>> = {
-  "CA/QC": "Quebec is a separate gated project (distinct consumer-law regime); not enabled.",
+export const JURISDICTION_POLICIES: Readonly<Record<string, JurisdictionPolicy>> = {
+  "CA/AB": {
+    status: "pilot",
+    reason: "Alberta — controlled pilot launch jurisdiction.",
+  },
+  "CA/QC": {
+    status: "blocked",
+    reason: "Quebec is a separate gated project (distinct consumer-law regime); not enabled.",
+  },
+  US: {
+    status: "waitlist",
+    reason:
+      "United States launch is deferred pending legal and compliance gates. Join the waitlist to be notified.",
+  },
 };
 
 export type EligibilityResult =
-  | { eligible: true; jurisdiction: Jurisdiction }
-  | { eligible: false; code: "jurisdiction_blocked"; reason: string };
+  | { eligible: true; status: "enabled" | "pilot"; jurisdiction: Jurisdiction }
+  | {
+      eligible: false;
+      status: "waitlist" | "blocked";
+      code: "jurisdiction_blocked";
+      reason: string;
+    };
 
 function norm(s: string | null | undefined): string {
   return (s ?? "").trim().toUpperCase();
+}
+
+function lookupPolicy(c: string, p: string | null): JurisdictionPolicy | undefined {
+  if (p) {
+    const provinceKey = `${c}/${p}`;
+    if (JURISDICTION_POLICIES[provinceKey]) return JURISDICTION_POLICIES[provinceKey];
+  }
+  return JURISDICTION_POLICIES[c];
 }
 
 export function checkEligibility(country: string, province: string | null): EligibilityResult {
   const c = norm(country);
   const p = norm(province) || null;
 
-  // Explicit blocks first, so the reason is precise.
-  if (c === "CA" && p === "QC") {
+  const policy = lookupPolicy(c, p);
+
+  if (!policy) {
     return {
       eligible: false,
+      status: "waitlist",
       code: "jurisdiction_blocked",
-      reason: BLOCKED_JURISDICTIONS["CA/QC"],
+      reason: `Not yet available in ${[p, c].filter(Boolean).join(", ")}. Join the waitlist to be notified when we expand.`,
     };
   }
 
-  // A null province in ENABLED_JURISDICTIONS means "any province/state".
-  const match = ENABLED_JURISDICTIONS.some(
-    (j) => norm(j.country) === c && (j.province === null || norm(j.province) === norm(p)),
-  );
-  if (match) return { eligible: true, jurisdiction: { country: c, province: p } };
+  if (policy.status === "enabled" || policy.status === "pilot") {
+    return { eligible: true, status: policy.status, jurisdiction: { country: c, province: p } };
+  }
 
   return {
     eligible: false,
+    status: policy.status,
     code: "jurisdiction_blocked",
-    reason: `Not available in ${[p, c].filter(Boolean).join(", ")} yet. Supported: Alberta (CA) and all US states.`,
+    reason: policy.reason,
   };
 }
 
@@ -67,7 +94,7 @@ export class JurisdictionBlockedError extends Error {
   }
 }
 
-/** Hard guard for the onboarding entry point. Throws unless jurisdiction enabled. */
+/** Hard guard for the onboarding entry point. Throws unless jurisdiction is pilot/enabled. */
 export function assertEligible(country: string, province: string | null): Jurisdiction {
   const r = checkEligibility(country, province);
   if (!r.eligible) throw new JurisdictionBlockedError(r.reason);

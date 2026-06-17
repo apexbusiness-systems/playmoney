@@ -8,6 +8,7 @@ import { IconChip, PMIcon } from "@/components/pm/Icon";
 import { OccupationStep } from "@/components/onboarding/OccupationStep";
 import { auth } from "@/lib/playmoney/client";
 import type { OccupationContext } from "@/lib/playmoney/types";
+import { checkEligibility } from "@/lib/compliance/geofence";
 
 export const Route = createFileRoute("/app/onboarding")({
   head: () => ({ meta: [{ title: "Get set up — PlayMoney" }] }),
@@ -26,8 +27,19 @@ const TOS = TOS_LATEST;
 const PRIVACY = PRIVACY_LATEST;
 const PAD = PAD_LATEST;
 
-// CA provinces and US states for the jurisdiction selector.
-const CA_PROVINCES = [{ label: "Alberta", value: "AB" }] as const; // only AB enabled at MVP
+const CA_PROVINCES = [
+  { label: "Alberta", value: "AB" },
+  { label: "British Columbia", value: "BC" },
+  { label: "Manitoba", value: "MB" },
+  { label: "New Brunswick", value: "NB" },
+  { label: "Newfoundland and Labrador", value: "NL" },
+  { label: "Nova Scotia", value: "NS" },
+  { label: "Ontario", value: "ON" },
+  { label: "Prince Edward Island", value: "PE" },
+  { label: "Quebec", value: "QC" },
+  { label: "Saskatchewan", value: "SK" },
+] as const;
+
 const US_STATES = [
   { label: "Alabama", value: "AL" },
   { label: "Alaska", value: "AK" },
@@ -90,10 +102,14 @@ function Onboarding() {
   const [legalName, setLegalName] = useState("");
   const [country, setCountry] = useState<"CA" | "US">("CA");
   const [province, setProvince] = useState("AB");
+  const nav = useNavigate();
+
   const [tosAccepted, setTosAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [padAccepted, setPadAccepted] = useState(false);
-  const nav = useNavigate();
+
+  // Eligibility is derived from country/province selection; drives step-3 UX and final submit guard.
+  const jurisdictionEligibility = checkEligibility(country, province || null);
 
   const canSubmit =
     tosAccepted &&
@@ -120,6 +136,13 @@ function Onboarding() {
   }
 
   async function handleFinalSubmit() {
+    // Final eligibility guard — prevents submission from a non-eligible jurisdiction.
+    if (!jurisdictionEligibility.eligible) {
+      toast.error("This region is not yet supported.", {
+        description: jurisdictionEligibility.reason,
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await auth.submitOnboarding({
@@ -150,6 +173,11 @@ function Onboarding() {
       setSubmitting(false);
     }
   }
+
+  const jurisdictionLabel =
+    country === "CA"
+      ? `${CA_PROVINCES.find((p) => p.value === province)?.label ?? province}, Canada`
+      : `${province || "United States"} · United States`;
 
   return (
     <section className="bg-sand">
@@ -217,7 +245,7 @@ function Onboarding() {
                       onChange={(e) => {
                         const c = e.target.value as "CA" | "US";
                         setCountry(c);
-                        setProvince(c === "CA" ? "AB" : "");
+                        setProvince(c === "CA" ? "AB" : "TX");
                       }}
                     >
                       <option value="CA">Canada</option>
@@ -232,6 +260,7 @@ function Onboarding() {
                       className="mt-1.5 h-11 w-full rounded-[12px] border border-border-l bg-card px-3 text-ink focus-visible:border-evergreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-evergreen"
                       value={province}
                       onChange={(e) => setProvince(e.target.value)}
+                      aria-describedby="jurisdiction-status-note"
                     >
                       {country === "CA"
                         ? CA_PROVINCES.map((p) => (
@@ -245,9 +274,20 @@ function Onboarding() {
                             </option>
                           ))}
                     </select>
-                    {country === "CA" && (
-                      <p className="mt-1 text-xs text-ink-muted">
-                        Alberta only during our Canadian launch.
+                    {/* Eligibility status — shown inline so users understand their options */}
+                    {jurisdictionEligibility.eligible ? (
+                      <p id="jurisdiction-status-note" className="mt-1 text-xs text-ink-muted">
+                        {jurisdictionEligibility.status === "pilot"
+                          ? "Pilot launch — you're good to go."
+                          : "Available jurisdiction."}
+                      </p>
+                    ) : jurisdictionEligibility.status === "waitlist" ? (
+                      <p id="jurisdiction-status-note" className="mt-1 text-xs text-ink-muted">
+                        Not yet available here. We'll notify you when we expand to your region.
+                      </p>
+                    ) : (
+                      <p id="jurisdiction-status-note" className="mt-1 text-xs text-ink-muted">
+                        {jurisdictionEligibility.reason}
                       </p>
                     )}
                   </div>
@@ -275,8 +315,8 @@ function Onboarding() {
                   One last thing — your agreement.
                 </h2>
                 <p className="mt-2 text-ink-muted">
-                  {country === "US" ? `${province || "US"} · United States` : "Alberta, Canada"} ·
-                  non-custodial. We charge a fee only after we recover money for you.
+                  {jurisdictionLabel} · non-custodial. We charge a fee only after we recover money
+                  for you.
                 </p>
                 <div className="mt-5 space-y-2">
                   <Consent checked={tosAccepted} onChange={setTosAccepted}>
@@ -299,7 +339,10 @@ function Onboarding() {
             <div className="mt-8 flex items-center gap-3">
               {step !== 2 && (
                 <PMButton
-                  disabled={step === TOTAL_STEPS && !canSubmit}
+                  disabled={
+                    (step === TOTAL_STEPS && !canSubmit) ||
+                    (step === 3 && !jurisdictionEligibility.eligible)
+                  }
                   onClick={() => {
                     if (step === TOTAL_STEPS) void handleFinalSubmit();
                     else setStep((step + 1) as Step);
