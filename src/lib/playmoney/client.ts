@@ -36,6 +36,11 @@ export function hasSupabaseConfig(
   return Boolean(cfg.supabaseUrl && cfg.supabaseAnonKey);
 }
 
+/**
+ * Throws when a production build requires Supabase config but it is absent.
+ * Set VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true in deploy builds to prevent
+ * MockApiClient from silently shipping to production.
+ */
 export function assertSupabaseConfigWhenRequired(
   cfg: PublicSupabaseConfig,
   requireSupabaseConfig: boolean,

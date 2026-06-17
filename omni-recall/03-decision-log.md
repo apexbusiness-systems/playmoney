@@ -256,25 +256,41 @@ viewport screenshots. Two **measured** mobile defects were found and fixed; ever
   `lint` exit 0 · `typecheck` clean · **139 tests / 23 files** · `build` green. (The Playwright
   harness was used locally for evidence only — not added as a dependency or wired into CI.)
 
-### 2026-06-16 · D-014 · Release-blocker follow-up after PR #14 (BUILT, not release-ready)
+### 2026-06-17 · D-014 · Jurisdiction policy model (refines PR #15)
 
-PR #14 only added Node setup and swapped the header wordmark. This follow-up closed the real release
-blockers it left untouched, while keeping `PLAYMONEY_MODE` unset/default `BUILT`:
+PR #16 refines PR #15's Alberta-only implementation into a scalable jurisdiction policy model.
+It preserves PR #15's production Supabase guard and CI/RLS env fixes unchanged. It does **not**
+make PlayMoney release-ready.
 
-- **Production mock-client safety**: `playmoney/client.ts` now has a pure
-  `assertSupabaseConfigWhenRequired(cfg, require)` guard. The deploy workflow sets
-  `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` and passes only public `VITE_SUPABASE_URL` /
-  `VITE_SUPABASE_ANON_KEY` into the build, so a production deploy build fails instead of silently
-  selecting `MockApiClient`. Offline/local/PR CI mock fallback remains available because that guard
-  flag is not set outside deploy.
-- **RLS CI env correctness**: CI now maps `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional
-  `SUPABASE_PUBLISHABLE_KEY`, and server-only `SUPABASE_SERVICE_ROLE_KEY` into the RLS step. The step
-  emits explicit skip notices when required secrets are unavailable; when present it runs
-  `bun run db:verify-rls`.
-- **Alberta-only launch geofence**: `ENABLED_JURISDICTIONS` is exactly `CA/AB`; all U.S. states are
-  blocked/deferred. Onboarding no longer offers the U.S. as an active selectable launch jurisdiction.
-- **Docs**: `.env.example` and `DEPLOY.md` now distinguish build-time public Vite variables,
-  server/runtime Supabase variables, and service-role/management secrets, and explicitly avoid any
+- **Production mock-client safety** (preserved from PR #15): `playmoney/client.ts` exports
+  `assertSupabaseConfigWhenRequired(cfg, require)`. The deploy workflow sets
+  `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` and passes public `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY` into the build, so a production deploy build fails instead of
+  silently selecting `MockApiClient`. Offline/local/PR CI mock fallback is unchanged.
+  `vite.config.ts` enforces the same at build time via `assertProductionSupabaseBuildConfig`.
+- **RLS CI env correctness** (preserved from PR #15): CI maps `SUPABASE_URL`,
+  `SUPABASE_ANON_KEY`, optional `SUPABASE_PUBLISHABLE_KEY`, and server-only
+  `SUPABASE_SERVICE_ROLE_KEY` into the RLS step, with explicit skip notices when secrets are
+  absent; when present it runs `bun run db:verify-rls`.
+- **Jurisdiction policy model** (replaces PR #15's hardcoded Alberta-only geofence):
+  `compliance/geofence.ts` uses a 4-state policy registry (`enabled` / `pilot` / `waitlist`
+  / `blocked`). Alberta (CA/AB) is `pilot` — the only active launch jurisdiction; onboarding
+  proceeds. U.S. (all states) is `waitlist` — deferred pending legal/compliance gates, visible
+  in the UI but not eligible for onboarding completion. Other Canadian provinces are `waitlist`
+  by default. Quebec (CA/QC) is `blocked` with its distinct legal reason. `checkEligibility`
+  returns `status` on both eligible and ineligible branches for UI/audit differentiation.
+- **Onboarding** (replaces PR #15's disabled country selector): Country and province/state
+  selectors are restored and active. Non-eligible jurisdictions show an inline eligibility note
+  and disable the Continue button — users see the waitlist/blocked reason without being able
+  to proceed. Alberta remains the only jurisdiction through which onboarding can complete.
+- **Docs**: `.env.example` and `DEPLOY.md` distinguish build-time public Vite variables,
+  server/runtime Supabase variables, and service-role/management secrets, and avoid any
   release-readiness claim.
-- **Residual**: release still requires real GitHub/Cloudflare/Supabase secrets, RLS verification
-  against the live project, external go-live gates, and the existing ops/legal blockers before LIVE.
+- **Remaining blockers** (this PR does not address): P4 real adapters (Flinks/Plaid/Stripe
+  concrete impls behind ports); P5 recovery initiation, lifecycle saga, and fee settlement
+  trust model end-to-end; service-role ownership authz for admin paths; durable LOA/review
+  queue; legal copy (ToS/Privacy/PAD text, counsel-supplied); privacy export/delete UX; full
+  RLS tenant-isolation proof via `db:verify-rls` against a live project with rotated secrets
+  (SECURITY-001); external go-live gates G-counsel and G-insurance (ops/legal, never auto-set);
+  and ops/legal approval before `PLAYMONEY_MODE=LIVE`. `PLAYMONEY_MODE` remains `BUILT` by
+  default; `canGoLive()` remains false.
