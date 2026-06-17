@@ -2,9 +2,11 @@
 //
 // Selects the REAL Supabase-backed clients when public config is present
 // (VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY), and falls back to the in-memory
-// mock otherwise — so the UI works offline / in CI with zero config, and renders
-// real RLS-scoped data the moment Supabase is wired. `selectClients` is pure over
-// its config so the choice is unit-testable without touching the environment.
+// mock otherwise — so the UI works offline / in non-production CI with zero config,
+// and renders real RLS-scoped data the moment Supabase is wired. Production deploy
+// builds must set VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true so mock fallback cannot
+// silently ship. `selectClients` is pure over its config so the choice is
+// unit-testable without touching the environment.
 
 import { createAnonClient } from "@/lib/supabase/client";
 import type { ApiClient, AuthClient } from "./types";
@@ -34,6 +36,17 @@ export function hasSupabaseConfig(
   return Boolean(cfg.supabaseUrl && cfg.supabaseAnonKey);
 }
 
+export function assertSupabaseConfigWhenRequired(
+  cfg: PublicSupabaseConfig,
+  requireSupabaseConfig: boolean,
+): void {
+  if (requireSupabaseConfig && !hasSupabaseConfig(cfg)) {
+    throw new Error(
+      "Production build requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY; refusing to use MockApiClient.",
+    );
+  }
+}
+
 /** PURE: pick real vs mock clients from config. Real path uses the anon (RLS) key. */
 export function selectClients(cfg: PublicSupabaseConfig): SelectedClients {
   if (hasSupabaseConfig(cfg)) {
@@ -61,7 +74,21 @@ export function readPublicSupabaseConfig(): PublicSupabaseConfig {
   };
 }
 
-const selected = selectClients(readPublicSupabaseConfig());
+function requiresSupabaseConfig(): boolean {
+  const viteEnv =
+    typeof import.meta !== "undefined"
+      ? (import.meta as { env?: Record<string, string | undefined> }).env
+      : undefined;
+  const procEnv = typeof process !== "undefined" ? process.env : undefined;
+  return (
+    viteEnv?.VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG === "true" ||
+    procEnv?.PLAYMONEY_REQUIRE_SUPABASE_CONFIG === "true"
+  );
+}
+
+const publicSupabaseConfig = readPublicSupabaseConfig();
+assertSupabaseConfigWhenRequired(publicSupabaseConfig, requiresSupabaseConfig());
+const selected = selectClients(publicSupabaseConfig);
 
 /** The active data client (real when configured, else mock). */
 export const api: ApiClient = selected.api;

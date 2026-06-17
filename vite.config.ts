@@ -4,7 +4,19 @@ import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 
+function assertProductionSupabaseBuildConfig(): void {
+  if (process.env.VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG !== "true") return;
+
+  if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
+    throw new Error(
+      "Production deploy build requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY; refusing to build with MockApiClient fallback.",
+    );
+  }
+}
+
 export default defineConfig(async () => {
+  assertProductionSupabaseBuildConfig();
+
   const { nitro } = await import("nitro/vite");
 
   return {

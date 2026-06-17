@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasSupabaseConfig, selectClients } from "./client";
+import { assertSupabaseConfigWhenRequired, hasSupabaseConfig, selectClients } from "./client";
 import { MockApiClient, MockAuthClient } from "./mock";
 import { SupabaseApiClient, SupabaseAuthClient } from "./supabase";
 
@@ -31,5 +31,18 @@ describe("P1 · client selector: real Supabase when configured, mock fallback ot
     expect(recs.length).toBeGreaterThan(0);
     const totals = await api.totals();
     expect(totals.foundTotal).toBeGreaterThan(0);
+  });
+
+  it("fails production builds instead of silently selecting the mock client", () => {
+    expect(() => assertSupabaseConfigWhenRequired({}, true)).toThrow(/MockApiClient/);
+    expect(() =>
+      assertSupabaseConfigWhenRequired({ supabaseUrl: "https://proj.supabase.co" }, true),
+    ).toThrow(/VITE_SUPABASE_ANON_KEY/);
+    expect(() =>
+      assertSupabaseConfigWhenRequired(
+        { supabaseUrl: "https://proj.supabase.co", supabaseAnonKey: "anon-key" },
+        true,
+      ),
+    ).not.toThrow();
   });
 });
