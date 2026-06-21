@@ -8,14 +8,11 @@
 // This adapter sends TEXT only — there is no parameter, return value, or code path
 // that moves, holds, or routes user funds. Non-custodial invariant is untouched.
 
+import { Resend } from "resend";
 import type { RecoveryOutboundPort, RecoveryCommPackageRef } from "@/lib/compliance/ports";
 import { assertModeIsLive } from "@/lib/compliance/mode";
 
-interface SendGridErrorBody {
-  errors?: Array<{ message?: string }>;
-}
-
-class EmailRecoveryOutboundAdapter implements RecoveryOutboundPort {
+export class ResendOutboundAdapter implements RecoveryOutboundPort {
   async sendRecoveryPackage(
     pkg: RecoveryCommPackageRef,
     destination: { email?: string; url?: string },
@@ -29,45 +26,37 @@ class EmailRecoveryOutboundAdapter implements RecoveryOutboundPort {
       );
     }
 
-    const apiKey = process.env.SENDGRID_API_KEY;
+    const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       throw new Error(
-        "RecoveryOutboundAdapter: SENDGRID_API_KEY not configured — required for LIVE dispatch",
+        "RecoveryOutboundAdapter: RESEND_API_KEY not configured — required for LIVE dispatch",
       );
     }
 
+    const resend = new Resend(apiKey);
     const from = process.env.OUTBOUND_EMAIL_FROM ?? "recovery@playmoney.ca";
 
-    const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: from },
-        subject: pkg.subject,
-        content: [{ type: "text/plain", value: pkg.body }],
-      }),
+    const { data, error } = await resend.emails.send({
+      from,
+      to: [to],
+      subject: pkg.subject,
+      text: pkg.body,
     });
 
-    if (!res.ok) {
-      const err = (await res.json().catch(() => ({}))) as SendGridErrorBody;
-      const msg = err.errors?.[0]?.message ?? `HTTP ${res.status}`;
-      throw new Error(`RecoveryOutboundAdapter: SendGrid returned error: ${msg}`);
+    if (error) {
+      throw new Error(`[ResendOutboundAdapter] Dispatch failed: ${error.name} — ${error.message}`);
     }
 
-    return { dispatchRef: `sg_${Date.now()}_${pkg.generatedAt}` };
+    return { dispatchRef: `resend_${data?.id}_${Date.now()}` };
   }
 }
 
 /**
  * Returns a RecoveryOutboundPort. Sealed in BUILT — every method calls
- * assertModeIsLive() before any I/O. Only a configured SENDGRID_API_KEY
+ * assertModeIsLive() before any I/O. Only a configured RESEND_API_KEY
  * enables the LIVE path; missing config throws LiveModeBlockedError so the
  * missing key is an explicit LIVE blocker, not a silent no-op.
  */
 export function createRecoveryOutboundAdapter(): RecoveryOutboundPort {
-  return new EmailRecoveryOutboundAdapter();
+  return new ResendOutboundAdapter();
 }

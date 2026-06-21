@@ -14,9 +14,9 @@ Claude Code: `/plugin marketplace add {{ORG}}/{{MARKETPLACE_REPO}}` | claude.ai:
 
 **Task**: {{one real task}}
 
-| | Without skill | With skill |
-|---|---|---|
-| {{metric}} | {{measured}} | {{measured}} |
+|            | Without skill | With skill   |
+| ---------- | ------------- | ------------ |
+| {{metric}} | {{measured}}  | {{measured}} |
 
 Numbers above come from `scorecard.json` in this package - regenerate with `python scripts/forge.py score .`
 
@@ -31,4 +31,5 @@ sha256sum -c dist/{{SKILL_NAME}}-{{VERSION}}.skill.sha256
 ```
 
 ---
+
 Runs on **{{RUNTIME}}**. (c) APEX Business Systems Ltd., Edmonton, AB.

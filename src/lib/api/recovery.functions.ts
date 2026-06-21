@@ -362,7 +362,8 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
             "approveRecovery: merchantContact has no email or url — cannot dispatch RCP",
           );
         }
-        const { createRecoveryOutboundAdapter } = await import("@/lib/adapters/outbound");
+        const { createRecoveryOutboundAdapter } =
+          await import("@/lib/adapters/resend-outbound.adapter");
         const outbound = createRecoveryOutboundAdapter();
         const dispatch = await outbound.sendRecoveryPackage(rcp, merchantContact);
 

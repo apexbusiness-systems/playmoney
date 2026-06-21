@@ -1,6 +1,7 @@
 # Validation Rubric
 
 ## Contents
+
 - Decision scale (GO / NO-GO / BLOCKED)
 - User-shoes questions
 - Hard caps
@@ -11,6 +12,7 @@
 ### GO
 
 Use GO only when all are true:
+
 - the surface's purpose is clear from its own labels or output;
 - the primary path works or is honestly gated;
 - every visible action works, is locally handled, or shows a clear prerequisite message;
@@ -22,6 +24,7 @@ Use GO only when all are true:
 ### NO-GO
 
 Use NO-GO if any are true:
+
 - the entry point produces no visible or logical result;
 - the surface serves no relevant user purpose;
 - the user is routed to the wrong flow or response;
@@ -40,6 +43,7 @@ Use BLOCKED only when validation cannot complete because of a named external con
 ## User-shoes questions
 
 For each surface, answer:
+
 1. What is this for?
 2. What can I do here?
 3. What happens when I take the primary action?
@@ -51,6 +55,7 @@ For each surface, answer:
 ## Hard caps
 
 Apply these caps even when automated tests pass:
+
 - entry point produces no visible result: max 60
 - user routed to the wrong flow or response: max 65
 - unsupported action returns a generic failure: max 70
@@ -64,6 +69,7 @@ Apply these caps even when automated tests pass:
 ## Quality preservation gate
 
 For every change that affects what a user sees, hears, or reads, require:
+
 - a "before" capture;
 - an "after" capture;
 - a stated reason the user's value is preserved;

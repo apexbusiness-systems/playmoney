@@ -6,17 +6,17 @@ This repository belongs to APEX Business Systems LTD and supports APEX-OmniHub. 
 
 Every change must support enterprise-grade quality:
 
-* Reliability
-* Security
-* Scalability
-* Maintainability
-* Modularity
-* Performance
-* Observability
-* Testability
-* Simplicity
-* Premium UX
-* Regression safety
+- Reliability
+- Security
+- Scalability
+- Maintainability
+- Modularity
+- Performance
+- Observability
+- Testability
+- Simplicity
+- Premium UX
+- Regression safety
 
 Optimize for revenue impact, user value, operational efficiency, automation, and long-term defensibility.
 
@@ -51,40 +51,40 @@ Do not introduce new architectural patterns unless clearly necessary.
 
 All changes must be:
 
-* Atomic
-* Surgical
-* Minimal-diff
-* Idempotent where relevant
-* Reversible
-* Testable
-* Regression-safe
-* Blast-radius contained
+- Atomic
+- Surgical
+- Minimal-diff
+- Idempotent where relevant
+- Reversible
+- Testable
+- Regression-safe
+- Blast-radius contained
 
 Avoid:
 
-* Broad rewrites
-* Duplicate logic
-* Hidden coupling
-* Premature complexity
-* Untested behavior changes
-* Breaking public APIs
-* Unnecessary dependency additions
-* Formatting churn outside touched code
+- Broad rewrites
+- Duplicate logic
+- Hidden coupling
+- Premature complexity
+- Untested behavior changes
+- Breaking public APIs
+- Unnecessary dependency additions
+- Formatting churn outside touched code
 
 ## UX Standard
 
 For frontend work, prioritize:
 
-* Clarity
-* Speed
-* Accessibility
-* Responsiveness
-* Low-friction flows
-* Error states
-* Loading states
-* Empty states
-* Consistent visual hierarchy
-* Premium, polished interaction design
+- Clarity
+- Speed
+- Accessibility
+- Responsiveness
+- Low-friction flows
+- Error states
+- Loading states
+- Empty states
+- Consistent visual hierarchy
+- Premium, polished interaction design
 
 Do not degrade existing UX.
 
@@ -116,12 +116,12 @@ Use existing repo commands whenever possible. Inspect scripts, CI, docs, package
 
 After changes, run the most relevant validation available:
 
-* Typecheck
-* Lint
-* Unit tests
-* Integration tests
-* Build
-* Targeted manual verification
+- Typecheck
+- Lint
+- Unit tests
+- Integration tests
+- Build
+- Targeted manual verification
 
 If validation cannot be run, state exactly why and what should be run next.
 
@@ -141,12 +141,11 @@ Keep responses concise and actionable.
 
 Apply these workflows when relevant:
 
-* apex-dev for production implementation
-* one-pass-debug for root-cause debugging
-* gtm-omni for growth, funnel, positioning, and revenue work
-* UNIVERSAL_DEBUG_SKILL for systematic diagnosis
-* webapp-testing for UI/app validation
-* frontend-design for premium UX implementation
+- apex-dev for production implementation
+- one-pass-debug for root-cause debugging
+- gtm-omni for growth, funnel, positioning, and revenue work
+- UNIVERSAL_DEBUG_SKILL for systematic diagnosis
+- webapp-testing for UI/app validation
+- frontend-design for premium UX implementation
 
 Use the right workflow silently unless the task benefits from explaining it.
-

@@ -40,6 +40,7 @@ What is being validated?
 ```
 
 Then, regardless of domain, answer:
+
 1. What does this surface claim to do?
 2. What would a user expect immediately after the primary entry point?
 3. What is the real job it has to do?
@@ -51,6 +52,7 @@ If docs, code, tests, and runtime behavior disagree, declare the drift before pr
 ### 2. Test in the user's shoes
 
 For every surface in scope:
+
 - enter it from the same entry point a real user would use, not a debug shortcut;
 - read labels, copy, or output as if seeing them for the first time;
 - exercise the primary action and every secondary action;
@@ -63,6 +65,7 @@ A surface that renders or responds but serves no logical user purpose is NO-GO.
 ### 3. Preserve quality
 
 Reject any change that:
+
 - makes the surface flatter, more generic, or strips meaningful context;
 - breaks the product's established visual or verbal language;
 - replaces a meaningful custom surface with a bare default;
@@ -73,6 +76,7 @@ Approve a quality-affecting change only when before/after evidence proves the re
 ### 4. Harden interaction behavior
 
 Every visible action must be exactly one of:
+
 - working and verified;
 - locally handled and verified;
 - disabled or gated with honest, specific copy;
@@ -87,6 +91,7 @@ GO only when user-shoes testing, tests, and evidence all pass. NO-GO when the su
 ## Evidence Rules
 
 Collect whatever the domain makes available:
+
 - UI: before screenshot, opened-surface screenshot, post-action screenshot;
 - API/CLI: the exact request/command and the exact response/output;
 - Agent flow: the verbatim transcript of the exchange;
