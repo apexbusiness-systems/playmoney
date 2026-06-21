@@ -352,7 +352,7 @@ export function matchMerchant(txnDescription: string): MerchantMatch | null {
 
       // Confidence: exact → 1.0, prefix → 0.95, contains → 0.90
       const confidence =
-        needle === alias ? 1.0 : needle.startsWith(alias + " ") || needle === alias ? 0.95 : 0.90;
+        needle === alias ? 1.0 : needle.startsWith(alias + " ") || needle === alias ? 0.95 : 0.9;
 
       if (!best || confidence > best.confidence) {
         best = { entry, confidence };

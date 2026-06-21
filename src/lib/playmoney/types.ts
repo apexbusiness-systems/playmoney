@@ -12,7 +12,7 @@ export const MerchantContact = z.object({
 export type MerchantContact = z.infer<typeof MerchantContact>;
 
 export class IntakeRejectionError extends Error {
-  readonly code: "not_eligible_credit_only" = "not_eligible_credit_only";
+  readonly code = "not_eligible_credit_only" as const;
   constructor(reason: string) {
     super(reason);
     this.name = "IntakeRejectionError";

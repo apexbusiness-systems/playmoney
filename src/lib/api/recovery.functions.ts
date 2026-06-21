@@ -333,7 +333,7 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
       .eq("owner_id", userId)
       .maybeSingle();
     const userDisplayName =
-      (profileRow.data as Record<string, unknown> | null)?.display_name as string | undefined ??
+      ((profileRow.data as Record<string, unknown> | null)?.display_name as string | undefined) ??
       "valued customer";
 
     // ── Build RCP (pure, no I/O) — validates letter is well-formed in BUILT ───

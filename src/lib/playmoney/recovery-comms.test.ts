@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildRecoveryCommPackage,
-  UnsupportedAvenueError,
-  type RcpInput,
-} from "./recovery-comms";
+import { buildRecoveryCommPackage, UnsupportedAvenueError, type RcpInput } from "./recovery-comms";
 import { lintCopy } from "@/lib/compliance/upl";
 
 const baseInput: RcpInput = {

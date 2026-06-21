@@ -188,9 +188,7 @@ function subscriptionCancellation(
 
 export class UnsupportedAvenueError extends Error {
   constructor(avenue: string) {
-    super(
-      `buildRecoveryCommPackage: avenue "${avenue}" is not a supported enabled avenue`,
-    );
+    super(`buildRecoveryCommPackage: avenue "${avenue}" is not a supported enabled avenue`);
     this.name = "UnsupportedAvenueError";
   }
 }

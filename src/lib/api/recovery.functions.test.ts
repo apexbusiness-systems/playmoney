@@ -232,16 +232,14 @@ describe("P5 · checkSubscriptionEligibility gate", () => {
   });
 
   it("throws IntakeRejectionError for subscription_cancellation with store_credit", () => {
-    expect(() =>
-      checkSubscriptionEligibility("subscription_cancellation", "store_credit"),
-    ).toThrow(IntakeRejectionError);
+    expect(() => checkSubscriptionEligibility("subscription_cancellation", "store_credit")).toThrow(
+      IntakeRejectionError,
+    );
   });
 
   it("passes for non-subscription avenues regardless of refundType", () => {
     for (const avenue of ["merchant_refund", "fee_reversal", "billing_error_correction"]) {
-      expect(() =>
-        checkSubscriptionEligibility(avenue, "store_credit"),
-      ).not.toThrow();
+      expect(() => checkSubscriptionEligibility(avenue, "store_credit")).not.toThrow();
     }
   });
 
@@ -255,7 +253,9 @@ describe("P5 · checkSubscriptionEligibility gate", () => {
 describe("P5 · RCP builder integration with recovery engine", () => {
   it("builds a UPL-clean RCP for every enabled avenue in BUILT", () => {
     const contact = { method: "manual" as const };
-    const cases: Array<[Recovery["avenue"], Parameters<typeof buildRecoveryCommPackage>[0]["avenue"]]> = [
+    const cases: Array<
+      [Recovery["avenue"], Parameters<typeof buildRecoveryCommPackage>[0]["avenue"]]
+    > = [
       ["refund", "merchant_refund"],
       ["fee_reversal", "fee_reversal"],
       ["billing_error", "billing_error_correction"],
