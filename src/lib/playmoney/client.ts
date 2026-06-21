@@ -47,7 +47,7 @@ export function assertSupabaseConfigWhenRequired(
 ): void {
   if (requireSupabaseConfig && !hasSupabaseConfig(cfg)) {
     throw new Error(
-      "Production build requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY; refusing to use MockApiClient.",
+      "Production build requires VITE_SUPABASE_URL and either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY; refusing to use MockApiClient.",
     );
   }
 }
@@ -75,7 +75,7 @@ export function readPublicSupabaseConfig(): PublicSupabaseConfig {
   const pick = (key: string): string | undefined => viteEnv?.[key] ?? procEnv?.[key];
   return {
     supabaseUrl: pick("VITE_SUPABASE_URL"),
-    supabaseAnonKey: pick("VITE_SUPABASE_ANON_KEY"),
+    supabaseAnonKey: pick("VITE_SUPABASE_ANON_KEY") ?? pick("VITE_SUPABASE_PUBLISHABLE_KEY"),
   };
 }
 
