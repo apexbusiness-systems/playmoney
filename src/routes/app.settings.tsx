@@ -4,6 +4,7 @@ import { api, auth } from "@/lib/playmoney/client";
 import { PMCard } from "@/components/pm/Card";
 import { PMButton } from "@/components/pm/Button";
 import { PMIcon } from "@/components/pm/Icon";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({ meta: [{ title: "Settings — PlayMoney" }] }),
@@ -21,6 +22,20 @@ function Settings() {
     a.download = "playmoney-export.json";
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function handleDeleteAll() {
+    if (!window.confirm("Are you sure you want to delete all your data? This cannot be undone."))
+      return;
+    try {
+      await api.deleteAllData();
+      toast.success("All data deleted");
+      window.location.reload();
+    } catch (err) {
+      toast.error("Failed to delete data", {
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+    }
   }
 
   return (
@@ -87,7 +102,8 @@ function Settings() {
               Export data
             </PMButton>
             <button
-              className="text-sm font-semibold text-destructive hover:underline"
+              onClick={handleDeleteAll}
+              className="text-sm font-semibold text-destructive hover:underline cursor-pointer"
               style={{ color: "#9C2A1A" }}
             >
               Delete everything
