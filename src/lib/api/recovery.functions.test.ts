@@ -1,7 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Recovery } from "@/lib/playmoney/types";
+import { IntakeRejectionError } from "@/lib/playmoney/types";
 import { GATE_KEYS, type GateStatus } from "@/lib/compliance/gates";
-import { processApproval, buildApprovalLoa, processRecoveryLanded } from "./recovery.functions";
+import {
+  processApproval,
+  buildApprovalLoa,
+  processRecoveryLanded,
+  checkSubscriptionEligibility,
+} from "./recovery.functions";
+import { buildRecoveryCommPackage } from "@/lib/playmoney/recovery-comms";
+import { lintCopy } from "@/lib/compliance/upl";
 import { applySettleFee } from "./lifecycle.functions";
 import { createPayoutAdapter } from "@/lib/adapters/payout";
 import { LiveModeBlockedError } from "@/lib/compliance/mode";
@@ -212,6 +220,61 @@ describe("P2 · buildApprovalLoa: e-LOA shape from click_accept", () => {
         now: NOW,
       });
       expect(loa.scope.avenue).toBe(expectedKey);
+    }
+  });
+});
+
+describe("P5 · checkSubscriptionEligibility gate", () => {
+  it("passes for subscription_cancellation with original_payment_method", () => {
+    expect(() =>
+      checkSubscriptionEligibility("subscription_cancellation", "original_payment_method"),
+    ).not.toThrow();
+  });
+
+  it("throws IntakeRejectionError for subscription_cancellation with store_credit", () => {
+    expect(() =>
+      checkSubscriptionEligibility("subscription_cancellation", "store_credit"),
+    ).toThrow(IntakeRejectionError);
+  });
+
+  it("passes for non-subscription avenues regardless of refundType", () => {
+    for (const avenue of ["merchant_refund", "fee_reversal", "billing_error_correction"]) {
+      expect(() =>
+        checkSubscriptionEligibility(avenue, "store_credit"),
+      ).not.toThrow();
+    }
+  });
+
+  it("passes when refundType is undefined (not provided)", () => {
+    expect(() =>
+      checkSubscriptionEligibility("subscription_cancellation", undefined),
+    ).not.toThrow();
+  });
+});
+
+describe("P5 · RCP builder integration with recovery engine", () => {
+  it("builds a UPL-clean RCP for every enabled avenue in BUILT", () => {
+    const contact = { method: "manual" as const };
+    const cases: Array<[Recovery["avenue"], Parameters<typeof buildRecoveryCommPackage>[0]["avenue"]]> = [
+      ["refund", "merchant_refund"],
+      ["fee_reversal", "fee_reversal"],
+      ["billing_error", "billing_error_correction"],
+      ["subscription", "subscription_cancellation"],
+    ];
+    for (const [, avenue] of cases) {
+      const pkg = buildRecoveryCommPackage({
+        avenue,
+        merchant: "Test Merchant",
+        contact,
+        userDisplayName: "Test User",
+        amountCents: 5000,
+        recoveryId: "rec_test",
+        reason: "Test reason.",
+        now: new Date("2026-06-21T00:00:00Z"),
+      });
+      expect(lintCopy(pkg.body).clean, `UPL clean for ${avenue}`).toBe(true);
+      expect(pkg.body).toContain("Test Merchant");
+      expect(pkg.body).toContain("rec_test");
     }
   });
 });

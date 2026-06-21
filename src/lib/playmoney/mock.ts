@@ -171,15 +171,25 @@ export class MockApiClient implements ApiClient {
   async approveRecovery({
     recoveryId,
     idempotencyKey,
+    merchantContact: _merchantContact,
+    refundType,
   }: {
     recoveryId: string;
     idempotencyKey: string;
+    merchantContact: import("./types").MerchantContact;
+    refundType?: import("./types").SubscriptionRefundType;
   }) {
+    const { IntakeRejectionError } = await import("./types");
     await this.delay(220);
     const existing = this.approvals.find((a) => a.approvalToken === idempotencyKey);
     if (existing) return existing;
     const rec = this.recoveries.find((r) => r.id === recoveryId);
     if (!rec) throw new Error("Recovery not found");
+    if (rec.avenue === "subscription" && refundType === "store_credit") {
+      throw new IntakeRejectionError(
+        "Store-credit-only subscriptions cannot be recovered through this service.",
+      );
+    }
     rec.status = "on_the_way";
     rec.updatedAt = new Date().toISOString();
     const approval: Approval = {

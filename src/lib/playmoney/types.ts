@@ -1,6 +1,24 @@
 import { z } from "zod";
 import type { OnboardingInput, OnboardingResult } from "@/lib/api/onboarding.core";
 
+export const SubscriptionRefundType = z.enum(["original_payment_method", "store_credit"]);
+export type SubscriptionRefundType = z.infer<typeof SubscriptionRefundType>;
+
+export const MerchantContact = z.object({
+  email: z.string().email().optional(),
+  url: z.string().url().optional(),
+  method: z.enum(["directory", "manual"]),
+});
+export type MerchantContact = z.infer<typeof MerchantContact>;
+
+export class IntakeRejectionError extends Error {
+  readonly code: "not_eligible_credit_only" = "not_eligible_credit_only";
+  constructor(reason: string) {
+    super(reason);
+    this.name = "IntakeRejectionError";
+  }
+}
+
 export const OccupationType = z.enum([
   "employee",
   "gig_worker",
@@ -119,7 +137,12 @@ export type IngestResult = { ok: true; situationCount: number } | SealedUntilLiv
 export interface ApiClient {
   listRecoveries(): Promise<Recovery[]>;
   getRecovery(id: string): Promise<Recovery | null>;
-  approveRecovery(input: { recoveryId: string; idempotencyKey: string }): Promise<Approval>;
+  approveRecovery(input: {
+    recoveryId: string;
+    idempotencyKey: string;
+    merchantContact: MerchantContact;
+    refundType?: SubscriptionRefundType;
+  }): Promise<Approval>;
   listNotifications(): Promise<Notification[]>;
   listFeeLedger(): Promise<FeeLedgerEntry[]>;
   totals(): Promise<{ foundTotal: number; landedTotal: number; ourFeeTotal: number }>;

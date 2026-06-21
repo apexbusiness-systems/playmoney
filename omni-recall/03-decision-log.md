@@ -397,3 +397,39 @@ was edited; no fund-holding type or table introduced; SECURITY-001 keys untouche
 4. **Interac e-Transfer as `payout_ref` (T6 YELLOW).** If any avenue is PLAYMONEY-INITIATED, `payout_ref` = Interac e-Transfer email is a real consumer-grade rail (funds land in the user's own account, no PlayMoney custody, no new vendor integration). Confirm this is the intended payout method, and confirm whether a tokenised PSP ref should coexist for non-Interac users.
 
 **What this D-016 does NOT do.** It does not choose MERCHANT-DIRECT vs PLAYMONEY-INITIATED for any avenue, does not build a payout rail, does not change any compliance file, and does not mark P4/P5 status. It surfaces the gap so the founder can decide before LIVE wiring begins.
+
+---
+
+### 2026-06-21 · D-017 · P5 — RCP engine + merchant intake (BUILT, sealed)
+
+Closes D-016's 4 open founder questions. Builds the Recovery Communication Package (RCP) engine and merchant contact intake. All outbound dispatch sealed behind `assertModeIsLive()` in BUILT; no real email sent until LIVE+gates.
+
+**(a) D-016 founder rulings implemented.**
+
+- **F-Q1 (MERCHANT-DIRECT)** — 3 avenues confirmed MERCHANT-DIRECT (merchant_refund, fee_reversal, billing_error_correction); subscription_cancellation is CONDITIONAL (card-reversal-only in scope — see F-Q3). `payout_ref` stays display-only; zero avenues require PlayMoney to initiate a disbursement at launch.
+- **F-Q2 (perform() gap closed)** — `perform()` now builds + dispatches an RCP. Build happens outside the executor gate (validates package in BUILT); dispatch fires only when LIVE+gates via `RecoveryOutboundAdapter`. `RecoveryOutboundPort` added to `ports.ts`. Dispatch confirmed sealed: `assertModeIsLive()` in adapter throws `LiveModeBlockedError` before any network call. SENDGRID_API_KEY required at LIVE.
+- **F-Q3 (subscription scope)** — `subscription_cancellation` scoped to card-reversal-only. Store-credit/voucher recoveries are EXPLICITLY OUT OF SCOPE. `checkSubscriptionEligibility(avenue, refundType)` is a pure exported gate; `approveRecoveryFn` runs it before the compliance stack (throws `IntakeRejectionError: not_eligible_credit_only`). Tested: store_credit → throws, original_payment_method → passes, non-subscription avenues → always pass.
+- **F-Q4 (Interac e-Transfer)** — CONFIRMED display-only at Phase 0. `payout_ref` correctly captured as Interac e-Transfer email (T6); `RecoveryDestination = UserPayoutRef` retained as reserved capacity. No payout rail wired; no PLAYMONEY-INITIATED avenue at launch.
+
+**(b) Files built.**
+
+- **`src/lib/playmoney/recovery-comms.ts`** — `buildRecoveryCommPackage()`: pure, no I/O. 4 avenue templates with Canadian regulatory citations woven into the body (CPA 2002 s.25, FCAC, CBA, CRTC, OEB/AUC/BCUC). All output linted at generation time via `assertCleanCopy(upl.ts)` — UPL violations throw, never render. `UnsupportedAvenueError` for disabled avenues.
+- **`src/lib/playmoney/merchant-directory.ts`** — `matchMerchant(txnDescription)`: contains-based fuzzy match (normalized, 3-char min alias, confidence ≥ 0.85). `buildMerchantContact(txnDescription)`: returns `MerchantContact` with `method:'directory'` (url/email from directory) or `method:'manual'` (no contact; user must supply). Seeded with top-50 Canadian dispute targets (telecom, streaming, SaaS, utilities, retail, delivery, fitness).
+- **`src/lib/adapters/outbound.ts`** — `createRecoveryOutboundAdapter()`: `RecoveryOutboundPort` impl. BUILT: `assertModeIsLive()` throws immediately. LIVE: dispatches via SendGrid (`SENDGRID_API_KEY`); missing key = explicit `LiveModeBlockedError` (LIVE configuration gate, not a silent no-op).
+- **`src/lib/compliance/ports.ts`** — `RecoveryOutboundPort` + `RecoveryCommPackageRef` interfaces added. Comment updated to document the seal contract.
+- **`src/lib/playmoney/types.ts`** — `MerchantContact`, `SubscriptionRefundType`, `IntakeRejectionError` (typed error, code `not_eligible_credit_only`) added. `ApiClient.approveRecovery` extended with `merchantContact: MerchantContact` (required) + `refundType?: SubscriptionRefundType`.
+- **`src/lib/api/recovery.functions.ts`** — `checkSubscriptionEligibility()` exported pure gate. `approveRecoveryFn` updated: subscription gate runs first (Step 0), RCP built before executor (validates in BUILT), `perform()` dispatches RCP → writes `outbound_dispatched` audit event → writes `status='on_the_way'`. Sealed audit note when `approved_sealed` now records that RCP was built and well-formed.
+- **`src/lib/playmoney/mock.ts` + `supabase.ts`** — `approveRecovery` signatures updated for new contract fields.
+- **`src/routes/app.index.tsx`** — `buildMerchantContact(rec.merchant)` auto-resolves the contact from the directory on "Send it" tap. `refundType` not yet exposed in the UI (subscription gate available but intake UX is P6).
+
+**(c) Flinks/Plaid merchant-contact resolution — CLOSED as NOT-UNCERTAIN.**
+
+Neither Flinks nor Plaid surfaces merchant dispute-contact emails. Transaction descriptions are truncated/obfuscated strings (TELUS*MOBILITY, AMZN*MKTPLACE). The merchant directory is the resolution mechanism: seed directory → fuzzy-match → manual fallback. Verified in `merchant-directory.test.ts` against real Flinks/Plaid txn description patterns.
+
+**(d) LIVE blockers added (no new gates — ops notes only).**
+
+- `SENDGRID_API_KEY` must be configured before LIVE dispatch (throws `LiveModeBlockedError` if missing).
+- `OUTBOUND_EMAIL_FROM` defaults to `recovery@playmoney.ca` — set before LIVE for branded sender.
+- Subscription gate intake UX (refundType selection) not yet wired in the UI — users can still tap "Send it" on a subscription recovery. The server fn gate fires if `store_credit` is passed, but the UI currently passes no `refundType`, so the gate defaults to pass (undefined). UI intake for `refundType` is P6 work.
+
+**Verified**: `bun run typecheck` clean · `bun run lint` exit 0 · `bun run test` = **197 passing / 29 files** (baseline 169/27 + 28 new: recovery-comms × 10, merchant-directory × 8, checkSubscriptionEligibility × 4, RCP-engine integration × 6) · `bun run build` green. BUILT seal re-confirmed: `assertModeIsLive()` throws in every outbound path; no non-test file sets `PLAYMONEY_MODE=LIVE`.
