@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { ResendOutboundAdapter } from "./resend-outbound.adapter";
 
-let mockSendResponse: any = { data: { id: "mock-email-id" }, error: null };
+let mockSendResponse: {
+  data: { id: string } | null;
+  error: { name: string; message: string } | null;
+} = { data: { id: "mock-email-id" }, error: null };
 
 vi.mock("resend", () => ({
   Resend: class {
@@ -27,7 +30,9 @@ const pkg = {
 describe("ResendOutboundAdapter", () => {
   it("throws LiveModeBlockedError in BUILT before any HTTP call", async () => {
     const adapter = new ResendOutboundAdapter();
-    await expect(adapter.sendRecoveryPackage(pkg, { email: "test@example.com" })).rejects.toThrow("BLOCKED");
+    await expect(adapter.sendRecoveryPackage(pkg, { email: "test@example.com" })).rejects.toThrow(
+      "BLOCKED",
+    );
   });
 
   it("throws error when email is missing", async () => {
@@ -39,14 +44,16 @@ describe("ResendOutboundAdapter", () => {
   it("throws error when RESEND_API_KEY is not configured", async () => {
     process.env.PLAYMONEY_MODE = "LIVE";
     const adapter = new ResendOutboundAdapter();
-    await expect(adapter.sendRecoveryPackage(pkg, { email: "test@example.com" })).rejects.toThrow("RESEND_API_KEY not configured");
+    await expect(adapter.sendRecoveryPackage(pkg, { email: "test@example.com" })).rejects.toThrow(
+      "RESEND_API_KEY not configured",
+    );
   });
 
   it("dispatches via resend.emails.send in LIVE mode with RESEND_API_KEY", async () => {
     process.env.PLAYMONEY_MODE = "LIVE";
     process.env.RESEND_API_KEY = "test-key";
     const adapter = new ResendOutboundAdapter();
-    
+
     const result = await adapter.sendRecoveryPackage(pkg, { email: "test@example.com" });
     expect(result.dispatchRef).toMatch(/^resend_mock-email-id_/);
   });
@@ -54,7 +61,7 @@ describe("ResendOutboundAdapter", () => {
   it("throws with error message on API failure (error path)", async () => {
     process.env.PLAYMONEY_MODE = "LIVE";
     process.env.RESEND_API_KEY = "test-key";
-    
+
     mockSendResponse = {
       data: null,
       error: { name: "validation_error", message: "Invalid email" },
@@ -62,7 +69,7 @@ describe("ResendOutboundAdapter", () => {
 
     const adapter = new ResendOutboundAdapter();
     await expect(adapter.sendRecoveryPackage(pkg, { email: "test@example.com" })).rejects.toThrow(
-      "[ResendOutboundAdapter] Dispatch failed: validation_error — Invalid email"
+      "[ResendOutboundAdapter] Dispatch failed: validation_error — Invalid email",
     );
   });
 });
