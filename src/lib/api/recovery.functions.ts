@@ -1,16 +1,21 @@
-// P2 · approveRecovery server fn — routes the user's approval through the full
-// MAN-Mode compliance stack before any real action may execute.
+// P2/P5 · approveRecovery server fn — routes the user's approval through the full
+// MAN-Mode compliance stack, then (LIVE+gates only) builds and dispatches the
+// Recovery Communication Package to the merchant.
 //
 // Flow (every call, regardless of outcome):
+//   0. Subscription gate: subscription_cancellation + refundType=store_credit → throw
+//      IntakeRejectionError (not_eligible_credit_only) before compliance stack runs.
 //   1. Idempotency gate: existing Approval for this key → return it immediately.
-//   2. Build a per-recovery e-LOA (click_accept = the user's "Send it" tap) and
+//   2. Build the RCP (pure, no I/O) — validates letter is well-formed even in BUILT.
+//   3. Build a per-recovery e-LOA (click_accept = the user's "Send it" tap) and
 //      a review item (user consent + evidence = the legitimacy attestation; #14).
-//   3. Call executeRecoveryAction → the three checks run: LOA valid, review
+//   4. Call executeRecoveryAction → the three checks run: LOA valid, review
 //      approved, AND (mode=LIVE + all gates green). In BUILT, result = "sealed".
-//   4. Write a recovery_events audit row with the exact outcome — always (#15).
-//   5. Write the Approval consent record (always — it is the record of the user's
+//   5. Write a recovery_events audit row with the exact outcome — always (#15).
+//   6. Write the Approval consent record (always — it is the record of the user's
 //      authorization, not of execution).
-//   6. When executed (LIVE+gates): persist status = "on_the_way" (truthful).
+//   7. When executed (LIVE+gates): dispatch RCP → write outbound_dispatched event →
+//      persist status = "on_the_way" (truthful).
 //      When sealed/rejected (BUILT or gates unmet): status stays at its current
 //      value — no status lie in the DB. The UI celebrates optimistically; the DB
 //      tells the truth.
@@ -28,7 +33,35 @@ import {
 import { executeRecoveryAction, type ExecOutcome } from "@/lib/compliance/executor";
 import type { GateStatus } from "@/lib/compliance/gates";
 import { PROBLEM_TYPE_TO_AVENUE } from "@/lib/engine/router";
-import { Approval, Recovery, type RecoveryAvenue } from "@/lib/playmoney/types";
+import {
+  Approval,
+  Recovery,
+  MerchantContact,
+  IntakeRejectionError,
+  SubscriptionRefundType,
+  type RecoveryAvenue,
+} from "@/lib/playmoney/types";
+import { buildRecoveryCommPackage } from "@/lib/playmoney/recovery-comms";
+
+// ── Subscription eligibility gate (pure, exported for UI pre-check) ──────────
+
+/**
+ * Gate #5: subscription_cancellation claims are only eligible when the merchant
+ * refunds to the original payment method. Store-credit-only refunds break the
+ * non-custodial model and are out of scope for Phase 0.
+ */
+export function checkSubscriptionEligibility(
+  avenue: string,
+  refundType: SubscriptionRefundType | undefined,
+): void {
+  if (avenue === "subscription_cancellation" && refundType === "store_credit") {
+    throw new IntakeRejectionError(
+      "PlayMoney can only recover funds that return to your original payment method. " +
+        "Subscriptions that offer store credit or gift cards only cannot be recovered " +
+        "through this service.",
+    );
+  }
+}
 
 export type ApprovalOutcome = {
   approval: Approval;
@@ -258,6 +291,8 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
     z.object({
       recoveryId: z.string().min(1),
       idempotencyKey: z.string().min(1),
+      merchantContact: MerchantContact,
+      refundType: SubscriptionRefundType.optional(),
     }),
   )
   .handler(async ({ data }): Promise<Approval> => {
@@ -276,6 +311,10 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
     const recovery = rowToRecovery(recRow.data);
     const userId: string = (recRow.data as Record<string, unknown>).owner_id as string;
 
+    // ── Gate #5: subscription eligibility — before compliance stack ───────────
+    const avenueKey = PROBLEM_TYPE_TO_AVENUE[recovery.avenue as RecoveryAvenue];
+    checkSubscriptionEligibility(avenueKey, data.refundType);
+
     // ── Idempotency: return the existing approval without re-running ──────────
     const existing = await sb
       .from("approvals")
@@ -286,8 +325,28 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
       throw new Error(`approveRecovery: idempotency lookup failed: ${existing.error.message}`);
     if (existing.data) return rowToApproval(existing.data);
 
-    // ── Load go-live gate status (ops-set, never auto) ────────────────────────
+    // ── Load go-live gate status + resolve user display name ──────────────────
     const gateStatus = await loadGateStatus();
+    const profileRow = await sb
+      .from("profiles")
+      .select("display_name")
+      .eq("owner_id", userId)
+      .maybeSingle();
+    const userDisplayName =
+      ((profileRow.data as Record<string, unknown> | null)?.display_name as string | undefined) ??
+      "valued customer";
+
+    // ── Build RCP (pure, no I/O) — validates letter is well-formed in BUILT ───
+    const merchantContact = data.merchantContact;
+    const rcp = buildRecoveryCommPackage({
+      avenue: avenueKey,
+      merchant: recovery.merchant,
+      contact: merchantContact,
+      userDisplayName,
+      amountCents: recovery.grossAmount,
+      recoveryId: data.recoveryId,
+      reason: recovery.reason,
+    });
 
     // ── Run the compliance stack → executor ───────────────────────────────────
     const outcome = await processApproval({
@@ -297,7 +356,36 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
       idempotencyKey: data.idempotencyKey,
       gateStatus,
       perform: async () => {
-        // This block runs ONLY when mode=LIVE + all gates green. In BUILT it is sealed.
+        // Runs ONLY when mode=LIVE + all gates green (executor guarantees this).
+        if (!merchantContact.email && !merchantContact.url) {
+          throw new Error(
+            "approveRecovery: merchantContact has no email or url — cannot dispatch RCP",
+          );
+        }
+        const { createRecoveryOutboundAdapter } = await import("@/lib/adapters/outbound");
+        const outbound = createRecoveryOutboundAdapter();
+        const dispatch = await outbound.sendRecoveryPackage(rcp, merchantContact);
+
+        // Outbound dispatch audit — written before status update so audit is complete
+        // even if status update fails.
+        const dispatchEv = await sb.from("recovery_events").insert({
+          owner_id: userId,
+          recovery_id: data.recoveryId,
+          kind: "outbound_dispatched",
+          note: JSON.stringify({
+            avenue: avenueKey,
+            merchant: recovery.merchant,
+            contactMethod: merchantContact.method,
+            dispatchRef: dispatch.dispatchRef,
+            rcpGeneratedAt: rcp.generatedAt,
+          }),
+        });
+        if (dispatchEv.error)
+          throw new Error(
+            `approveRecovery: dispatch event write failed: ${dispatchEv.error.message}`,
+          );
+
+        // Status truthfully reflects that the RCP is in flight.
         const { error } = await sb
           .from("recoveries")
           .update({ status: "on_the_way" })
@@ -315,9 +403,9 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
           : `rejected_${outcome.code}`;
     const eventNote =
       outcome.status === "executed"
-        ? "Recovery approved and execution dispatched (LIVE)."
+        ? "Recovery approved; RCP dispatched to merchant (LIVE)."
         : outcome.status === "sealed"
-          ? "Recovery approved by user; execution sealed (BUILT / gates unmet). No real action taken."
+          ? `Recovery approved; RCP built (${avenueKey}, well-formed); dispatch sealed in BUILT/gates unmet. No real action taken.`
           : `Approval rejected by compliance stack: ${outcome.reason}`;
 
     const eventRow = await sb
@@ -342,6 +430,7 @@ export const approveRecoveryFn = createServerFn({ method: "POST" })
         recoveryId: data.recoveryId,
         idempotencyKey: data.idempotencyKey,
         outcome: outcome.status,
+        avenue: avenueKey,
         ...(outcome.status === "rejected" ? { code: outcome.code, reason: outcome.reason } : {}),
       },
     });

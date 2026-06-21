@@ -7,6 +7,7 @@ import { api, auth } from "@/lib/playmoney/client";
 import { useFormatMoney } from "@/lib/playmoney/currency";
 import type { Recovery } from "@/lib/playmoney/types";
 import { approveRecovery } from "@/lib/playmoney/approve";
+import { buildMerchantContact } from "@/lib/playmoney/merchant-directory";
 import { rankByContextKey } from "@/lib/engine/situation";
 import { Odometer } from "@/components/pm/Odometer";
 import { GoldDing } from "@/components/pm/GoldDing";
@@ -55,7 +56,12 @@ function WinsPage() {
       await approveRecovery({
         qc,
         rec,
-        run: () => api.approveRecovery({ recoveryId: rec.id, idempotencyKey: rec.idempotencyKey }),
+        run: () =>
+          api.approveRecovery({
+            recoveryId: rec.id,
+            idempotencyKey: rec.idempotencyKey,
+            merchantContact: buildMerchantContact(rec.merchant),
+          }),
       });
       setLanded(rec);
     } catch {

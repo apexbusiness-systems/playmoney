@@ -258,9 +258,14 @@ export class SupabaseApiClient implements ApiClient {
     return data ? rowToRecovery(data) : null;
   }
 
-  async approveRecovery(input: { recoveryId: string; idempotencyKey: string }): Promise<Approval> {
-    // P2: route through the MAN-Mode executor server fn (LOA + review + sealed-unless-LIVE).
-    // The server fn handles idempotency, LOA build, review, audit trail, and DB writes.
+  async approveRecovery(input: {
+    recoveryId: string;
+    idempotencyKey: string;
+    merchantContact: import("./types").MerchantContact;
+    refundType?: import("./types").SubscriptionRefundType;
+  }): Promise<Approval> {
+    // P2/P5: route through the MAN-Mode executor server fn (subscription gate +
+    // LOA + review + RCP build + sealed dispatch unless LIVE).
     const { approveRecoveryFn } = await import("@/lib/api/recovery.functions");
     return approveRecoveryFn({ data: input });
   }
