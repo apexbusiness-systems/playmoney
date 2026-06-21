@@ -12,21 +12,43 @@ export const Route = createFileRoute("/bank/connect")({
 function BankConnect() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [sealed, setSealed] = useState(false);
 
   async function handleConnect() {
     setLoading(true);
     setErrorMsg("");
     try {
-      // In a real flow, getFlinksConnectUrl calls the backend.
-      const { connectUrl } = await auth.getFlinksConnectUrl();
-      // Redirect out to the Flinks iframe/OAuth flow
-      window.location.assign(connectUrl);
+      const result = await auth.getFlinksConnectUrl();
+      if (!result.ok) {
+        // Honest sealed-until-live state — no real bank link exists yet.
+        setSealed(true);
+        setLoading(false);
+        return;
+      }
+      // Redirect out to the Flinks iframe/OAuth flow.
+      window.location.assign(result.connectUrl);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to generate bank link.";
       setErrorMsg(msg);
       toast.error("Connection failed", { description: msg });
       setLoading(false);
     }
+  }
+
+  if (sealed) {
+    return (
+      <div className="mx-auto max-w-md text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-3xl">
+          🔒
+        </div>
+        <h1 className="font-display mt-6 text-3xl font-semibold">Coming soon</h1>
+        <p className="mt-3 text-muted-dark leading-relaxed">
+          Bank connection unlocks at launch. We&apos;re finishing the work to safely scan your
+          history for hidden money in your region — we&apos;ll let you know the moment it&apos;s
+          live.
+        </p>
+      </div>
+    );
   }
 
   return (

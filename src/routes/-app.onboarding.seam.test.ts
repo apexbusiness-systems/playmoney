@@ -34,3 +34,24 @@ describe("P6 · onboarding route wires the occupation/context step", () => {
     expect(routeSrc).toContain("auth.saveContext");
   });
 });
+
+describe("T6 · onboarding captures a real-world Interac e-Transfer payout email", () => {
+  it("labels the field for Interac e-Transfer and uses email autocomplete/type", () => {
+    expect(routeSrc).toMatch(/Email for Interac e-Transfer/);
+    expect(routeSrc).toMatch(/autoComplete="email"/);
+    expect(routeSrc).toMatch(/type="email"/);
+  });
+
+  it("validates a real email format before allowing submit", () => {
+    expect(routeSrc).toMatch(/function isValidEmail/);
+    expect(routeSrc).toMatch(/payoutEmailValid/);
+    // The opaque "tok_payout_***" placeholder no consumer could supply is gone.
+    expect(routeSrc).not.toContain("tok_payout_***");
+    expect(routeSrc).not.toContain("Routing token");
+  });
+
+  it("still writes to the same payout_ref contract seam (auth.submitOnboarding)", () => {
+    expect(routeSrc).toContain("auth.submitOnboarding");
+    expect(routeSrc).toMatch(/payoutRef:\s*payoutEmail\.trim\(\)/);
+  });
+});

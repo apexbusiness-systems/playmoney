@@ -18,6 +18,11 @@ export const Route = createFileRoute("/app/onboarding")({
 type Step = 1 | 2 | 3 | 4;
 const TOTAL_STEPS = 4;
 
+/** Real email-format validation for the Interac e-Transfer payout destination. */
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 import { TOS_LATEST } from "@/legal/terms-of-service";
 import { PRIVACY_LATEST } from "@/legal/privacy-policy";
 import { PAD_LATEST } from "@/legal/pad-agreement";
@@ -98,7 +103,7 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [capturedContext, setCapturedContext] = useState<OccupationContext | null>(null);
-  const [payoutToken, setPayoutToken] = useState("");
+  const [payoutEmail, setPayoutEmail] = useState("");
   const [legalName, setLegalName] = useState("");
   const [country, setCountry] = useState<"CA" | "US">("CA");
   const [province, setProvince] = useState("AB");
@@ -111,12 +116,14 @@ function Onboarding() {
   // Eligibility is derived from country/province selection; drives step-3 UX and final submit guard.
   const jurisdictionEligibility = checkEligibility(country, province || null);
 
+  const payoutEmailValid = isValidEmail(payoutEmail);
+
   const canSubmit =
     tosAccepted &&
     privacyAccepted &&
     padAccepted &&
     legalName.trim().length > 0 &&
-    payoutToken.trim().length > 0 &&
+    payoutEmailValid &&
     !submitting;
 
   async function handleOccupationComplete(context: OccupationContext) {
@@ -158,7 +165,8 @@ function Onboarding() {
         padCancellationPath: PAD.cancellationPath,
         padWaiveAdvanceNotice: false,
         displayName: legalName.trim(),
-        payoutRef: payoutToken.trim(),
+        // Interac e-Transfer email is the user's own non-custodial payout destination.
+        payoutRef: payoutEmail.trim(),
         occupationContext: capturedContext ?? undefined,
       });
       if (res.ok) {
@@ -233,7 +241,8 @@ function Onboarding() {
                   Where should the money land?
                 </h2>
                 <p className="mt-2 text-ink-muted">
-                  A tokenised payout reference — never raw bank credentials.
+                  We send recovered money by Interac e-Transfer to your own email — it lands in your
+                  account, never ours. No bank credentials, ever.
                 </p>
                 <div className="mt-5 grid gap-3">
                   {/* Jurisdiction — determines which currency and legal regime applies. */}
@@ -291,13 +300,21 @@ function Onboarding() {
                       </p>
                     )}
                   </div>
-                  <Field
-                    label="Routing token"
-                    placeholder="tok_payout_***"
-                    value={payoutToken}
-                    onChange={setPayoutToken}
-                    autoComplete="off"
-                  />
+                  <div>
+                    <Field
+                      label="Email for Interac e-Transfer (where your recovered money lands)"
+                      placeholder="you@email.com"
+                      value={payoutEmail}
+                      onChange={setPayoutEmail}
+                      autoComplete="email"
+                      type="email"
+                    />
+                    {payoutEmail.length > 0 && !payoutEmailValid && (
+                      <p className="mt-1 text-xs text-red-500">
+                        Enter a valid email address so your money can reach you.
+                      </p>
+                    )}
+                  </div>
                   <Field
                     label="Legal name"
                     placeholder="Maya Chen"

@@ -108,11 +108,11 @@ function WinsPage() {
         <div className="mt-6 space-y-3">
           {recs.isLoading && <SkeletonFeed />}
           {/* P5: Show bank connect or situations if pipeline is totally empty */}
-          {recs.data?.length === 0 && !situations.data?.length && <EmptyPipeline />}
-          {recs.data?.length === 0 && (situations.data?.length ?? 0) > 0 && (
+          {recs.data?.length === 0 && !situations.data?.situations.length && <EmptyPipeline />}
+          {recs.data?.length === 0 && (situations.data?.situations.length ?? 0) > 0 && (
             <SituationsCard
-              count={situations.data!.length}
-              amountCents={situations.data!.reduce((sum, s) => sum + s.amountCents, 0)}
+              count={situations.data!.situations.length}
+              amountCents={situations.data!.situations.reduce((sum, s) => sum + s.amountCents, 0)}
             />
           )}
 

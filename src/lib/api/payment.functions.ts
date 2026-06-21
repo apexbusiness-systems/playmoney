@@ -12,7 +12,10 @@ export const setupCustomerFn = createServerFn({ method: "POST" })
     // a LiveModeBlockedError (or "Not configured" if not seeded).
     const port = createPayoutAdapter({ stripeSecretKey: process.env.STRIPE_SECRET_KEY });
 
-    // Attempt the setup call (this hits the mode seal).
+    // Attempt the setup call (this hits the mode seal — sealed in BUILT). The issued
+    // customerRef is persisted to profiles.stripe_customer_ref by the caller via the
+    // RLS-session seam (auth.saveAdapterRefs), since this server fn has no session
+    // context and recovery_events/profiles writes must stay owner-scoped (#15).
     const { customerRef } = await port.createStripeCustomer(data);
     return { success: true, customerRef };
   });

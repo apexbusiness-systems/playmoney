@@ -3,6 +3,9 @@ import {
   MagicLinkSentError,
   SupabaseApiClient,
   SupabaseAuthClient,
+  buildAdapterRefPatch,
+  deriveInitiatedRecovery,
+  processInitiateRecovery,
   recoveryToFeeEntry,
   rowToApproval,
   rowToNotification,
@@ -10,6 +13,7 @@ import {
   rowToRecovery,
 } from "./supabase";
 import type { ApiClient, AuthClient } from "./types";
+import type { DetectedSituation } from "@/lib/engine/situation";
 
 // Compile-time proof the real clients satisfy the contract (no `any`, no drift).
 const _api: new (sb: never) => ApiClient = SupabaseApiClient;
@@ -98,6 +102,83 @@ describe("P1 · DB row -> domain mappers are Zod-validated at the boundary", () 
     expect(prof.email).toBe("maya@example.com");
     expect(prof.payoutRef).toBe("");
     expect(prof.identityVerified).toBe(false);
+  });
+});
+
+describe("T3 · initiateRecovery creates a real recovery row + initiated audit event", () => {
+  const situation: DetectedSituation = {
+    situation: {
+      id: "sit_001",
+      merchant: "Chase Checking",
+      detectedAt: "2026-06-12T12:00:00Z",
+      summary: "Overdraft fee charged on May 12th",
+    },
+    problemType: "fee_reversal",
+    merchant: "Chase Checking",
+    amountCents: 3500,
+    evidenceTxnIds: ["txn_1"],
+  };
+
+  it("projects an owner-scoped row with integer cents and a 25% fee", () => {
+    const row = deriveInitiatedRecovery(situation, "owner-1");
+    expect(row.owner_id).toBe("owner-1");
+    expect(row.merchant).toBe("Chase Checking");
+    expect(row.avenue).toBe("fee_reversal");
+    expect(row.gross_amount_cents).toBe(3500);
+    expect(row.our_fee_cents).toBe(875); // 25%
+    expect(row.user_net_cents).toBe(2625); // gross - fee, integer cents
+    expect(row.status).toBe("needs_approval");
+    expect(row.idempotency_key).toBe("init_sit_001");
+  });
+
+  it("inserts the recovery, writes the initiated event, and returns the generated id", async () => {
+    const inserted: unknown[] = [];
+    const events: string[] = [];
+    const result = await processInitiateRecovery({
+      situation,
+      ownerId: "owner-1",
+      insertRecovery: async (row) => {
+        inserted.push(row);
+        return { id: "rec-uuid-generated" };
+      },
+      writeEvent: async (recoveryId) => {
+        events.push(recoveryId);
+      },
+    });
+
+    expect(result.recoveryId).toBe("rec-uuid-generated");
+    expect(inserted).toHaveLength(1);
+    expect(events).toEqual(["rec-uuid-generated"]); // audit event written for the new row
+  });
+
+  it("no longer throws the not-implemented stub error", () => {
+    // The throwing stub has been replaced by a real, injectable implementation.
+    expect(SupabaseApiClient.prototype.initiateRecovery.toString()).not.toContain(
+      "not implemented",
+    );
+  });
+});
+
+describe("T5 · adapter-ref patch is owner-scoped, partial-safe, and money-free", () => {
+  it("maps camelCase refs to snake_case profile columns", () => {
+    const patch = buildAdapterRefPatch({
+      stripeCustomerRef: "cus_123",
+      aggregatorToken: "tok_flinks_abc",
+    });
+    expect(patch).toEqual({
+      stripe_customer_ref: "cus_123",
+      aggregator_token: "tok_flinks_abc",
+    });
+  });
+
+  it("skips undefined fields so a partial save never nulls the other ref", () => {
+    expect(buildAdapterRefPatch({ stripeCustomerRef: "cus_only" })).toEqual({
+      stripe_customer_ref: "cus_only",
+    });
+    expect(buildAdapterRefPatch({ aggregatorToken: "tok_only" })).toEqual({
+      aggregator_token: "tok_only",
+    });
+    expect(buildAdapterRefPatch({})).toEqual({});
   });
 });
 

@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Recovery } from "@/lib/playmoney/types";
 import { GATE_KEYS, type GateStatus } from "@/lib/compliance/gates";
-import { processApproval, buildApprovalLoa } from "./recovery.functions";
+import { processApproval, buildApprovalLoa, processRecoveryLanded } from "./recovery.functions";
+import { applySettleFee } from "./lifecycle.functions";
+import { createPayoutAdapter } from "@/lib/adapters/payout";
+import { LiveModeBlockedError } from "@/lib/compliance/mode";
 
 const ALL_GREEN: GateStatus = Object.fromEntries(GATE_KEYS.map((k) => [k, true])) as GateStatus;
 const NO_GATES: Partial<GateStatus> = {};
@@ -111,6 +114,66 @@ describe("P2 · processApproval: perform() is never called in BUILT mode", () =>
       // In BUILT, all should seal — never reject due to avenue being disabled.
       expect(outcome.status, `expected sealed for avenue=${avenue}`).toBe("sealed");
     }
+  });
+});
+
+describe("T4 · landed transition fires fee settlement exactly once, sealed in BUILT", () => {
+  it("writes the landed audit event then fires settleFee exactly once (sealed)", async () => {
+    let settleCalls = 0;
+    const events: Array<{ kind: string; note: string }> = [];
+
+    // The real settle path: applySettleFee with a sealed PayoutPort. In BUILT, chargeFee
+    // throws LiveModeBlockedError BEFORE writeCharge — proving it is sealed, not a no-op.
+    const sealedPort = createPayoutAdapter({}); // no Stripe key ⇒ sealed stub
+    const settleFee = async () => {
+      settleCalls++;
+      await applySettleFee({
+        parsedInput: {
+          recoveryId: "rec_landed",
+          idempotencyKey: "idem_landed",
+          grossAmountCents: 10000,
+          confirmedAt: NOW.toISOString(),
+          evidenceRef: "ev_1",
+          customerRef: "cus_test",
+          causedByPlaymoney: true,
+          disclosureAcked: true,
+        },
+        ownerId: "owner_1",
+        readExistingCharge: async () => null,
+        chargeFee: sealedPort.chargeFee,
+        writeCharge: async () => {
+          throw new Error("writeCharge must not run in BUILT — the seal failed");
+        },
+      });
+    };
+
+    await expect(
+      processRecoveryLanded({
+        writeEvent: async (kind, note) => {
+          events.push({ kind, note });
+        },
+        settleFee,
+      }),
+    ).rejects.toBeInstanceOf(LiveModeBlockedError);
+
+    expect(settleCalls).toBe(1); // fired exactly once
+    expect(events).toEqual([
+      { kind: "landed", note: "Recovery confirmed landed; firing fee settlement." },
+    ]);
+  });
+
+  it("the landing is audited even though settlement is sealed (no status lie)", async () => {
+    const events: string[] = [];
+    await processRecoveryLanded({
+      writeEvent: async (kind) => {
+        events.push(kind);
+      },
+      // A trivially-sealed settle that throws like the real adapter would in BUILT.
+      settleFee: async () => {
+        throw new LiveModeBlockedError("mode is BUILT (default); live paths are sealed");
+      },
+    }).catch(() => undefined);
+    expect(events).toEqual(["landed"]); // audit row written before the seal stopped settlement
   });
 });
 

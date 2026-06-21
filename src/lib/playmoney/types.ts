@@ -101,6 +101,21 @@ export const Notification = z.object({
 });
 export type Notification = z.infer<typeof Notification>;
 
+/**
+ * Honest sealed-until-LIVE signal. Returned (never thrown as a 500) when a bank
+ * adapter path is reached in BUILT mode — the underlying adapter throws
+ * LiveModeBlockedError, which the server fn catches and translates into this typed
+ * result so the UI can show a truthful "coming soon" state instead of a dead URL or
+ * a fabricated success. The seal itself is NOT weakened; this only renders it honest.
+ */
+export type SealedUntilLive = { ok: false; code: "sealed_until_live"; message: string };
+
+/** Result of building a bank-connect URL: a real URL, or sealed-until-live. */
+export type ConnectUrlResult = { ok: true; connectUrl: string } | SealedUntilLive;
+
+/** Result of ingesting bank transactions: a real situation count, or sealed-until-live. */
+export type IngestResult = { ok: true; situationCount: number } | SealedUntilLive;
+
 export interface ApiClient {
   listRecoveries(): Promise<Recovery[]>;
   getRecovery(id: string): Promise<Recovery | null>;
@@ -126,8 +141,11 @@ export interface AuthClient {
   updateProfile(patch: Partial<Profile>): Promise<Profile>;
   saveContext(context: OccupationContext): Promise<Profile>;
   submitOnboarding(input: OnboardingInput): Promise<OnboardingResult>;
-  getFlinksConnectUrl(): Promise<{ connectUrl: string }>;
-  ingestTransactions(input: {
-    aggregatorToken: string;
-  }): Promise<{ success: boolean; situationCount: number }>;
+  /**
+   * Persist PSP/aggregator REFERENCES issued once a user goes LIVE (Stripe customer id,
+   * Flinks/Plaid OAuth token). Owner-scoped (RLS session). References, not money (#1).
+   */
+  saveAdapterRefs(refs: { stripeCustomerRef?: string; aggregatorToken?: string }): Promise<void>;
+  getFlinksConnectUrl(): Promise<ConnectUrlResult>;
+  ingestTransactions(input: { aggregatorToken: string }): Promise<IngestResult>;
 }
