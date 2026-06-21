@@ -1,6 +1,7 @@
 # Report Templates
 
 ## Contents
+
 - Surface validation matrix
 - Action validation matrix
 - Quality change review
@@ -11,14 +12,14 @@
 
 ```markdown
 | Surface | Intended purpose | User action | Expected behavior | Actual behavior | Works or gated honestly? | Quality preserved? | Evidence | Result |
-|---|---|---|---|---|---|---|---|---|
+| ------- | ---------------- | ----------- | ----------------- | --------------- | ------------------------ | ------------------ | -------- | ------ |
 ```
 
 ## Action validation matrix
 
 ```markdown
 | Surface | Action | Expected | Actual | System call made? | User-visible result | Decision |
-|---|---|---|---|---:|---|---|
+| ------- | ------ | -------- | ------ | ----------------: | ------------------- | -------- |
 ```
 
 ## Quality change review
