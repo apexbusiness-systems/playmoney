@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-
 import { motion } from "framer-motion";
 import { Odometer } from "@/components/pm/Odometer";
 import { GoldDing } from "@/components/pm/GoldDing";
@@ -7,6 +6,8 @@ import { PMButton } from "@/components/pm/Button";
 import { PMCard } from "@/components/pm/Card";
 import { IconChip, PMIcon } from "@/components/pm/Icon";
 import { WinsMarquee } from "@/components/pm/Marquee";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { LanguageSwitcher } from "@/components/pm/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,6 +50,8 @@ function Landing() {
 }
 
 function Nav() {
+  const { t } = useI18n();
+
   return (
     <header
       className="fixed inset-x-0 top-0 z-40 border-b"
@@ -58,26 +61,37 @@ function Nav() {
         <Link to="/" className="inline-flex items-center" aria-label="PlayMoney home">
           <img src="/wordmark.png" alt="PlayMoney" className="h-8 w-auto" width={148} height={32} />
         </Link>
-        <nav className="hidden items-center gap-7 sm:flex">
-          <a href="#how" className="text-sm text-text-dark/85 hover:text-text-dark">
-            How it works
-          </a>
-          <a href="#wins" className="text-sm text-text-dark/85 hover:text-text-dark">
-            Wins
-          </a>
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher variant="dark" />
+          <nav className="hidden items-center gap-7 sm:flex">
+            <a href="#how" className="text-sm text-text-dark/85 hover:text-text-dark">
+              {t("landing.nav.howItWorks")}
+            </a>
+            <a href="#wins" className="text-sm text-text-dark/85 hover:text-text-dark">
+              {t("landing.nav.wins")}
+            </a>
+            <Link
+              to="/auth/sign-in"
+              className="inline-flex h-10 items-center rounded-full bg-gold px-5 text-sm font-semibold text-ink hover:brightness-95"
+            >
+              {t("landing.nav.getStarted")}
+            </Link>
+          </nav>
           <Link
             to="/auth/sign-in"
-            className="inline-flex h-10 items-center rounded-full bg-gold px-5 text-sm font-semibold text-ink hover:brightness-95"
+            className="inline-flex h-8 items-center rounded-full bg-gold px-3 text-xs font-semibold text-ink hover:brightness-95 sm:hidden"
           >
-            Get started
+            {t("landing.nav.getStarted")}
           </Link>
-        </nav>
+        </div>
       </div>
     </header>
   );
 }
 
 function Hero() {
+  const { t } = useI18n();
+
   return (
     <section
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
@@ -99,7 +113,7 @@ function Hero() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="eyebrow text-muted-dark"
         >
-          Good news, handled
+          {t("landing.hero.eyebrow")}
         </motion.p>
 
         <motion.div
@@ -121,7 +135,7 @@ function Hero() {
           transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="font-display mt-10 max-w-3xl text-2xl font-semibold leading-tight text-text-dark sm:text-3xl"
         >
-          Money you were owed. Already on its way back.
+          {t("landing.hero.title")}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
@@ -129,8 +143,7 @@ function Hero() {
           transition={{ duration: 0.7, delay: 0.55 }}
           className="mt-4 max-w-xl text-muted-dark"
         >
-          PlayMoney finds the refunds, fees and forgotten charges you're owed — you don't lift a
-          finger.
+          {t("landing.hero.description")}
         </motion.p>
 
         <motion.div
@@ -141,10 +154,10 @@ function Hero() {
         >
           <Link to="/app/onboarding">
             <PMButton variant="primaryDark">
-              Start finding money — free <PMIcon name="arrow" stroke="#1C1813" />
+              {t("landing.hero.cta")} <PMIcon name="arrow" stroke="#1C1813" />
             </PMButton>
           </Link>
-          <p className="text-xs text-muted-dark">No win, no fee.</p>
+          <p className="text-xs text-muted-dark">{t("landing.hero.ctaSub")}</p>
         </motion.div>
       </div>
     </section>
@@ -168,26 +181,28 @@ function Ticker() {
 }
 
 function AggregateProof() {
+  const { t } = useI18n();
+
   const stats = [
-    { v: "$4.2M+", l: "recovered for members" },
-    { v: "18,400", l: "members paid out" },
-    { v: "$94", l: "average win, in 2 days" },
+    { v: "$4.2M+", l: t("landing.proof.recovered") },
+    { v: "18,400", l: t("landing.proof.members") },
+    { v: t("landing.proof.average"), l: "" },
   ];
   const assurances = [
-    "Non-custodial — funds never touch us",
-    "We never see your passwords",
-    "Bank-level encryption · SOC 2",
+    t("landing.proof.nonCustodial"),
+    t("landing.proof.noPasswords"),
+    t("landing.proof.encryption"),
   ];
   return (
     <section className="bg-sand" aria-label="PlayMoney results and safety">
       <div className="container-pm py-12 sm:py-16">
         <div className="grid gap-8 sm:grid-cols-3">
-          {stats.map((s) => (
-            <div key={s.l} className="text-center sm:text-left">
+          {stats.map((s, idx) => (
+            <div key={idx} className="text-center sm:text-left">
               <p className="font-display tabular text-4xl font-semibold text-ink sm:text-5xl">
                 {s.v}
               </p>
-              <p className="mt-1 text-sm text-ink-muted">{s.l}</p>
+              {s.l && <p className="mt-1 text-sm text-ink-muted">{s.l}</p>}
             </div>
           ))}
         </div>
@@ -211,18 +226,17 @@ function AggregateProof() {
 }
 
 function HowItWorks() {
+  const { t, locale } = useI18n();
+
+  const recovered1 = locale === "fr" ? "240 $ récupérés" : "$240 recovered";
+
   return (
     <section id="how" className="section-pad bg-sand">
       <div className="container-pm grid gap-12 lg:grid-cols-[2fr_3fr]">
         <div className="lg:sticky lg:top-28 self-start">
-          <p className="eyebrow text-ink-muted">How it works</p>
-          <h2 className="h2-display mt-4">
-            Three ways your money <br /> comes home.
-          </h2>
-          <p className="mt-5 max-w-md text-ink-muted">
-            We watch the boring stuff — billing emails, statements, expiring promos — for the
-            moments money is yours to take back. You get the ding, you tap once, it lands.
-          </p>
+          <p className="eyebrow text-ink-muted">{t("landing.how.eyebrow")}</p>
+          <h2 className="h2-display mt-4">{t("landing.how.title")}</h2>
+          <p className="mt-5 max-w-md text-ink-muted">{t("landing.how.description")}</p>
         </div>
 
         <div className="grid gap-5">
@@ -230,17 +244,16 @@ function HowItWorks() {
             <div className="flex items-start gap-5">
               <IconChip name="coin" />
               <div className="flex-1">
-                <h3 className="text-[1.1875rem] font-semibold leading-tight">Refunds you forgot</h3>
-                <p className="mt-2 text-ink-muted">
-                  Delays, double charges, promo prices not honored. We chase the paperwork; the
-                  dollars come back to you.
-                </p>
+                <h3 className="text-[1.1875rem] font-semibold leading-tight">
+                  {t("landing.how.card1.title")}
+                </h3>
+                <p className="mt-2 text-ink-muted">{t("landing.how.card1.description")}</p>
                 <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-mint-chip px-3 py-1.5 text-sm">
                   <PMIcon name="check" stroke="#0E3B2D" width={16} height={16} />
                   <span className="font-display tabular font-semibold text-evergreen">
-                    $240 recovered
+                    {recovered1}
                   </span>
-                  <span className="text-ink-muted">· Delta delay</span>
+                  <span className="text-ink-muted">{t("landing.how.card1.badgeSub")}</span>
                 </div>
               </div>
             </div>
@@ -250,20 +263,16 @@ function HowItWorks() {
             <PMCard>
               <IconChip name="receipt" />
               <h3 className="mt-5 text-[1.1875rem] font-semibold leading-tight">
-                Subscriptions gone cold
+                {t("landing.how.card2.title")}
               </h3>
-              <p className="mt-2 text-ink-muted">
-                Auto-renewals you don't open anymore — clawed back where the merchant's terms allow.
-              </p>
+              <p className="mt-2 text-ink-muted">{t("landing.how.card2.description")}</p>
             </PMCard>
             <PMCard>
               <IconChip name="shield" />
               <h3 className="mt-5 text-[1.1875rem] font-semibold leading-tight">
-                Fees that aren't yours
+                {t("landing.how.card3.title")}
               </h3>
-              <p className="mt-2 text-ink-muted">
-                Overdrafts, mistaken FX, wrong ATM fees — reversed quietly, without the phone calls.
-              </p>
+              <p className="mt-2 text-ink-muted">{t("landing.how.card3.description")}</p>
             </PMCard>
           </div>
         </div>
@@ -273,6 +282,8 @@ function HowItWorks() {
 }
 
 function DingSection() {
+  const { t } = useI18n();
+
   return (
     <section className="section-pad relative overflow-hidden" style={{ background: "#15110B" }}>
       <div
@@ -283,11 +294,9 @@ function DingSection() {
         }}
       />
       <div className="container-pm relative z-10 text-center">
-        <p className="eyebrow text-muted-dark">The ding</p>
-        <h2 className="h2-display mt-4 text-text-dark">The sound you'll start waiting for.</h2>
-        <p className="mt-4 mx-auto max-w-lg text-muted-dark">
-          Every recovery ends with one notification. Tap, and it's done.
-        </p>
+        <p className="eyebrow text-muted-dark">{t("landing.ding.eyebrow")}</p>
+        <h2 className="h2-display mt-4 text-text-dark">{t("landing.ding.title")}</h2>
+        <p className="mt-4 mx-auto max-w-lg text-muted-dark">{t("landing.ding.description")}</p>
 
         <div className="mt-16 flex items-center justify-center">
           <div className="relative">
@@ -301,16 +310,17 @@ function DingSection() {
                     <PMIcon name="bell" stroke="#1C1813" />
                   </span>
                   <span className="text-xs uppercase tracking-widest text-muted-dark">
-                    PlayMoney · now
+                    {t("landing.ding.now")}
                   </span>
                 </div>
                 <p
                   className="mt-4 font-display text-3xl font-semibold tabular"
                   style={{ color: "#F2C24B" }}
                 >
-                  <Odometer valueCents={8000} duration={1400} startFrom={0.4} /> just landed
+                  <Odometer valueCents={8000} duration={1400} startFrom={0.4} />{" "}
+                  {t("landing.ding.justLanded", { amount: "" }).trim()}
                 </p>
-                <p className="mt-1 text-sm text-muted-dark">From Chase · overdraft fee reversed</p>
+                <p className="mt-1 text-sm text-muted-dark">{t("landing.ding.chase")}</p>
               </div>
             </GoldDing>
           </div>
@@ -321,21 +331,24 @@ function DingSection() {
 }
 
 function NoWinNoFee() {
+  const { t, locale } = useI18n();
+
   const points = [
-    { t: "Non-custodial", d: "Money lands in your account. We never hold it." },
-    { t: "One tap, no friction", d: "Approve, send, done. No forms, no calls." },
-    { t: "We only ping you when there's money", d: "No marketing. No noise. Just landings." },
+    { t: t("landing.nowin.point1.title"), d: t("landing.nowin.point1.desc") },
+    { t: t("landing.nowin.point2.title"), d: t("landing.nowin.point2.desc") },
+    { t: t("landing.nowin.point3.title"), d: t("landing.nowin.point3.desc") },
   ];
+
+  const exGross = locale === "fr" ? "100,00 $" : "$100.00";
+  const exFee = locale === "fr" ? "20,00 $" : "$20.00";
+  const exNet = locale === "fr" ? "80,00 $" : "$80.00";
+
   return (
     <section className="section-pad bg-sand">
       <div className="container-pm grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div>
-          <p className="eyebrow text-ink-muted">No win, no fee</p>
-          <h2 className="h2-display mt-4">
-            We don't promise.
-            <br />
-            We deliver.
-          </h2>
+          <p className="eyebrow text-ink-muted">{t("landing.nowin.eyebrow")}</p>
+          <h2 className="h2-display mt-4">{t("landing.nowin.title")}</h2>
           <ul className="mt-8 space-y-5">
             {points.map((p) => (
               <li key={p.t} className="flex items-start gap-4">
@@ -355,24 +368,22 @@ function NoWinNoFee() {
           className="rounded-[24px] border border-border-d p-8 text-text-dark"
           style={{ background: "#0E3B2D" }}
         >
-          <p className="eyebrow text-muted-dark">Example · $100 recovered</p>
+          <p className="eyebrow text-muted-dark">{t("landing.nowin.example.title")}</p>
           <div className="mt-6 space-y-4 text-text-dark">
-            <BreakdownRow k="Gross recovered" v="$100.00" />
-            <BreakdownRow k="Our cut · 20%" v="$20.00" muted />
+            <BreakdownRow k={t("landing.nowin.example.gross")} v={exGross} />
+            <BreakdownRow k={t("landing.nowin.example.fee")} v={exFee} muted />
             <div className="my-2 h-px bg-border-d" />
             <div className="flex items-end justify-between">
-              <span className="eyebrow text-muted-dark">You get</span>
+              <span className="eyebrow text-muted-dark">{t("landing.nowin.example.youGet")}</span>
               <span
                 className="font-display text-4xl font-semibold tabular"
                 style={{ color: "#F2C24B" }}
               >
-                $80.00
+                {exNet}
               </span>
             </div>
           </div>
-          <p className="mt-6 text-sm text-muted-dark">
-            Funds route directly to your account. We never touch the money.
-          </p>
+          <p className="mt-6 text-sm text-muted-dark">{t("landing.nowin.example.footnote")}</p>
         </div>
       </div>
     </section>
@@ -393,6 +404,20 @@ function BreakdownRow({ k, v, muted }: { k: string; v: string; muted?: boolean }
 }
 
 function Testimonial() {
+  const { t } = useI18n();
+
+  const highlightText = (
+    <span style={{ color: "#F2C24B" }}>{t("landing.testimonial.highlight")}</span>
+  );
+  const quoteTemplate = t("landing.testimonial.quote");
+  const parts = quoteTemplate.split("{highlight}");
+
+  const testimonials = [
+    { q: t("landing.testimonial.mini1.quote"), a: t("landing.testimonial.mini1.author") },
+    { q: t("landing.testimonial.mini2.quote"), a: t("landing.testimonial.mini2.author") },
+    { q: t("landing.testimonial.mini3.quote"), a: t("landing.testimonial.mini3.author") },
+  ];
+
   return (
     <section className="section-pad" style={{ background: "#0E3B2D" }}>
       <div className="container-pm">
@@ -405,30 +430,26 @@ function Testimonial() {
             “
           </span>
           <blockquote className="font-display relative text-text-dark text-3xl font-semibold leading-tight sm:text-4xl">
-            I forgot I'd been double-charged for a flight. PlayMoney pinged me on a Tuesday —{" "}
-            <span style={{ color: "#F2C24B" }}>$310 was in my account by Thursday</span>. I didn't
-            even make a phone call.
+            {parts[0]}
+            {highlightText}
+            {parts[1]}
           </blockquote>
           <footer className="mt-8 flex items-center gap-3">
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gold font-display text-ink">
               M
             </span>
             <div>
-              <p className="font-semibold text-text-dark">Maya Chen</p>
-              <p className="text-sm text-muted-dark">PM at a healthtech startup · Brooklyn</p>
+              <p className="font-semibold text-text-dark">{t("landing.testimonial.author")}</p>
+              <p className="text-sm text-muted-dark">{t("landing.testimonial.authorSub")}</p>
             </div>
           </footer>
         </div>
 
         <div className="mt-14 grid gap-4 border-t border-border-d pt-8 sm:grid-cols-3">
-          {[
-            { q: "$51.40 back from Uber. Took me one tap.", a: "Andre · Chicago" },
-            { q: "Spotify auto-renew refunded after 7 months unused.", a: "Sofia · Madrid" },
-            { q: "An overdraft I didn't even notice — gone.", a: "Jordan · Austin" },
-          ].map((t) => (
-            <p key={t.a} className="text-sm text-text-dark/90">
-              "{t.q}"<br />
-              <span className="text-muted-dark">— {t.a}</span>
+          {testimonials.map((t_item) => (
+            <p key={t_item.a} className="text-sm text-text-dark/90">
+              "{t_item.q}"<br />
+              <span className="text-muted-dark">— {t_item.a}</span>
             </p>
           ))}
         </div>
@@ -438,6 +459,8 @@ function Testimonial() {
 }
 
 function FinalCta() {
+  const { t } = useI18n();
+
   return (
     <section className="section-pad relative overflow-hidden" style={{ background: "#15110B" }}>
       <div
@@ -449,17 +472,17 @@ function FinalCta() {
       />
       <div className="container-pm relative z-10 mx-auto max-w-3xl text-center">
         <h2 className="h2-display text-text-dark">
-          We do the hard work.
+          {t("landing.cta.title")}
           <br />
-          <span style={{ color: "#F2C24B" }}>You just play with the money.</span>
+          <span style={{ color: "#F2C24B" }}>{t("landing.cta.subtitle")}</span>
         </h2>
         <div className="mt-10 flex flex-col items-center gap-3">
           <Link to="/auth/sign-in">
             <PMButton variant="primaryDark">
-              Start finding money — free <PMIcon name="arrow" stroke="#1C1813" />
+              {t("landing.hero.cta")} <PMIcon name="arrow" stroke="#1C1813" />
             </PMButton>
           </Link>
-          <p className="text-xs text-muted-dark">No win, no fee. Two minutes to set up.</p>
+          <p className="text-xs text-muted-dark">{t("landing.cta.setupTime")}</p>
         </div>
       </div>
     </section>
@@ -467,6 +490,14 @@ function FinalCta() {
 }
 
 function Footer() {
+  const { t } = useI18n();
+
+  const footerCols = [
+    { h: t("landing.footer.product"), l: [t("landing.nav.howItWorks"), "Pricing", "Security"] },
+    { h: t("landing.footer.company"), l: ["About", t("landing.nav.wins"), "Press"] },
+    { h: t("landing.footer.legal"), l: ["Privacy", "Terms", "Disclosures"] },
+  ];
+
   return (
     <footer className="border-t" style={{ background: "#15110B", borderColor: "#1E5A45" }}>
       <div className="container-pm py-14">
@@ -479,9 +510,7 @@ function Footer() {
               width={148}
               height={32}
             />
-            <p className="mt-3 max-w-xs text-sm text-muted-dark">
-              We do the hard work. You just play with the money.
-            </p>
+            <p className="mt-3 max-w-xs text-sm text-muted-dark">{t("landing.footer.tagline")}</p>
             <p className="mt-6 text-xs text-muted-dark">
               <PMIcon
                 name="shield"
@@ -490,14 +519,10 @@ function Footer() {
                 height={14}
                 className="inline -mt-0.5"
               />{" "}
-              We never hold your money.
+              {t("landing.footer.neverHold")}
             </p>
           </div>
-          {[
-            { h: "Product", l: ["How it works", "Pricing", "Security"] },
-            { h: "Company", l: ["About", "Wins", "Press"] },
-            { h: "Legal", l: ["Privacy", "Terms", "Disclosures"] },
-          ].map((c) => (
+          {footerCols.map((c) => (
             <div key={c.h}>
               <p className="eyebrow text-muted-dark">{c.h}</p>
               <ul className="mt-4 space-y-2">
@@ -516,8 +541,8 @@ function Footer() {
           className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-6"
           style={{ borderColor: "#1E5A45" }}
         >
-          <p className="text-xs text-muted-dark">© 2026 PlayMoney, Inc.</p>
-          <p className="text-xs text-muted-dark">Non-custodial · No win, no fee</p>
+          <p className="text-xs text-muted-dark">{t("landing.footer.copyright")}</p>
+          <p className="text-xs text-muted-dark">{t("landing.footer.nonCustodial")}</p>
         </div>
       </div>
     </footer>

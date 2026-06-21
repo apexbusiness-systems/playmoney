@@ -322,7 +322,11 @@ export const liveWins: Array<{ name: string; amount: number; reason: string }> =
   { name: "Luca", amount: c(76.4), reason: "Late delivery credit" },
 ];
 
-export function formatMoney(cents: number, currency: "CAD" | "USD" = "CAD"): string {
-  const locale = currency === "USD" ? "en-US" : "en-CA";
+export function formatMoney(
+  cents: number,
+  currency: "CAD" | "USD" = "CAD",
+  lang?: "en" | "fr",
+): string {
+  const locale = lang === "fr" ? "fr-CA" : currency === "USD" ? "en-US" : "en-CA";
   return new Intl.NumberFormat(locale, { style: "currency", currency }).format(cents / 100);
 }

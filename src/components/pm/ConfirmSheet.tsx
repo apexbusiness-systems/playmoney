@@ -14,8 +14,9 @@ import { useState } from "react";
 import { PMButton } from "./Button";
 import { PMIcon } from "./Icon";
 import { useDialogA11y } from "./useDialog";
-import { formatMoney } from "@/lib/playmoney/client";
+import { useFormatMoney } from "@/lib/playmoney/currency";
 import type { Recovery } from "@/lib/playmoney/types";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface Props {
   open: boolean;
@@ -33,11 +34,19 @@ export function ConfirmSheet({
   recovery,
   onClose,
   onApprove,
-  routingDestination = "Checking •••• ——",
-  feeBilledTo = "Card •••• ——",
+  routingDestination,
+  feeBilledTo,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const dialogRef = useDialogA11y<HTMLDivElement>(open && !!recovery, onClose);
+  const fmt = useFormatMoney();
+  const { t, locale } = useI18n();
+
+  const defaultDestination = locale === "fr" ? "Chèques •••• ——" : "Checking •••• ——";
+  const defaultFeeBilledTo = locale === "fr" ? "Carte •••• ——" : "Card •••• ——";
+
+  const activeDestination = routingDestination || defaultDestination;
+  const activeFeeBilledTo = feeBilledTo || defaultFeeBilledTo;
 
   return (
     <AnimatePresence>
@@ -66,42 +75,39 @@ export function ConfirmSheet({
               tabIndex={-1}
               className="rounded-[20px] bg-card border border-border-l shadow-card-l p-7 outline-none"
             >
-              <p className="eyebrow text-ink-muted">Awaiting your OK</p>
+              <p className="eyebrow text-ink-muted">{t("app.confirm.eyebrow")}</p>
               <p id="confirm-sheet-title" className="mt-3 font-display text-2xl font-semibold">
-                Found you <span className="text-mint">{formatMoney(recovery.grossAmount)}</span>{" "}
-                from {recovery.merchant}.
+                {t("app.confirm.title", {
+                  amount: fmt(recovery.grossAmount),
+                  merchant: recovery.merchant,
+                })}
               </p>
 
               {/* ── Anti-netting ledger ───────────────────────────────────────────
                   Gross amount routes DIRECTLY from the platform to the user's
                   account. The success fee is a separate Stripe charge (#1, #5).  */}
               <div className="mt-5 rounded-[14px] bg-sand p-4 text-sm">
-                <Row k="Target platform sends you" v={formatMoney(recovery.grossAmount)} strong />
+                <Row k={t("app.confirm.rowPlatform")} v={fmt(recovery.grossAmount)} strong />
                 <div className="mt-2 border-t border-border-l pt-2">
-                  <Row
-                    k="PlayMoney success fee (20%)"
-                    v={`− ${formatMoney(recovery.ourFee)}`}
-                    muted
-                  />
+                  <Row k={t("app.confirm.rowFee")} v={`− ${fmt(recovery.ourFee)}`} muted />
                 </div>
               </div>
 
               {/* ── Routing destination + fee billing anchors ─────────────────── */}
               <div className="mt-4 flex flex-col gap-2 px-1">
                 <div className="flex items-center justify-between text-xs text-ink-muted">
-                  <span>Routing destination</span>
-                  <span className="font-medium text-ink">{routingDestination}</span>
+                  <span>{t("app.confirm.destination")}</span>
+                  <span className="font-medium text-ink">{activeDestination}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-ink-muted">
-                  <span>Fee billed to</span>
-                  <span className="font-medium text-ink">{feeBilledTo}</span>
+                  <span>{t("app.confirm.feeBilled")}</span>
+                  <span className="font-medium text-ink">{activeFeeBilledTo}</span>
                 </div>
               </div>
 
               {/* ── 1-click e-LOA consent copy + button ──────────────────────── */}
               <p className="mt-6 mb-2 text-center text-[11px] leading-tight text-ink-muted">
-                By continuing, you authorize PlayMoney to route these funds on your behalf and agree
-                to the success fee charged separately to your card.
+                {t("app.confirm.consentText")}
               </p>
               <div className="flex items-center gap-3">
                 <PMButton
@@ -114,19 +120,17 @@ export function ConfirmSheet({
                     setBusy(false);
                   }}
                 >
-                  <PMIcon name="check" stroke="#FFFDF8" /> Authorize & Transfer
+                  <PMIcon name="check" stroke="#FFFDF8" /> {t("app.confirm.btnAuthorize")}
                 </PMButton>
                 <button
                   className="text-sm font-medium text-ink-muted hover:text-ink"
                   onClick={onClose}
                 >
-                  Not now
+                  {t("app.confirm.btnNotNow")}
                 </button>
               </div>
 
-              <p className="mt-4 text-xs text-ink-muted">
-                Funds route directly to your account. PlayMoney never holds your money.
-              </p>
+              <p className="mt-4 text-xs text-ink-muted">{t("app.confirm.footnote")}</p>
             </div>
           </motion.div>
         </>

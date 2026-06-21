@@ -9,6 +9,7 @@ import { OccupationStep } from "@/components/onboarding/OccupationStep";
 import { auth } from "@/lib/playmoney/client";
 import type { OccupationContext } from "@/lib/playmoney/types";
 import { checkEligibility } from "@/lib/compliance/geofence";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export const Route = createFileRoute("/app/onboarding")({
   head: () => ({ meta: [{ title: "Get set up — PlayMoney" }] }),
@@ -108,6 +109,7 @@ function Onboarding() {
   const [country, setCountry] = useState<"CA" | "US">("CA");
   const [province, setProvince] = useState("AB");
   const nav = useNavigate();
+  const { t } = useI18n();
 
   const [tosAccepted, setTosAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -133,8 +135,8 @@ function Onboarding() {
       await auth.saveContext(context);
     } catch {
       // Context is a ranking hint, not a gate — never block onboarding on it.
-      toast.error("We couldn't save that just now", {
-        description: "No problem — you can keep going; we'll tune your matches as we learn.",
+      toast.error(t("app.onboarding.step2.toastErrorTitle"), {
+        description: t("app.onboarding.step2.toastErrorDesc"),
       });
     } finally {
       setSaving(false);
@@ -145,7 +147,7 @@ function Onboarding() {
   async function handleFinalSubmit() {
     // Final eligibility guard — prevents submission from a non-eligible jurisdiction.
     if (!jurisdictionEligibility.eligible) {
-      toast.error("This region is not yet supported.", {
+      toast.error(t("app.onboarding.eligibilityError"), {
         description: jurisdictionEligibility.reason,
       });
       return;
@@ -170,30 +172,57 @@ function Onboarding() {
         occupationContext: capturedContext ?? undefined,
       });
       if (res.ok) {
-        toast.success("You're all set", { description: "We're watching for your money now." });
+        toast.success(t("app.onboarding.toastSuccessTitle"), {
+          description: t("app.onboarding.toastSuccessDesc"),
+        });
         nav({ to: "/app" });
       } else {
-        toast.error("We couldn't finish setup", { description: res.reason });
+        toast.error(t("app.onboarding.toastFailedTitle"), { description: res.reason });
       }
     } catch {
-      toast.error("Setup didn't go through", { description: "Please try again in a moment." });
+      toast.error(t("app.onboarding.toastFailedTitle"), {
+        description: t("app.onboarding.toastFailedDesc"),
+      });
     } finally {
       setSubmitting(false);
     }
   }
 
+  const provinceLabel = CA_PROVINCES.find((p) => p.value === province)?.label ?? province;
   const jurisdictionLabel =
     country === "CA"
-      ? `${CA_PROVINCES.find((p) => p.value === province)?.label ?? province}, Canada`
+      ? `${provinceLabel}, Canada`
       : `${province || "United States"} · United States`;
+
+  // Content for legal consents
+  const tosLink = (
+    <span className="font-semibold text-ink">{t("app.onboarding.step4.tosLabel")}</span>
+  );
+  const privacyLink = (
+    <span className="font-semibold text-ink">{t("app.onboarding.step4.privacyLabel")}</span>
+  );
+  const cardLink = (
+    <span className="font-semibold text-ink">{t("app.onboarding.step4.cardLabel")}</span>
+  );
+
+  const renderConsentText = (template: string, element: ReactNode) => {
+    const parts = template.split(/\{[a-zA-Z]+\}/);
+    return (
+      <>
+        {parts[0]}
+        {element}
+        {parts[1]}
+      </>
+    );
+  };
 
   return (
     <section className="bg-sand">
       <div className="container-pm py-14">
         <p className="eyebrow text-ink-muted">
-          Setup · step {step} of {TOTAL_STEPS}
+          {t("app.onboarding.stepIndicator", { step, total: TOTAL_STEPS })}
         </p>
-        <h1 className="h2-display mt-3">Let's get you on the receiving end.</h1>
+        <h1 className="h2-display mt-3">{t("app.onboarding.mainTitle")}</h1>
 
         <div className="mt-10 grid gap-3 sm:grid-cols-4">
           {([1, 2, 3, 4] as const).map((i) => (
@@ -217,17 +246,15 @@ function Onboarding() {
               <>
                 <IconChip name="envelope" />
                 <h2 className="mt-5 font-display text-2xl font-semibold">
-                  Forward your billing receipts
+                  {t("app.onboarding.step1.title")}
                 </h2>
                 <p className="mt-2 text-ink-muted">
-                  Auto-forward billing emails to{" "}
-                  <code className="rounded bg-sand px-2 py-0.5">find@inbox.playmoney.app</code>. No
-                  password sharing, no read access to your inbox.
+                  {t("app.onboarding.step1.desc", { email: "find@inbox.playmoney.app" })}
                 </p>
                 <ol className="mt-6 space-y-3 text-sm text-ink-muted">
-                  <li>1. Open Gmail → Settings → Forwarding</li>
-                  <li>2. Filter: "subject: receipt OR statement OR invoice"</li>
-                  <li>3. Forward to our address above</li>
+                  <li>{t("app.onboarding.step1.step1")}</li>
+                  <li>{t("app.onboarding.step1.step2")}</li>
+                  <li>{t("app.onboarding.step1.step3")}</li>
                 </ol>
               </>
             )}
@@ -238,16 +265,15 @@ function Onboarding() {
               <>
                 <IconChip name="coin" />
                 <h2 className="mt-5 font-display text-2xl font-semibold">
-                  Where should the money land?
+                  {t("app.onboarding.step3.title")}
                 </h2>
-                <p className="mt-2 text-ink-muted">
-                  We send recovered money by Interac e-Transfer to your own email — it lands in your
-                  account, never ours. No bank credentials, ever.
-                </p>
+                <p className="mt-2 text-ink-muted">{t("app.onboarding.step3.desc")}</p>
                 <div className="mt-5 grid gap-3">
                   {/* Jurisdiction — determines which currency and legal regime applies. */}
                   <div>
-                    <label className="eyebrow block text-ink-muted">Country</label>
+                    <label className="eyebrow block text-ink-muted">
+                      {t("app.onboarding.step3.country")}
+                    </label>
                     <select
                       className="mt-1.5 h-11 w-full rounded-[12px] border border-border-l bg-card px-3 text-ink focus-visible:border-evergreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-evergreen"
                       value={country}
@@ -263,7 +289,9 @@ function Onboarding() {
                   </div>
                   <div>
                     <label className="eyebrow block text-ink-muted">
-                      {country === "CA" ? "Province" : "State"}
+                      {country === "CA"
+                        ? t("app.onboarding.step3.province")
+                        : t("app.onboarding.step3.state")}
                     </label>
                     <select
                       className="mt-1.5 h-11 w-full rounded-[12px] border border-border-l bg-card px-3 text-ink focus-visible:border-evergreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-evergreen"
@@ -287,12 +315,12 @@ function Onboarding() {
                     {jurisdictionEligibility.eligible ? (
                       <p id="jurisdiction-status-note" className="mt-1 text-xs text-ink-muted">
                         {jurisdictionEligibility.status === "pilot"
-                          ? "Pilot launch — you're good to go."
-                          : "Available jurisdiction."}
+                          ? t("app.onboarding.step3.pilot")
+                          : t("app.onboarding.step3.available")}
                       </p>
                     ) : jurisdictionEligibility.status === "waitlist" ? (
                       <p id="jurisdiction-status-note" className="mt-1 text-xs text-ink-muted">
-                        Not yet available here. We'll notify you when we expand to your region.
+                        {t("app.onboarding.step3.waitlist")}
                       </p>
                     ) : (
                       <p id="jurisdiction-status-note" className="mt-1 text-xs text-ink-muted">
@@ -302,8 +330,10 @@ function Onboarding() {
                   </div>
                   <div>
                     <Field
-                      label="Email for Interac e-Transfer (where your recovered money lands)"
-                      placeholder="you@email.com"
+                      label={t(
+                        "app.onboarding.step3.emailLabel",
+                      )} /* Email for Interac e-Transfer */
+                      placeholder={t("app.onboarding.step3.emailPlaceholder")}
                       value={payoutEmail}
                       onChange={setPayoutEmail}
                       autoComplete="email"
@@ -311,13 +341,13 @@ function Onboarding() {
                     />
                     {payoutEmail.length > 0 && !payoutEmailValid && (
                       <p className="mt-1 text-xs text-red-500">
-                        Enter a valid email address so your money can reach you.
+                        {t("app.onboarding.step3.emailError")}
                       </p>
                     )}
                   </div>
                   <Field
-                    label="Legal name"
-                    placeholder="Maya Chen"
+                    label={t("app.onboarding.step3.nameLabel")}
+                    placeholder={t("app.onboarding.step3.namePlaceholder")}
                     value={legalName}
                     onChange={setLegalName}
                     autoComplete="name"
@@ -329,24 +359,20 @@ function Onboarding() {
               <>
                 <IconChip name="shield" />
                 <h2 className="mt-5 font-display text-2xl font-semibold">
-                  One last thing — your agreement.
+                  {t("app.onboarding.step4.title")}
                 </h2>
                 <p className="mt-2 text-ink-muted">
-                  {jurisdictionLabel} · non-custodial. We charge a fee only after we recover money
-                  for you.
+                  {t("app.onboarding.step4.desc", { jurisdiction: jurisdictionLabel })}
                 </p>
                 <div className="mt-5 space-y-2">
                   <Consent checked={tosAccepted} onChange={setTosAccepted}>
-                    I agree to the <span className="font-semibold text-ink">Terms of Service</span>{" "}
-                    (internet-sales agreement).
+                    {renderConsentText(t("app.onboarding.step4.tos"), tosLink)}
                   </Consent>
                   <Consent checked={privacyAccepted} onChange={setPrivacyAccepted}>
-                    I've read the <span className="font-semibold text-ink">Privacy Policy</span>.
+                    {renderConsentText(t("app.onboarding.step4.privacy"), privacyLink)}
                   </Consent>
                   <Consent checked={padAccepted} onChange={setPadAccepted}>
-                    I authorize a <span className="font-semibold text-ink">card-on-file fee</span>{" "}
-                    of 25% of any amount recovered, charged only after the money lands. Cancel
-                    anytime.
+                    {renderConsentText(t("app.onboarding.step4.pad"), cardLink)}
                   </Consent>
                 </div>
               </>
@@ -367,9 +393,9 @@ function Onboarding() {
                 >
                   {step === TOTAL_STEPS
                     ? submitting
-                      ? "Setting up…"
-                      : "Open my wins"
-                    : "Continue"}{" "}
+                      ? t("app.onboarding.btnSetup")
+                      : t("app.onboarding.btnOpen")
+                    : t("app.onboarding.btnContinue")}{" "}
                   <PMIcon name="arrow" stroke="#FFFDF8" />
                 </PMButton>
               )}
@@ -379,7 +405,7 @@ function Onboarding() {
                   onClick={() => setStep((step - 1) as Step)}
                   disabled={saving || submitting}
                 >
-                  Back
+                  {t("app.onboarding.btnBack")}
                 </button>
               )}
             </div>
@@ -389,23 +415,22 @@ function Onboarding() {
             className="rounded-[24px] border border-border-d p-7 text-text-dark"
             style={{ background: "#0E3B2D" }}
           >
-            <p className="eyebrow text-muted-dark">Why this works</p>
+            <p className="eyebrow text-muted-dark">{t("app.onboarding.whyTitle")}</p>
             <p className="mt-3 font-display text-xl leading-snug">
-              We never see passwords, never hold funds, and only message you when there's money to
-              send.
+              {t("app.onboarding.whySubtitle")}
             </p>
             <ul className="mt-6 space-y-3 text-sm text-muted-dark">
               <li className="flex gap-2">
-                <PMIcon name="shield" stroke="#A8C0B4" width={16} height={16} /> Tokenised payout —
-                no bank credentials
+                <PMIcon name="shield" stroke="#A8C0B4" width={16} height={16} />{" "}
+                {t("app.onboarding.whyPoint1")}
               </li>
               <li className="flex gap-2">
-                <PMIcon name="bell" stroke="#A8C0B4" width={16} height={16} /> Money-landed alerts
-                only
+                <PMIcon name="bell" stroke="#A8C0B4" width={16} height={16} />{" "}
+                {t("app.onboarding.whyPoint2")}
               </li>
               <li className="flex gap-2">
-                <PMIcon name="receipt" stroke="#A8C0B4" width={16} height={16} /> Export or delete
-                data anytime
+                <PMIcon name="receipt" stroke="#A8C0B4" width={16} height={16} />{" "}
+                {t("app.onboarding.whyPoint3")}
               </li>
             </ul>
           </div>

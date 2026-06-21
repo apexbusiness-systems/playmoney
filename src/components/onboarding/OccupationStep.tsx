@@ -3,15 +3,7 @@ import { type OccupationContext, type OccupationType } from "@/lib/playmoney/typ
 import { cn } from "@/lib/utils";
 import { IconChip, PMIcon } from "@/components/pm/Icon";
 import { PMButton } from "@/components/pm/Button";
-
-const OCCUPATION_OPTIONS: Array<{ value: OccupationType; label: string; hint: string }> = [
-  { value: "employee", label: "Employee", hint: "Salaried or hourly, T4 / W-2" },
-  { value: "gig_worker", label: "Gig worker", hint: "Uber, DoorDash, Lyft, Instacart" },
-  { value: "freelancer", label: "Freelancer", hint: "Fiverr, Upwork, independent contracts" },
-  { value: "small_business", label: "Business owner", hint: "Registered sole-prop or corporation" },
-  { value: "student", label: "Student", hint: "Full- or part-time enrolment" },
-  { value: "other", label: "Other", hint: "None of the above" },
-];
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const GIG_PLATFORMS = [
   "Uber",
@@ -38,6 +30,40 @@ interface Props {
 export function OccupationStep({ onComplete, isLoading = false }: Props) {
   const [occupationType, setOccupationType] = useState<OccupationType | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<Set<string>>(new Set());
+  const { t } = useI18n();
+
+  const OCCUPATION_OPTIONS: Array<{ value: OccupationType; label: string; hint: string }> = [
+    {
+      value: "employee",
+      label: t("app.onboarding.step2.employee"),
+      hint: t("app.onboarding.step2.employeeHint"),
+    },
+    {
+      value: "gig_worker",
+      label: t("app.onboarding.step2.gig"),
+      hint: t("app.onboarding.step2.gigHint"),
+    },
+    {
+      value: "freelancer",
+      label: t("app.onboarding.step2.freelancer"),
+      hint: t("app.onboarding.step2.freelancerHint"),
+    },
+    {
+      value: "small_business",
+      label: t("app.onboarding.step2.business"),
+      hint: t("app.onboarding.step2.businessHint"),
+    },
+    {
+      value: "student",
+      label: t("app.onboarding.step2.student"),
+      hint: t("app.onboarding.step2.studentHint"),
+    },
+    {
+      value: "other",
+      label: t("app.onboarding.step2.other"),
+      hint: t("app.onboarding.step2.otherHint"),
+    },
+  ];
 
   const platformOptions =
     occupationType === "gig_worker"
@@ -70,10 +96,10 @@ export function OccupationStep({ onComplete, isLoading = false }: Props) {
   return (
     <>
       <IconChip name="spark" />
-      <h2 className="mt-5 font-display text-2xl font-semibold text-ink">Tell us about yourself</h2>
-      <p className="mt-2 text-ink-muted">
-        We'll surface the money-back opportunities that matter most for how you earn.
-      </p>
+      <h2 className="mt-5 font-display text-2xl font-semibold text-ink">
+        {t("app.onboarding.step2.title")}
+      </h2>
+      <p className="mt-2 text-ink-muted">{t("app.onboarding.step2.desc")}</p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {OCCUPATION_OPTIONS.map((opt) => (
@@ -100,7 +126,9 @@ export function OccupationStep({ onComplete, isLoading = false }: Props) {
 
       {platformOptions.length > 0 && (
         <div className="mt-6">
-          <p className="mb-2 text-sm font-semibold text-ink">Which platforms do you use?</p>
+          <p className="mb-2 text-sm font-semibold text-ink">
+            {t("app.onboarding.step2.platforms")}
+          </p>
           <div className="flex flex-wrap gap-2">
             {platformOptions.map((p) => (
               <button
@@ -128,7 +156,7 @@ export function OccupationStep({ onComplete, isLoading = false }: Props) {
           disabled={!occupationType || isLoading}
           onClick={handleSubmit}
         >
-          {isLoading ? "Saving…" : "Continue"}
+          {isLoading ? t("app.onboarding.step2.btnSaving") : t("app.onboarding.btnContinue")}
           {!isLoading && <PMIcon name="arrow" stroke="#FFFDF8" />}
         </PMButton>
       </div>

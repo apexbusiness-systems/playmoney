@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { auth } from "@/lib/playmoney/client";
 import { PMButton } from "@/components/pm/Button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const searchSchema = z.object({
   email: z.string().email().catch(""),
@@ -25,12 +26,13 @@ function CheckEmail() {
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const { t } = useI18n();
 
   // Countdown timer for the resend cooldown.
   useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
-    return () => clearInterval(t);
+    const t_timer = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(t_timer);
   }, [cooldown]);
 
   const handleVerify = useCallback(
@@ -40,19 +42,18 @@ function CheckEmail() {
       setVerifying(true);
       try {
         await auth.verifyOtp({ email, token: trimmed });
-        toast.success("You're in!", { description: "Welcome to PlayMoney." });
+        toast.success(t("auth.check.successToast"), { description: t("auth.check.welcome") });
         await nav({ to: "/app" });
       } catch (err) {
-        toast.error("Invalid or expired code", {
-          description:
-            err instanceof Error ? err.message : "Please try again or request a new link.",
+        toast.error(t("auth.check.errorToast"), {
+          description: err instanceof Error ? err.message : t("auth.check.invalidCode"),
         });
         setOtp("");
       } finally {
         setVerifying(false);
       }
     },
-    [email, nav],
+    [email, nav, t],
   );
 
   // Auto-verify when 6 digits are entered.
@@ -72,7 +73,9 @@ function CheckEmail() {
     } finally {
       setResending(false);
       setCooldown(RESEND_COOLDOWN_SECONDS);
-      toast.success("New link sent", { description: `Check ${email} for a fresh code.` });
+      toast.success(t("auth.check.newLinkSent"), {
+        description: t("auth.check.checkFresh", { email }),
+      });
     }
   }
 
@@ -91,16 +94,16 @@ function CheckEmail() {
         ✉️
       </span>
 
-      <h1 className="font-display mt-6 text-3xl font-semibold text-text-dark">Check your inbox</h1>
+      <h1 className="font-display mt-6 text-3xl font-semibold text-text-dark">
+        {t("auth.check.title")}
+      </h1>
       <p className="mt-2 text-sm text-muted-dark">
-        We sent a sign-in link to{" "}
-        <span className="font-semibold text-text-dark">{email || "your email"}</span>. Click the
-        link or enter the 6-digit code below.
+        {t("auth.check.subtitle", { email: email || t("auth.check.emailFallback") })}
       </p>
 
       <div className="mt-8">
         <label htmlFor="otp-input" className="eyebrow block text-muted-dark">
-          6-digit code
+          {t("auth.check.codeLabel")}
         </label>
         <input
           id="otp-input"
@@ -117,7 +120,7 @@ function CheckEmail() {
           aria-describedby="otp-hint"
         />
         <p id="otp-hint" className="mt-1 text-xs text-muted-dark">
-          Auto-submits when complete.
+          {t("auth.check.hint")}
         </p>
       </div>
 
@@ -127,7 +130,7 @@ function CheckEmail() {
         disabled={otp.replace(/\s/g, "").length !== 6 || verifying}
         onClick={() => void handleVerify(otp)}
       >
-        {verifying ? "Verifying…" : "Verify code"}
+        {verifying ? t("auth.check.btnVerifying") : t("auth.check.btnVerify")}
       </PMButton>
 
       <div className="mt-6 flex flex-col gap-2">
@@ -137,16 +140,16 @@ function CheckEmail() {
           className="text-sm text-muted-dark transition hover:text-text-dark disabled:opacity-50"
         >
           {resending
-            ? "Sending…"
+            ? t("auth.check.resendSending")
             : cooldown > 0
-              ? `Resend link in ${cooldown}s`
-              : "Resend sign-in link"}
+              ? t("auth.check.resendCooldown", { cooldown })
+              : t("auth.check.resendBtn")}
         </button>
         <button
           onClick={() => void nav({ to: "/auth/sign-in" })}
           className="text-xs text-muted-dark/60 hover:text-muted-dark transition"
         >
-          ← Back to sign in
+          {t("auth.check.back")}
         </button>
       </div>
     </motion.div>

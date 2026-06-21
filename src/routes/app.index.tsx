@@ -16,6 +16,8 @@ import { PMIcon } from "@/components/pm/Icon";
 import { PMButton } from "@/components/pm/Button";
 import { ConfirmSheet } from "@/components/pm/ConfirmSheet";
 import { useDialogA11y } from "@/components/pm/useDialog";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { translateReason } from "@/lib/i18n/messages";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Your wins — PlayMoney" }] }),
@@ -26,6 +28,7 @@ function WinsPage() {
   const qc = useQueryClient();
   const totals = useQuery({ queryKey: ["totals"], queryFn: () => api.totals() });
   const recs = useQuery({ queryKey: ["recoveries"], queryFn: () => api.listRecoveries() });
+  const { t } = useI18n();
 
   // P5: Fetch upstream pipeline situations if they have them.
   const situations = useQuery({
@@ -66,8 +69,11 @@ function WinsPage() {
       setLanded(rec);
     } catch {
       // approveRecovery has already rolled the optimistic update back.
-      toast.error("That didn't go through", {
-        description: `We couldn't send ${fmt(rec.userNet)} from ${rec.merchant}. Nothing left your side — tap to try again.`,
+      toast.error(t("app.dashboard.errorToastTitle"), {
+        description: t("app.dashboard.errorToastDesc", {
+          amount: fmt(rec.userNet),
+          merchant: rec.merchant,
+        }),
       });
     }
   }
@@ -77,7 +83,7 @@ function WinsPage() {
       {/* DARK total strip */}
       <section style={{ background: "#0E3B2D", borderBottom: "1px solid #1E5A45" }}>
         <div className="container-pm py-10 sm:py-14">
-          <p className="eyebrow text-muted-dark">Found for you</p>
+          <p className="eyebrow text-muted-dark">{t("app.dashboard.foundTitle")}</p>
           <div className="mt-3 flex items-end justify-between gap-6">
             <h1
               className="font-display tabular text-5xl font-semibold leading-none sm:text-6xl"
@@ -90,24 +96,24 @@ function WinsPage() {
               )}
             </h1>
             <div className="hidden text-right sm:block">
-              <p className="text-sm text-muted-dark">Landed in your account</p>
+              <p className="text-sm text-muted-dark">{t("app.dashboard.landedTitle")}</p>
               <p className="font-display tabular text-2xl text-text-dark">
                 {totals.data ? fmt(totals.data.landedTotal) : "—"}
               </p>
             </div>
           </div>
-          <p className="mt-3 max-w-lg text-sm text-muted-dark">
-            We only ping you when there's money. Tap any card to approve.
-          </p>
+          <p className="mt-3 max-w-lg text-sm text-muted-dark">{t("app.dashboard.instruction")}</p>
         </div>
       </section>
 
       <section className="container-pm py-10">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl font-semibold">Recent wins</h2>
+          <h2 className="font-display text-2xl font-semibold">{t("app.dashboard.recentWins")}</h2>
           <div className="flex items-center gap-2 text-sm text-ink-muted">
             <span className="h-2 w-2 rounded-full bg-mint" />
-            {context ? "Prioritized for you" : `Watching ${recs.data?.length ?? 0} signals`}
+            {context
+              ? t("app.dashboard.prioritized")
+              : t("app.dashboard.watchingSignals", { count: recs.data?.length ?? 0 })}
           </div>
         </div>
 
@@ -142,12 +148,14 @@ function WinsPage() {
 
 function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void }) {
   const fmt = useFormatMoney();
+  const { t } = useI18n();
   // Bigger win = bigger, visually featured card.
   const size = rec.userNet >= 15000 ? "lg" : rec.userNet >= 5000 ? "md" : "sm";
   const featured = size === "lg";
   const pad = size === "lg" ? "p-7 sm:p-8" : size === "md" ? "p-6" : "p-5";
   const amountClass =
     size === "lg" ? "text-4xl sm:text-5xl" : size === "md" ? "text-3xl" : "text-2xl";
+
   return (
     <motion.div
       layout
@@ -166,14 +174,14 @@ function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          {featured && <p className="eyebrow mb-2 text-gold">Top win</p>}
+          {featured && <p className="eyebrow mb-2 text-gold">{t("app.dashboard.topWin")}</p>}
           <div className="flex items-center gap-3">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-mint-chip">
               <PMIcon name={iconFor(rec.avenue)} />
             </span>
             <div className="min-w-0">
               <p className="truncate font-semibold">{rec.merchant}</p>
-              <p className="truncate text-sm text-ink-muted">{rec.reason}</p>
+              <p className="truncate text-sm text-ink-muted">{translateReason(rec.reason, t)}</p>
             </div>
           </div>
         </div>
@@ -185,15 +193,14 @@ function RecoveryCard({ rec, onApprove }: { rec: Recovery; onApprove: () => void
       {rec.status === "needs_approval" && (
         <div className="mt-5 flex items-center justify-between gap-4 rounded-[14px] bg-sand px-4 py-3 text-sm">
           <span className="text-ink-muted">
-            Tap to send <span className="font-semibold text-ink">{fmt(rec.userNet)}</span> to your
-            account.
+            {t("app.dashboard.tapToSend", { amount: fmt(rec.userNet) })}
           </span>
           <PMButton
             variant="primaryLight"
             className="!h-10 shrink-0 whitespace-nowrap !px-4 text-sm"
             onClick={onApprove}
           >
-            Send it
+            {t("app.dashboard.sendIt")}
           </PMButton>
         </div>
       )}
@@ -229,19 +236,21 @@ function SkeletonFeed() {
 }
 
 function EmptyPipeline() {
+  const { t } = useI18n();
+
   return (
     <div className="rounded-[20px] border border-dashed border-border-l bg-card p-10 text-center">
       <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-mint-chip">
         <PMIcon name="shield" />
       </span>
-      <p className="mt-4 font-display text-xl font-semibold">Ready to find your money?</p>
-      <p className="mt-1 text-ink-muted">Connect your bank securely to scan for hidden refunds.</p>
+      <p className="mt-4 font-display text-xl font-semibold">{t("app.dashboard.emptyTitle")}</p>
+      <p className="mt-1 text-ink-muted">{t("app.dashboard.emptyDesc")}</p>
       <div className="mt-6 flex justify-center">
         <Link
           to="/bank/connect"
           className="inline-flex h-10 items-center rounded-full bg-gold px-5 text-sm font-semibold text-ink hover:brightness-95"
         >
-          Connect a bank
+          {t("app.dashboard.emptyConnect")}
         </Link>
       </div>
     </div>
@@ -250,6 +259,8 @@ function EmptyPipeline() {
 
 function SituationsCard({ count, amountCents }: { count: number; amountCents: number }) {
   const fmt = useFormatMoney();
+  const { t } = useI18n();
+
   return (
     <div
       className="rounded-[20px] border border-gold/40 bg-card p-6 text-center shadow-card-l"
@@ -257,16 +268,18 @@ function SituationsCard({ count, amountCents }: { count: number; amountCents: nu
         background: "linear-gradient(180deg, rgba(242,194,75,0.06) 0%, rgba(255,253,248,1) 40%)",
       }}
     >
-      <p className="font-display text-2xl font-semibold">We found {count} new situations!</p>
+      <p className="font-display text-2xl font-semibold">
+        {t("app.dashboard.situationsTitle", { count })}
+      </p>
       <p className="mt-2 text-ink-muted">
-        Totaling up to <span className="font-semibold text-text-dark">{fmt(amountCents)}</span>.
+        {t("app.dashboard.situationsTotal", { amount: fmt(amountCents) })}
       </p>
       <div className="mt-6 flex justify-center">
         <Link
           to="/app/pipeline"
           className="inline-flex h-10 items-center rounded-full bg-evergreen px-5 text-sm font-semibold text-text-dark hover:brightness-110 transition"
         >
-          Review pipeline
+          {t("app.dashboard.situationsReview")}
         </Link>
       </div>
     </div>
@@ -276,6 +289,8 @@ function SituationsCard({ count, amountCents }: { count: number; amountCents: nu
 function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => void }) {
   const fmt = useFormatMoney();
   const dialogRef = useDialogA11y<HTMLDivElement>(!!rec, onClose);
+  const { t } = useI18n();
+
   return (
     <AnimatePresence>
       {rec && (
@@ -283,7 +298,10 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
-          aria-label={`Recovered ${fmt(rec.userNet)} from ${rec.merchant}`}
+          aria-label={t("app.landed.ariaLabel", {
+            amount: fmt(rec.userNet),
+            merchant: rec.merchant,
+          })}
           tabIndex={-1}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -292,7 +310,7 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
           style={{ background: "#15110B" }}
         >
           <div className="text-center">
-            <p className="eyebrow text-muted-dark">Just landed</p>
+            <p className="eyebrow text-muted-dark">{t("app.landed.eyebrow")}</p>
             <div className="mt-6">
               <GoldDing trigger={1}>
                 <span className="odometer-hero font-display" style={{ color: "#F2C24B" }}>
@@ -300,12 +318,14 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
                 </span>
               </GoldDing>
             </div>
-            <p className="mt-8 font-display text-2xl text-text-dark">From {rec.merchant}</p>
+            <p className="mt-8 font-display text-2xl text-text-dark">
+              {t("app.landed.from", { merchant: rec.merchant })}
+            </p>
             <button
               onClick={onClose}
               className="mt-10 inline-flex h-11 items-center rounded-full bg-gold px-6 font-semibold text-ink"
             >
-              Back to wins
+              {t("app.landed.btnBack")}
             </button>
           </div>
         </motion.div>
