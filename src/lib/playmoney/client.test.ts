@@ -37,7 +37,7 @@ describe("P1 · client selector: real Supabase when configured, mock fallback ot
     expect(() => assertSupabaseConfigWhenRequired({}, true)).toThrow(/MockApiClient/);
     expect(() =>
       assertSupabaseConfigWhenRequired({ supabaseUrl: "https://proj.supabase.co" }, true),
-    ).toThrow(/VITE_SUPABASE_ANON_KEY/);
+    ).toThrow(/VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY/);
     expect(() =>
       assertSupabaseConfigWhenRequired(
         { supabaseUrl: "https://proj.supabase.co", supabaseAnonKey: "anon-key" },

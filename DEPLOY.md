@@ -21,9 +21,9 @@ Production deploy builds must receive the public Supabase Vite values so the app
 These are RLS-safe public values and may be embedded in browser bundles:
 
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_ANON_KEY` or `VITE_SUPABASE_PUBLISHABLE_KEY` (modern alternative)
 
-The deploy workflow also sets `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` internally. If either public Vite value is missing, the build fails instead of silently using `MockApiClient`.
+The deploy workflow also sets `VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG=true` internally. If public Vite URL is missing, or if both public keys are missing, the build fails instead of silently using `MockApiClient`.
 
 ### RLS verification values
 
