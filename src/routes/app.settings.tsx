@@ -96,7 +96,6 @@ function Settings() {
           </div>
         </PMCard>
       </div>
-
     </section>
   );
 }
