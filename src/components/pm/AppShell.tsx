@@ -22,7 +22,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <img
               src="/wordmark.png"
               alt="PlayMoney"
-              className="h-8 w-auto"
+              className="h-8 w-auto opacity-90"
+              style={{ filter: "brightness(0)" }}
               width={148}
               height={32}
             />
