@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { auth } from "@/lib/playmoney/client";
 import { MagicLinkSentError } from "@/lib/playmoney/supabase";
 import { PMButton } from "@/components/pm/Button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export const Route = createFileRoute("/auth/sign-in")({
   head: () => ({ meta: [{ title: "Sign in — PlayMoney" }] }),
@@ -15,6 +16,7 @@ function SignIn() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+  const { t } = useI18n();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,13 +37,22 @@ function SignIn() {
         });
         return;
       }
-      toast.error("Couldn't send sign-in link", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(t("auth.signin.errorToast"), {
+        description: err instanceof Error ? err.message : t("auth.signin.tryAgain"),
       });
     } finally {
       setLoading(false);
     }
   }
+
+  // Create footer link text with formatting
+  const linkMarkup = (
+    <a href="/" className="underline hover:text-text-dark">
+      {t("auth.signin.footerLinkText")}
+    </a>
+  );
+  const footerTemplate = t("auth.signin.footer");
+  const footerParts = footerTemplate.split("{link}");
 
   return (
     <motion.div
@@ -50,15 +61,15 @@ function SignIn() {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-sm"
     >
-      <h1 className="font-display text-center text-3xl font-semibold text-text-dark">Sign in</h1>
-      <p className="mt-2 text-center text-sm text-muted-dark">
-        Enter your email. We'll send a one-tap sign-in link.
-      </p>
+      <h1 className="font-display text-center text-3xl font-semibold text-text-dark">
+        {t("auth.signin.title")}
+      </h1>
+      <p className="mt-2 text-center text-sm text-muted-dark">{t("auth.signin.subtitle")}</p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <div>
           <label htmlFor="signin-email" className="eyebrow block text-muted-dark">
-            Email address
+            {t("auth.signin.emailLabel")}
           </label>
           <input
             id="signin-email"
@@ -66,7 +77,7 @@ function SignIn() {
             autoComplete="email"
             autoFocus
             required
-            placeholder="you@example.com"
+            placeholder={t("auth.signin.placeholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
@@ -80,15 +91,14 @@ function SignIn() {
           className="w-full"
           disabled={loading || !email.trim()}
         >
-          {loading ? "Sending…" : "Send sign-in link"}
+          {loading ? t("auth.signin.btnSending") : t("auth.signin.btnSend")}
         </PMButton>
       </form>
 
       <p className="mt-6 text-center text-xs text-muted-dark">
-        No password. No friction.{" "}
-        <a href="/" className="underline hover:text-text-dark">
-          Learn how PlayMoney works →
-        </a>
+        {footerParts[0]}
+        {linkMarkup}
+        {footerParts[1]}
       </p>
     </motion.div>
   );

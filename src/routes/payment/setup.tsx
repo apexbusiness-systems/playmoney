@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { auth } from "@/lib/playmoney/client";
 import { PMButton } from "@/components/pm/Button";
 import { setupCustomerFn } from "@/lib/api/payment.functions";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export const Route = createFileRoute("/payment/setup")({
   head: () => ({ meta: [{ title: "Payment Setup — PlayMoney" }] }),
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/payment/setup")({
 function PaymentSetup() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { t } = useI18n();
 
   async function handleSetup() {
     setLoading(true);
@@ -30,11 +32,11 @@ function PaymentSetup() {
       // the customer id is who we charge the fee to, not where the user's money lands).
       if (res.success && res.customerRef) {
         await auth.saveAdapterRefs({ stripeCustomerRef: res.customerRef });
-        toast.success("Payment method secured");
+        toast.success(t("payment.setup.toastSuccess"));
         await nav({ to: "/app" });
       }
     } catch (err) {
-      toast.error("Setup blocked", {
+      toast.error(t("payment.setup.toastBlocked"), {
         description: err instanceof Error ? err.message : "Payment setup failed.",
       });
     } finally {
@@ -42,31 +44,36 @@ function PaymentSetup() {
     }
   }
 
+  // Create description with strong HTML
+  const descTemplate = t("payment.setup.desc");
+  const descParts = descTemplate.split(/\{strong[a-zA-Z]+\}/);
+
   return (
     <div className="mx-auto max-w-md text-center">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-3xl">
         💳
       </div>
-      <h1 className="font-display mt-6 text-3xl font-semibold">Secure your fee payment</h1>
+      <h1 className="font-display mt-6 text-3xl font-semibold">{t("payment.setup.mainTitle")}</h1>
       <p className="mt-3 text-muted-dark leading-relaxed">
-        We found money that belongs to you. PlayMoney takes a 20% success fee{" "}
-        <strong>only after</strong> the funds land safely in your account.
+        {descParts[0]}
+        <strong>{descParts[1]}</strong>
+        {descParts[2]}
       </p>
 
       <div className="mt-8 rounded-xl border border-border-d bg-card p-6 text-left">
-        <h3 className="font-semibold text-gold">Our Promise</h3>
+        <h3 className="font-semibold text-gold">{t("payment.setup.promiseTitle")}</h3>
         <ul className="mt-4 space-y-3 text-sm text-muted-dark">
           <li className="flex items-start gap-2">
             <span className="text-gold">✓</span>
-            No upfront costs.
+            {t("payment.setup.promisePoint1")}
           </li>
           <li className="flex items-start gap-2">
             <span className="text-gold">✓</span>
-            You approve every recovery.
+            {t("payment.setup.promisePoint2")}
           </li>
           <li className="flex items-start gap-2">
             <span className="text-gold">✓</span>
-            We only get paid when you do.
+            {t("payment.setup.promisePoint3")}
           </li>
         </ul>
       </div>
@@ -77,9 +84,9 @@ function PaymentSetup() {
         onClick={() => void handleSetup()}
         disabled={loading}
       >
-        {loading ? "Securing..." : "Add Payment Method"}
+        {loading ? t("payment.setup.btnSecuring") : t("payment.setup.btnPay")}
       </PMButton>
-      <p className="mt-4 text-xs text-muted-dark">Secured by Stripe</p>
+      <p className="mt-4 text-xs text-muted-dark">{t("payment.setup.stripeBadge")}</p>
     </div>
   );
 }

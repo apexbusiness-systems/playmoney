@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/playmoney/client";
 import { useFormatMoney } from "@/lib/playmoney/currency";
 import { StatusPill } from "@/components/pm/StatusPill";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { translateReason } from "@/lib/i18n/messages";
 
 export const Route = createFileRoute("/app/activity")({
   head: () => ({ meta: [{ title: "Activity — PlayMoney" }] }),
@@ -14,15 +16,21 @@ function Activity() {
   const fees = useQuery({ queryKey: ["fees"], queryFn: () => api.listFeeLedger() });
   const feeTotal = fees.data?.reduce((s, f) => s + f.feeAmount, 0) ?? 0;
   const fmt = useFormatMoney();
+  const { t, locale } = useI18n();
+
+  const recoveriesLabel =
+    (fees.data?.length ?? 0) === 1
+      ? t("app.activity.recoverySingular")
+      : t("app.activity.recoveryPlural");
 
   return (
     <section className="container-pm py-12">
-      <h1 className="h2-display">Activity</h1>
-      <p className="mt-2 text-ink-muted">A complete, auditable trail. Money out, our fee in.</p>
+      <h1 className="h2-display">{t("app.activity.title")}</h1>
+      <p className="mt-2 text-ink-muted">{t("app.activity.desc")}</p>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[3fr_2fr]">
         <div>
-          <h2 className="font-display text-xl font-semibold">Recovery events</h2>
+          <h2 className="font-display text-xl font-semibold">{t("app.activity.recoveryEvents")}</h2>
 
           {/* Mobile: stacked cards — a 4-column table can't fit 390px without a
               sideways scroll, so below sm we render each event as its own card. */}
@@ -37,7 +45,7 @@ function Activity() {
                   <p className="shrink-0 font-display tabular font-semibold">{fmt(r.userNet)}</p>
                 </div>
                 <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="min-w-0 text-sm text-ink-muted">{r.reason}</p>
+                  <p className="min-w-0 text-sm text-ink-muted">{translateReason(r.reason, t)}</p>
                   <span className="shrink-0">
                     <StatusPill status={r.status} />
                   </span>
@@ -52,19 +60,19 @@ function Activity() {
             <table className="w-full text-left text-sm">
               <thead className="bg-sand text-ink-muted">
                 <tr>
-                  <th className="px-5 py-3 font-semibold">Merchant</th>
-                  <th className="px-5 py-3 font-semibold">Reason</th>
+                  <th className="px-5 py-3 font-semibold">{t("app.activity.tableMerchant")}</th>
+                  <th className="px-5 py-3 font-semibold">{t("app.activity.tableReason")}</th>
                   <th className="whitespace-nowrap px-5 py-3 text-right font-semibold">
-                    Net to you
+                    {t("app.activity.tableNet")}
                   </th>
-                  <th className="px-5 py-3 font-semibold">Status</th>
+                  <th className="px-5 py-3 font-semibold">{t("app.activity.tableStatus")}</th>
                 </tr>
               </thead>
               <tbody>
                 {recs.data?.map((r) => (
                   <tr key={r.id} className="border-t border-border-l">
                     <td className="px-5 py-4 font-semibold">{r.merchant}</td>
-                    <td className="px-5 py-4 text-ink-muted">{r.reason}</td>
+                    <td className="px-5 py-4 text-ink-muted">{translateReason(r.reason, t)}</td>
                     <td className="px-5 py-4 text-right font-display tabular">{fmt(r.userNet)}</td>
                     <td className="px-5 py-4">
                       <StatusPill status={r.status} />
@@ -77,13 +85,13 @@ function Activity() {
         </div>
 
         <div className="lg:sticky lg:top-24 self-start">
-          <h2 className="font-display text-xl font-semibold">Our fee ledger</h2>
+          <h2 className="font-display text-xl font-semibold">{t("app.activity.feeLedger")}</h2>
 
           <div
             className="mt-4 rounded-[20px] border border-border-d p-6 text-text-dark"
             style={{ background: "#0E3B2D" }}
           >
-            <p className="eyebrow text-muted-dark">Total paid to PlayMoney</p>
+            <p className="eyebrow text-muted-dark">{t("app.activity.feeTotalLabel")}</p>
             <p
               className="mt-2 font-display tabular text-4xl font-semibold"
               style={{ color: "#F2C24B" }}
@@ -91,9 +99,7 @@ function Activity() {
               {fees.data ? fmt(feeTotal) : "—"}
             </p>
             <p className="mt-2 text-sm text-muted-dark">
-              Across {fees.data?.length ?? 0} landed{" "}
-              {(fees.data?.length ?? 0) === 1 ? "recovery" : "recoveries"} · 20% only on what you
-              keep.
+              {t("app.activity.feeSummary", { count: fees.data?.length ?? 0, recoveriesLabel })}
             </p>
           </div>
 
@@ -103,14 +109,16 @@ function Activity() {
                 key={f.id}
                 className="flex items-center justify-between rounded-[14px] border border-border-l bg-card px-5 py-3 text-sm"
               >
-                <span className="text-ink-muted">{new Date(f.ts).toLocaleDateString()}</span>
+                <span className="text-ink-muted">
+                  {new Date(f.ts).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA")}
+                </span>
                 <span className="font-display tabular font-semibold text-evergreen">
                   {fmt(f.feeAmount)}
                 </span>
               </div>
             ))}
             {fees.data?.length === 0 && (
-              <p className="text-sm text-ink-muted">No fees yet — we only get paid when you do.</p>
+              <p className="text-sm text-ink-muted">{t("app.activity.noFees")}</p>
             )}
           </div>
         </div>

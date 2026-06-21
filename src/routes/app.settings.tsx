@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api, auth } from "@/lib/playmoney/client";
 import { PMCard } from "@/components/pm/Card";
 import { PMButton } from "@/components/pm/Button";
-
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({ meta: [{ title: "Settings — PlayMoney" }] }),
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/app/settings")({
 
 function Settings() {
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => auth.getProfile() });
+  const { t } = useI18n();
 
   async function exportData() {
     const blob = await api.exportData();
@@ -25,44 +26,61 @@ function Settings() {
   }
 
   async function handleDeleteAll() {
-    if (!window.confirm("Are you sure you want to delete all your data? This cannot be undone."))
-      return;
+    if (!window.confirm(t("app.settings.deleteConfirm"))) return;
     try {
       await api.deleteAllData();
-      toast.success("All data deleted");
+      toast.success(t("app.settings.deleteSuccess"));
       window.location.reload();
     } catch (err) {
-      toast.error("Failed to delete data", {
+      toast.error(t("app.settings.deleteFailed"), {
         description: err instanceof Error ? err.message : "Please try again.",
       });
     }
   }
 
+  const notificationRows = [
+    {
+      label: t("app.settings.notifArrivedLabel"),
+      desc: t("app.settings.notifArrivedDesc"),
+      v: t("app.settings.notifArrivedVal"),
+    },
+    {
+      label: t("app.settings.notifActionLabel"),
+      desc: t("app.settings.notifActionDesc"),
+      v: t("app.settings.notifActionVal"),
+    },
+    {
+      label: t("app.settings.notifPromoLabel"),
+      desc: t("app.settings.notifPromoDesc"),
+      v: t("app.settings.notifPromoVal"),
+    },
+  ];
+
+  const profileVerifiedStatus = profile.data?.identityVerified
+    ? t("app.settings.profileVerified")
+    : t("app.settings.profilePending");
+
   return (
     <section className="container-pm py-12">
-      <h1 className="h2-display">Settings</h1>
-      <p className="mt-2 text-ink-muted">Small surface. That's the point.</p>
+      <h1 className="h2-display">{t("app.settings.title")}</h1>
+      <p className="mt-2 text-ink-muted">{t("app.settings.desc")}</p>
 
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
         <PMCard>
-          <p className="eyebrow text-ink-muted">Profile</p>
+          <p className="eyebrow text-ink-muted">{t("app.settings.profileTitle")}</p>
           <div className="mt-4 space-y-2">
-            <Row k="Name" v={profile.data?.displayName ?? "—"} />
-            <Row k="Email" v={profile.data?.email ?? "—"} />
-            <Row k="Payout token" v={profile.data?.payoutRef ?? "—"} mono />
-            <Row k="Identity" v={profile.data?.identityVerified ? "Verified" : "Pending"} />
+            <Row k={t("app.settings.profileName")} v={profile.data?.displayName ?? "—"} />
+            <Row k={t("app.settings.profileEmail")} v={profile.data?.email ?? "—"} />
+            <Row k={t("app.settings.profilePayout")} v={profile.data?.payoutRef ?? "—"} mono />
+            <Row k={t("app.settings.profileIdentity")} v={profileVerifiedStatus} />
           </div>
         </PMCard>
 
         <PMCard>
-          <p className="eyebrow text-ink-muted">Notifications</p>
-          <p className="mt-2 text-ink-muted">Only money-related events. Always.</p>
+          <p className="eyebrow text-ink-muted">{t("app.settings.notifTitle")}</p>
+          <p className="mt-2 text-ink-muted">{t("app.settings.notifDesc")}</p>
           <ul className="mt-4 space-y-2 text-sm">
-            {[
-              { label: "Money arrived", desc: "When a refund or fee lands", v: "On" },
-              { label: "Action needed", desc: "When your signature is required", v: "On" },
-              { label: "Promotions", desc: "Tips, offers, and marketing", v: "Never" },
-            ].map((r) => (
+            {notificationRows.map((r) => (
               <li
                 key={r.label}
                 className="flex items-center justify-between rounded-[12px] bg-sand px-4 py-3"
@@ -78,25 +96,22 @@ function Settings() {
         </PMCard>
 
         <PMCard>
-          <p className="eyebrow text-ink-muted">Your data</p>
-          <p className="mt-2 text-ink-muted">
-            Tokens, not credentials. Export or delete at any time.
-          </p>
+          <p className="eyebrow text-ink-muted">{t("app.settings.dataTitle")}</p>
+          <p className="mt-2 text-ink-muted">{t("app.settings.dataDesc")}</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <PMButton variant="ghostLight" onClick={exportData}>
-              Export data
+              {t("app.settings.dataExport")}
             </PMButton>
             <button
               onClick={handleDeleteAll}
               className="cursor-pointer text-sm font-semibold hover:underline"
               style={{ color: "#9C2A1A" }}
             >
-              Delete everything
+              {t("app.settings.dataDelete")}
             </button>
           </div>
         </PMCard>
       </div>
-
     </section>
   );
 }

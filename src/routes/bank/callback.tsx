@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { auth } from "@/lib/playmoney/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const searchSchema = (search: Record<string, unknown>) => {
   return {
@@ -21,19 +22,20 @@ function BankCallback() {
   const nav = useNavigate();
   const [status, setStatus] = useState<"scanning" | "done" | "error">("scanning");
   const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { t } = useI18n();
 
   useEffect(() => {
     void (async () => {
       if (error) {
         setStatus("error");
-        toast.error("Connection failed", {
-          description: "You cancelled or the bank denied access.",
+        toast.error(t("bank.callback.toastFailed"), {
+          description: t("bank.callback.toastDenied"),
         });
         return;
       }
       if (!loginId) {
         setStatus("error");
-        toast.error("Invalid response from bank");
+        toast.error(t("bank.callback.toastInvalid"));
         return;
       }
 
@@ -44,7 +46,7 @@ function BankCallback() {
         if (!result.ok) {
           // Honest sealed-until-live state — no real scan happened.
           setStatus("done");
-          toast.info("Coming soon", { description: result.message });
+          toast.info(t("bank.callback.toastComingSoon"), { description: result.message });
           navTimerRef.current = setTimeout(() => {
             void nav({ to: "/app" });
           }, 1800);
@@ -57,8 +59,8 @@ function BankCallback() {
 
         setStatus("done");
 
-        toast.success("Scan complete", {
-          description: `We found ${result.situationCount} potential refunds in your history.`,
+        toast.success(t("bank.callback.toastScanComplete"), {
+          description: t("bank.callback.toastFoundCount", { count: result.situationCount }),
         });
 
         // Slight delay for UX, then return to dashboard to view the pipeline.
@@ -67,15 +69,15 @@ function BankCallback() {
         }, 1500);
       } catch (err) {
         setStatus("error");
-        toast.error("Scanning failed", {
-          description: err instanceof Error ? err.message : "Could not process your history.",
+        toast.error(t("bank.callback.toastScanFailed"), {
+          description: err instanceof Error ? err.message : t("bank.callback.toastScanFailedDesc"),
         });
       }
     })();
     return () => {
       if (navTimerRef.current !== null) clearTimeout(navTimerRef.current);
     };
-  }, [loginId, error, nav]);
+  }, [loginId, error, nav, t]);
 
   return (
     <div className="mx-auto max-w-md py-16 text-center">
@@ -87,12 +89,9 @@ function BankCallback() {
             role="status"
           />
           <h1 className="font-display mt-6 text-2xl font-semibold">
-            Scanning 24 months of history...
+            {t("bank.callback.scanningTitle")}
           </h1>
-          <p className="mt-2 text-sm text-muted-dark">
-            Looking for unused subscriptions, duplicate charges, and hidden fees. This usually takes
-            about 10 seconds.
-          </p>
+          <p className="mt-2 text-sm text-muted-dark">{t("bank.callback.scanningDesc")}</p>
         </>
       )}
 
@@ -101,8 +100,10 @@ function BankCallback() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold/20 text-3xl">
             ✓
           </div>
-          <h1 className="font-display mt-6 text-2xl font-semibold">Scan complete</h1>
-          <p className="mt-2 text-sm text-muted-dark">Taking you to your dashboard...</p>
+          <h1 className="font-display mt-6 text-2xl font-semibold">
+            {t("bank.callback.successTitle")}
+          </h1>
+          <p className="mt-2 text-sm text-muted-dark">{t("bank.callback.successSub")}</p>
         </>
       )}
 
@@ -111,13 +112,15 @@ function BankCallback() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-500/20 text-3xl">
             ✗
           </div>
-          <h1 className="font-display mt-6 text-2xl font-semibold">Scan failed</h1>
-          <p className="mt-2 text-sm text-muted-dark">We couldn't connect to your bank.</p>
+          <h1 className="font-display mt-6 text-2xl font-semibold">
+            {t("bank.callback.failedTitle")}
+          </h1>
+          <p className="mt-2 text-sm text-muted-dark">{t("bank.callback.failedSub")}</p>
           <button
             onClick={() => void nav({ to: "/bank/connect" })}
             className="mt-6 text-sm font-semibold text-gold hover:underline"
           >
-            Try again
+            {t("bank.callback.tryAgain")}
           </button>
         </>
       )}

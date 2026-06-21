@@ -2,18 +2,22 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PMIcon } from "./Icon";
 import { Toaster } from "@/components/ui/sonner";
-
-const navLinks = [
-  { to: "/app", label: "Wins", icon: "coin" },
-  { to: "/app/activity", label: "Activity", icon: "receipt" },
-  { to: "/app/settings", label: "Settings", icon: "spark" },
-] as const;
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 // Muted ink (#6A6354) for inactive tab glyphs; active uses the default evergreen.
 const INACTIVE = "#6A6354";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { t } = useI18n();
+
+  const localizedLinks = [
+    { to: "/app", label: t("app.nav.wins"), icon: "coin" },
+    { to: "/app/activity", label: t("app.nav.activity"), icon: "receipt" },
+    { to: "/app/settings", label: t("app.nav.settings"), icon: "spark" },
+  ] as const;
+
   return (
     <div className="min-h-screen bg-sand text-ink">
       <header
@@ -33,7 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {/* Desktop/tablet: inline pill nav. On mobile this collapses to the
               bottom tab bar below so the header never overflows. */}
           <nav className="hidden items-center gap-1 sm:flex">
-            {navLinks.map((l) => {
+            {localizedLinks.map((l) => {
               const active = pathname === l.to;
               return (
                 <Link
@@ -51,16 +55,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <LanguageSwitcher variant="dark" />
             <button
               className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10"
-              aria-label="Notifications"
+              aria-label={t("app.nav.notifications.aria")}
             >
               <PMIcon name="bell" stroke="#F4EEE1" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-gold" />
             </button>
             <span
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 font-display text-text-dark"
-              aria-label="Account: Maya Chen"
+              aria-label={t("app.nav.account.aria", { name: "Maya Chen" })}
             >
               M
             </span>
@@ -73,12 +78,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile bottom tab bar — iOS-native pattern, replaces the header nav. */}
       <nav
-        aria-label="Primary"
+        aria-label={t("app.nav.primary.aria")}
         className="fixed inset-x-0 bottom-0 z-30 border-t border-border-l bg-card/95 backdrop-blur sm:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto flex max-w-lg items-stretch justify-around">
-          {navLinks.map((l) => {
+          {localizedLinks.map((l) => {
             const active = pathname === l.to;
             return (
               <Link

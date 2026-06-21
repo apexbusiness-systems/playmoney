@@ -50,6 +50,8 @@ export function useCurrency(): AppCurrency {
   return detectBrowserCurrency();
 }
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
 /**
  * React hook — returns a pre-bound money formatter for the current user's
  * currency. Drop-in replacement for the raw `formatMoney` import in routes:
@@ -59,5 +61,6 @@ export function useCurrency(): AppCurrency {
  */
 export function useFormatMoney(): (cents: number) => string {
   const currency = useCurrency();
-  return (cents: number) => formatMoney(cents, currency);
+  const { locale } = useI18n();
+  return (cents: number) => formatMoney(cents, currency, locale);
 }
