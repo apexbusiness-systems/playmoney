@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api, auth } from "@/lib/playmoney/client";
 import { PMCard } from "@/components/pm/Card";
 import { PMButton } from "@/components/pm/Button";
-import { PMIcon } from "@/components/pm/Icon";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
@@ -59,37 +59,22 @@ function Settings() {
           <p className="mt-2 text-ink-muted">Only money-related events. Always.</p>
           <ul className="mt-4 space-y-2 text-sm">
             {[
-              { k: "money_landed", v: "On" },
-              { k: "needs_signature", v: "On" },
-              { k: "marketing", v: "Never" },
+              { label: "Money arrived", desc: "When a refund or fee lands", v: "On" },
+              { label: "Action needed", desc: "When your signature is required", v: "On" },
+              { label: "Promotions", desc: "Tips, offers, and marketing", v: "Never" },
             ].map((r) => (
               <li
-                key={r.k}
-                className="flex items-center justify-between rounded-[12px] bg-sand px-4 py-2"
+                key={r.label}
+                className="flex items-center justify-between rounded-[12px] bg-sand px-4 py-3"
               >
-                <span className="font-mono text-xs text-ink-muted">{r.k}</span>
+                <div>
+                  <p className="font-medium text-ink">{r.label}</p>
+                  <p className="text-xs text-ink-muted">{r.desc}</p>
+                </div>
                 <span className="font-semibold">{r.v}</span>
               </li>
             ))}
           </ul>
-        </PMCard>
-
-        <PMCard>
-          <p className="eyebrow text-ink-muted">Integrations</p>
-          <div className="mt-4 flex items-center justify-between rounded-[12px] border border-border-l bg-sand px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-mint-chip">
-                <PMIcon name="spark" />
-              </span>
-              <div>
-                <p className="font-semibold">GitHub sync</p>
-                <p className="text-xs text-ink-muted">Sync receipts repo (read-only)</p>
-              </div>
-            </div>
-            <PMButton variant="ghostLight" className="!h-9">
-              Connect
-            </PMButton>
-          </div>
         </PMCard>
 
         <PMCard>
@@ -103,7 +88,7 @@ function Settings() {
             </PMButton>
             <button
               onClick={handleDeleteAll}
-              className="text-sm font-semibold text-destructive hover:underline cursor-pointer"
+              className="cursor-pointer text-sm font-semibold hover:underline"
               style={{ color: "#9C2A1A" }}
             >
               Delete everything
@@ -111,6 +96,7 @@ function Settings() {
           </div>
         </PMCard>
       </div>
+
     </section>
   );
 }
