@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+
 import { motion } from "framer-motion";
 import { Odometer } from "@/components/pm/Odometer";
 import { GoldDing } from "@/components/pm/GoldDing";
@@ -49,22 +49,10 @@ function Landing() {
 }
 
 function Nav() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const f = () => setScrolled(window.scrollY > 24);
-    f();
-    window.addEventListener("scroll", f, { passive: true });
-    return () => window.removeEventListener("scroll", f);
-  }, []);
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
-        scrolled ? "backdrop-blur-md" : ""
-      }`}
-      style={{
-        background: scrolled ? "rgba(14,59,45,0.85)" : "transparent",
-        borderBottom: scrolled ? "1px solid #1E5A45" : "1px solid transparent",
-      }}
+      className="fixed inset-x-0 top-0 z-40 border-b"
+      style={{ background: "#0E3B2D", borderColor: "#1E5A45" }}
     >
       <div className="container-pm flex h-16 items-center justify-between">
         <Link to="/" className="inline-flex items-center" aria-label="PlayMoney home">

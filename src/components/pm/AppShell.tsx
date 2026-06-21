@@ -16,7 +16,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="min-h-screen bg-sand text-ink">
-      <header className="sticky top-0 z-30 border-b border-border-l bg-card/80 backdrop-blur">
+      <header
+        className="sticky top-0 z-30 border-b backdrop-blur"
+        style={{ background: "#0E3B2D", borderColor: "#1E5A45" }}
+      >
         <div className="container-pm flex h-16 items-center justify-between">
           <Link to="/" className="inline-flex items-center" aria-label="PlayMoney home">
             <img
@@ -37,7 +40,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                   key={l.to}
                   to={l.to}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    active ? "bg-evergreen text-text-dark" : "text-ink hover:bg-sand"
+                    active
+                      ? "bg-white/15 text-text-dark"
+                      : "text-text-dark/70 hover:bg-white/10 hover:text-text-dark"
                   }`}
                 >
                   {l.label}
@@ -47,14 +52,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
-              className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-l bg-card"
+              className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10"
               aria-label="Notifications"
             >
-              <PMIcon name="bell" />
+              <PMIcon name="bell" stroke="#F4EEE1" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-gold" />
             </button>
             <span
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-evergreen font-display text-text-dark"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 font-display text-text-dark"
               aria-label="Account: Maya Chen"
             >
               M
