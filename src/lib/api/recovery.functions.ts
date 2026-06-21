@@ -136,6 +136,119 @@ export async function processApproval(input: {
 }
 
 /**
+ * Pure landed-transition logic (mirrors processApproval): when a recovery is confirmed
+ * landed, write the audit event in the EXISTING recovery_events path, then fire the
+ * fee-settlement step. `settleFee` is the real settlement callback — it stays sealed in
+ * BUILT via assertLiveAllowed() inside StripePayoutAdapter, so this plumbs the trigger
+ * without changing what happens once triggered. Injected I/O ⇒ unit-testable.
+ */
+export async function processRecoveryLanded(input: {
+  writeEvent: (kind: string, note: string) => Promise<void>;
+  settleFee: () => Promise<void>;
+}): Promise<void> {
+  // Audit the landing first, in the same recovery_events path used for approve/execute.
+  await input.writeEvent("landed", "Recovery confirmed landed; firing fee settlement.");
+  // Explicit next step: settle the fee. Sealed in BUILT — throws LiveModeBlockedError,
+  // never a silent no-op. The audit row above truthfully records the landing regardless.
+  await input.settleFee();
+}
+
+/**
+ * TanStack Start server fn — the recovery status-transition trigger. When a recovery is
+ * confirmed landed (an external confirmation event in LIVE; the caller is P4/P5 ingest),
+ * this writes the `landed` recovery_events row, persists status='landed', and fires
+ * settleFeeRecoveryFn as the explicit next step. Settlement remains sealed in BUILT.
+ */
+export const markRecoveryLandedFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      recoveryId: z.string().min(1),
+      idempotencyKey: z.string().min(1),
+      evidenceRef: z.string().min(1),
+      customerRef: z.string().min(1),
+    }),
+  )
+  .handler(async ({ data }): Promise<void> => {
+    const { getAdminClient } = await import("@/lib/supabase/admin.server");
+    const { rowToRecovery } = await import("@/lib/playmoney/supabase");
+    const { settleFeeRecoveryFn } = await import("./lifecycle.functions");
+    const sb = getAdminClient();
+
+    const recRow = await sb.from("recoveries").select("*").eq("id", data.recoveryId).maybeSingle();
+    if (recRow.error)
+      throw new Error(`markRecoveryLanded: recovery lookup failed: ${recRow.error.message}`);
+    if (!recRow.data) throw new Error(`markRecoveryLanded: recovery ${data.recoveryId} not found`);
+    const recovery = rowToRecovery(recRow.data);
+    const ownerId: string = (recRow.data as Record<string, unknown>).owner_id as string;
+
+    await processRecoveryLanded({
+      writeEvent: async (kind, note) => {
+        const ev = await sb
+          .from("recovery_events")
+          .insert({ owner_id: ownerId, recovery_id: data.recoveryId, kind, note });
+        if (ev.error)
+          throw new Error(`markRecoveryLanded: event write failed: ${ev.error.message}`);
+        const up = await sb
+          .from("recoveries")
+          .update({ status: "landed" })
+          .eq("id", data.recoveryId);
+        if (up.error)
+          throw new Error(`markRecoveryLanded: status update failed: ${up.error.message}`);
+      },
+      settleFee: async () => {
+        // Sealed in BUILT (StripePayoutAdapter.chargeFee throws LiveModeBlockedError).
+        await settleFeeRecoveryFn({
+          data: {
+            recoveryId: data.recoveryId,
+            idempotencyKey: data.idempotencyKey,
+            grossAmountCents: recovery.grossAmount,
+            confirmedAt: new Date().toISOString(),
+            evidenceRef: data.evidenceRef,
+            customerRef: data.customerRef,
+            causedByPlaymoney: true,
+            disclosureAcked: true,
+          },
+        });
+      },
+    });
+  });
+
+/**
+ * Writes the `initiated` audit event for a freshly-created recovery. The recovery
+ * row itself is inserted under the owner's RLS session (SupabaseApiClient.initiateRecovery);
+ * recovery_events has no tenant INSERT policy (truthful audit, service-role only), so the
+ * append happens here via the admin client, resolving the owner from the recovery row —
+ * the same pattern approveRecoveryFn uses. Creating a record is a DB write, not a
+ * money-movement action, so it is NOT subject to assertLiveAllowed().
+ */
+export const recordRecoveryInitiatedFn = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ recoveryId: z.string().min(1) }))
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    const { getAdminClient } = await import("@/lib/supabase/admin.server");
+    const sb = getAdminClient();
+
+    const recRow = await sb
+      .from("recoveries")
+      .select("owner_id")
+      .eq("id", data.recoveryId)
+      .maybeSingle();
+    if (recRow.error)
+      throw new Error(`recordRecoveryInitiated: recovery lookup failed: ${recRow.error.message}`);
+    if (!recRow.data)
+      throw new Error(`recordRecoveryInitiated: recovery ${data.recoveryId} not found`);
+    const ownerId: string = (recRow.data as Record<string, unknown>).owner_id as string;
+
+    const { error } = await sb.from("recovery_events").insert({
+      owner_id: ownerId,
+      recovery_id: data.recoveryId,
+      kind: "initiated",
+      note: "Recovery initiated from a detected situation.",
+    });
+    if (error) throw new Error(`recordRecoveryInitiated: event write failed: ${error.message}`);
+    return { ok: true };
+  });
+
+/**
  * TanStack Start server fn — the single approve endpoint.
  * All compliance checks, audit writes, and DB mutations happen here server-side.
  * Client never touches the compliance layer directly.

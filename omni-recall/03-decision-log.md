@@ -294,3 +294,106 @@ make PlayMoney release-ready.
   (SECURITY-001); external go-live gates G-counsel and G-insurance (ops/legal, never auto-set);
   and ops/legal approval before `PLAYMONEY_MODE=LIVE`. `PLAYMONEY_MODE` remains `BUILT` by
   default; `canGoLive()` remains false.
+
+### 2026-06-21 · D-015 · Documentation reconciliation + T1–T6 remediation (Path-A beta, BUILT)
+
+Closed six verified, evidence-cited Path-A gaps (real adapter wiring, honest sample
+labeling, real recovery initiation, fee-settlement trigger, adapter-ref persistence,
+real-world payout capture). Plumbing + honesty only — the BUILT/LIVE seal was not
+touched, weakened, or bypassed; no RED-lane file was edited.
+
+**(a) Doc-status corrections (evidence-cited).**
+
+- **P4 "todo" → BUILT.** Real adapters already shipped: `src/lib/adapters/account-data.ts`
+  (Flinks CA + Plaid US, read-only, sealed by `assertModeIsLive`/`assertLiveAllowed`) and
+  `src/lib/adapters/payout.ts` (Stripe fee-only). `ls` confirms both + `adapters.test.ts`.
+- **P7 go-live health check "pending" → BUILT.** `src/lib/api/health.functions.ts` exists
+  (read-only `HealthReport`: mode + `canGoLive` + per-gate green/external). CLAUDE.md row
+  corrected; only `db:verify-rls`-in-CI remains (gated on SECURITY-001 key rotation).
+- **Test-count baseline corrected.** `05-coverage.md` claimed `139/23` (dated 2026-06-15);
+  the real pre-T1 baseline re-run here was **147 passing / 24 files** (`bun run test`). The
+  doc carried a stale number; corrected to the freshly-run figure (no number carried forward).
+
+**(b) T1–T6 built (file · what).**
+
+- **T1 · `src/lib/api/bank.functions.ts`** — replaced the "Simulated server function" stub.
+  Pure `ingestThroughAdapter` calls the real `createAccountDataAdapter` + `deriveSituations`;
+  `buildFlinksConnectUrl` templates the real URL from env. The adapter's `LiveModeBlockedError`
+  is caught and returned as a typed `sealed_until_live` (contract types in `types.ts`), never a
+  fake success or unhandled 500. Routes `bank/connect.tsx` + `bank/callback.tsx` show honest
+  "coming soon". Test proves the seal originates INSIDE the real adapter path.
+- **T2 · `src/lib/api/situations.functions.ts` + `src/routes/app/pipeline.tsx`** — `getSituations`
+  is mode-aware: LIVE derives real situations from ingested txns; BUILT returns the renamed
+  `SAMPLE_SITUATIONS` tagged `{ sampleMode: true }`. Pipeline shows "Sample preview — these are
+  example results. Real scanning unlocks at launch." (the misleading "found by our engines" copy
+  is now gated behind `!sampleMode`). Sample data retained as a disclosed preview, not deleted.
+- **T3 · `src/lib/playmoney/supabase.ts`** — `initiateRecovery` no longer throws "not implemented".
+  `processInitiateRecovery` inserts an owner-scoped `recoveries` row (RLS session; integer-cents
+  25% fee projection) and writes a `recovery_events` `initiated` audit row via the new admin
+  `recordRecoveryInitiatedFn` (recovery_events stays service-role-only — RLS not weakened).
+- **T4 · `src/lib/api/recovery.functions.ts`** — wired the orphaned `settleFee` trigger.
+  `processRecoveryLanded` writes the `landed` event in the EXISTING recovery_events path then
+  fires settlement exactly once; `markRecoveryLandedFn` is the status-transition server fn.
+  Settlement stays sealed in BUILT (`LiveModeBlockedError` via `StripePayoutAdapter`), proven by
+  test against the real `applySettleFee` path — not a silent no-op.
+- **T5 · `supabase/migrations/0009_adapter_refs.sql`** — adds `stripe_customer_ref` +
+  `aggregator_token` to `public.profiles` (idempotent `add column if not exists`). Chose COLUMNS
+  over a child table: cardinality is exactly 1:1 with the user, so columns inherit profiles'
+  owner-scoped RLS (0001) with zero new RLS surface and nothing to join. These are PSP/aggregator
+  REFERENCES, not money — invariant #1 untouched. `saveAdapterRefs` (contract + mock + supabase,
+  RLS-session) persists them; `payment/setup.tsx` now writes the Stripe ref to its own column
+  (it had been mislabeled into `payout_ref`); `bank/callback.tsx` persists the aggregator token on
+  LIVE ingest. Live application still requires `bun run db:migrate` against a real project, after
+  which ops must re-run `bun run db:verify-rls` (no live creds in this environment).
+- **T6 · `src/routes/app.onboarding.tsx`** — replaced the opaque "Routing token / tok*payout***\*"
+  field (no consumer could supply it) with a validated **Interac e-Transfer email\*\* capture
+  (`type="email"`, `autoComplete="email"`, real `isValidEmail`), still writing the same `payout_ref`
+  contract seam via `auth.submitOnboarding`. Variable renamed `payoutToken` → `payoutEmail`.
+
+**(c) YELLOW assumptions — flagged for product/founder sign-off (proceeded per spec defaults).**
+
+1. **T2 sample-mode labeling** — sample data is retained as a DISCLOSED product-preview state
+   ("Sample preview … unlocks at launch") rather than deleted. Confirm this is the desired Path-A
+   beta presentation.
+2. **T6 Interac e-Transfer default** — chosen as the simplest non-custodial Canadian payout method
+   (funds land in the user's own account, no new vendor integration). Confirm before LIVE, and
+   confirm whether a tokenised PSP payout ref should coexist for non-Interac users.
+
+**Verified** (freshly re-run, not assumed): `bun run typecheck` clean · `bun run lint` exit 0 ·
+`bun run test` = **169 passing / 27 files** (baseline 147/24 + 22 new across bank/situations/
+pipeline/supabase/recovery seam tests) · `bun run build` green. Seal re-checked at runtime:
+`getMode()` = `BUILT` (PLAYMONEY_MODE unset), `canGoLive(empty)` = `false`,
+`isLiveEnabled(empty)` = `false`. No non-test file assigns `PLAYMONEY_MODE = "LIVE"` (grep clean).
+No RED-lane file (`money/mode/gates/executor/loa/causation/review/upl/avenues/geofence/ports`)
+was edited; no fund-holding type or table introduced; SECURITY-001 keys untouched.
+
+---
+
+### 2026-06-21 · D-016 · Avenue-by-avenue payout mechanism (founder decision input)
+
+**This is an open question for the founder/product, not a resolved decision. Nothing is marked BUILT or closed here.**
+
+**Context.** D-002 noted an avenue taxonomy mismatch ("Open until M7"). M7 was built (`compliance/avenues.ts`): the 4-avenue registry exists, disabled avenues are hard-gated, and problem types map through `PROBLEM_TYPE_TO_AVENUE`. What D-002 never resolved — and what the code still does not answer — is the *money-path mechanics* per avenue: does the recovered money return to the user automatically (MERCHANT-DIRECT, no PlayMoney rail needed) or must PlayMoney actively send money to the user's `payout_ref` (PLAYMONEY-INITIATED, needs a disbursement rail)?
+
+**Evidence-based findings (no inference beyond what the code shows).**
+
+| Avenue | Mechanism | Evidence (file:line) | Implication |
+|---|---|---|---|
+| `merchant_refund` | **UNVERIFIED** | `ports.ts:1–11` — no "send-to-user" method exists by design; `recovery.functions.ts:299–306` — `perform()` when LIVE only writes `status='on_the_way'` in DB; no outbound merchant communication in any code path | Non-custodial by type (MERCHANT-DIRECT intent), but the reversal-triggering mechanism is not built; `payout_ref` is never read in the execution path |
+| `fee_reversal` | **UNVERIFIED** | Same `perform()` path; `ports.ts:28–42` — `PayoutPort.chargeFee()` charges the user a fee, it does not send money to the user | Same: architectural intent is MERCHANT-DIRECT (bank reverses the fee back to the card), but no outbound communication exists |
+| `billing_error_correction` | **UNVERIFIED** | All 4 avenues share the single `processApproval → executeRecoveryAction → perform()` path; no avenue-specific handler diverges | Same |
+| `subscription_cancellation` | **UNVERIFIED** | Same; `money.ts:50` — `RecoveryDestination = UserPayoutRef` is declared but grep of every call site shows it is read nowhere in any execution path (defined, type-tested, displayed in Settings — never consumed by recovery approval/execution/settlement) | Same — though subscription cancellations are the avenue most likely to yield store credit or cheque rather than a card-network reversal, which is where MERCHANT-DIRECT breaks down |
+
+**`payout_ref` current status.** Written to `profiles` during onboarding (T6: now an Interac e-Transfer email), displayed in Settings, never read by any recovery approval, execution, or settlement path. `ConfirmSheet.tsx:25` has a comment "populated from payoutRef in P4/P6" — flagging it as planned but not yet wired. As of today: zero of the four avenues consume it.
+
+**The unresolved fork — questions for the founder.**
+
+1. **Is every enabled avenue truly MERCHANT-DIRECT?** i.e. once PlayMoney sends the right communication to the merchant/bank/processor, do funds always return automatically to the user's original payment instrument, with no disbursement action required from PlayMoney? If yes, `payout_ref` stays display-only and no payout rail is needed at launch.
+
+2. **What does PlayMoney actually SEND to cause a reversal?** The `perform()` callback at LIVE+gates currently only writes a DB row. The outbound communication (letter to merchant, API call to processor, chargeback filing) is entirely unimplemented. This is the largest open gap between the compliance spine and a working product.
+
+3. **`subscription_cancellation` edge case.** Merchants frequently cancel a subscription but issue store credit or a future credit note rather than a card-network reversal. If PlayMoney pursues this avenue, the user may not receive cash automatically — PlayMoney may need to collect the credit and forward it. Does this avenue's scope include only direct card reversals, or also credit/voucher recoveries? If the latter, a disbursement rail (Interac e-Transfer for Business or PSP payout) is required and `payout_ref` becomes load-bearing.
+
+4. **Interac e-Transfer as `payout_ref` (T6 YELLOW).** If any avenue is PLAYMONEY-INITIATED, `payout_ref` = Interac e-Transfer email is a real consumer-grade rail (funds land in the user's own account, no PlayMoney custody, no new vendor integration). Confirm this is the intended payout method, and confirm whether a tokenised PSP ref should coexist for non-Interac users.
+
+**What this D-016 does NOT do.** It does not choose MERCHANT-DIRECT vs PLAYMONEY-INITIATED for any avenue, does not build a payout rail, does not change any compliance file, and does not mark P4/P5 status. It surfaces the gap so the founder can decide before LIVE wiring begins.

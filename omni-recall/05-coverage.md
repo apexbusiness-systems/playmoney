@@ -1,10 +1,12 @@
 # 05 · Compliance Coverage & Residuals (§7 Definition of Done)
 
-_Phase 2 complete: 2026-06-14. Updated: 2026-06-15 (branch `claude/admiring-cori-civ47c`)._
+_Phase 2 complete: 2026-06-14. Updated: 2026-06-21 (branch `claude/eager-darwin-d2yde0`, D-015)._
 **Status: BUILT, not LIVE.** `PLAYMONEY_MODE` default BUILT; `canGoLive()` = false; live paths sealed.
-Phases delivered since: P1 (D-006), P3 (D-007), P2 (D-008); P5/P6 partially scaffolded (see CLAUDE.md).
-Verification (2026-06-15): `bun run typecheck` clean · `bun run test` = **139 passing / 23 files** ·
-`bun run build` green · `bun run db:verify-rls` denies anon. `bun run lint` not yet green (prettier debt only; 0 real errors).
+Phases delivered since: P1 (D-006), P3 (D-007), P2 (D-008); P4 + P7 done (D-015); P5/P6 mostly wired (see CLAUDE.md).
+Verification (2026-06-21, freshly re-run): `bun run typecheck` clean · `bun run lint` exit 0 ·
+`bun run test` = **169 passing / 27 files** · `bun run build` green. (Prior `139/23` was stale; the
+pre-T1 baseline this session was 147/24, +22 from T1–T6.) `bun run db:verify-rls` is an ops/local
+check (needs the SECURITY-001 service-role key) — not run in this credential-free environment.
 
 ## Coverage table (17 controls → enforcement → status)
 

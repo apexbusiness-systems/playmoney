@@ -2,6 +2,8 @@ import type {
   ApiClient,
   AuthClient,
   Approval,
+  ConnectUrlResult,
+  IngestResult,
   Notification,
   OccupationContext,
   Profile,
@@ -238,6 +240,7 @@ export class MockApiClient implements ApiClient {
 
 export class MockAuthClient implements AuthClient {
   private profile: Profile | null = seededProfile;
+  private adapterRefs: { stripeCustomerRef?: string; aggregatorToken?: string } = {};
   async getProfile() {
     return this.profile;
   }
@@ -265,6 +268,9 @@ export class MockAuthClient implements AuthClient {
     this.profile = { ...(this.profile ?? seededProfile), context };
     return this.profile;
   }
+  async saveAdapterRefs(refs: { stripeCustomerRef?: string; aggregatorToken?: string }) {
+    this.adapterRefs = { ...this.adapterRefs, ...refs };
+  }
   async submitOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
     return processOnboarding({
       parsedInput: input,
@@ -279,12 +285,12 @@ export class MockAuthClient implements AuthClient {
       },
     });
   }
-  async getFlinksConnectUrl() {
-    return { connectUrl: "https://mock.flinks.com/connect?token=mock_url_token" };
+  async getFlinksConnectUrl(): Promise<ConnectUrlResult> {
+    return { ok: true, connectUrl: "https://mock.flinks.com/connect?token=mock_url_token" };
   }
-  async ingestTransactions(_input: { aggregatorToken: string }) {
-    // In mock mode, we just pretend the ingestion was successful.
-    return { success: true, situationCount: 3 };
+  async ingestTransactions(_input: { aggregatorToken: string }): Promise<IngestResult> {
+    // In mock mode, we just pretend the ingestion was successful (sample preview).
+    return { ok: true, situationCount: 3 };
   }
 }
 

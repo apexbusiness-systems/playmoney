@@ -15,6 +15,8 @@ import {
   OccupationContext,
   type ApiClient,
   type AuthClient,
+  type ConnectUrlResult,
+  type IngestResult,
   FeeLedgerEntry,
   Notification,
   Profile,
@@ -25,6 +27,67 @@ import {
   type OnboardingInput,
   type OnboardingResult,
 } from "@/lib/api/onboarding.core";
+import type { DetectedSituation } from "@/lib/engine/situation";
+
+// Fee rate applied when projecting a recovery's display amounts from a situation.
+// 25% — the YELLOW default registered in D-003, within the 20–30% benchmark band (#13).
+// This is a DISPLAY projection only; the authoritative fee is settled (sealed in BUILT)
+// through causation.ts → fee_charges, never netted from funds in transit (#2).
+export const INITIATE_FEE_RATE = 0.25;
+
+/** Owner-scoped recovery insert row derived from a detected situation. */
+export interface InitiatedRecoveryRow {
+  owner_id: string;
+  merchant: string;
+  avenue: string;
+  reason: string;
+  gross_amount_cents: number;
+  user_net_cents: number;
+  our_fee_cents: number;
+  status: "needs_approval";
+  idempotency_key: string;
+}
+
+/** Pure: project a recovery row from a detected situation (integer cents, 25% fee). */
+export function deriveInitiatedRecovery(
+  situation: DetectedSituation,
+  ownerId: string,
+  feeRate: number = INITIATE_FEE_RATE,
+): InitiatedRecoveryRow {
+  const grossAmountCents = situation.amountCents;
+  const ourFeeCents = Math.round(grossAmountCents * feeRate);
+  const userNetCents = grossAmountCents - ourFeeCents;
+  return {
+    owner_id: ownerId,
+    merchant: situation.merchant,
+    avenue: situation.problemType,
+    reason: situation.situation.summary,
+    gross_amount_cents: grossAmountCents,
+    user_net_cents: userNetCents,
+    our_fee_cents: ourFeeCents,
+    status: "needs_approval",
+    idempotency_key: `init_${situation.situation.id}`,
+  };
+}
+
+/**
+ * Pure initiation logic with injected I/O (mirrors processApproval/applySettleFee):
+ * insert the owner-scoped recovery, then write its `initiated` audit event, returning
+ * the real generated recoveryId. Creating a recovery is a DB write, not money movement,
+ * so it is NOT gated by assertLiveAllowed().
+ */
+export async function processInitiateRecovery(input: {
+  situation: DetectedSituation;
+  ownerId: string;
+  feeRate?: number;
+  insertRecovery: (row: InitiatedRecoveryRow) => Promise<{ id: string }>;
+  writeEvent: (recoveryId: string) => Promise<void>;
+}): Promise<{ recoveryId: string }> {
+  const row = deriveInitiatedRecovery(input.situation, input.ownerId, input.feeRate);
+  const { id } = await input.insertRecovery(row);
+  await input.writeEvent(id);
+  return { recoveryId: id };
+}
 
 // ── DB row schemas (snake_case). int8 may arrive as number or numeric string. ──
 const cents = z.coerce.number().int();
@@ -145,6 +208,20 @@ export function rowToProfile(row: unknown, email: string): Profile {
   });
 }
 
+/**
+ * Pure: build the snake_case profiles patch for adapter references, skipping any
+ * undefined field (so a partial save never nulls the other ref). References, not funds.
+ */
+export function buildAdapterRefPatch(refs: {
+  stripeCustomerRef?: string;
+  aggregatorToken?: string;
+}): Record<string, string> {
+  const patch: Record<string, string> = {};
+  if (refs.stripeCustomerRef !== undefined) patch.stripe_customer_ref = refs.stripeCustomerRef;
+  if (refs.aggregatorToken !== undefined) patch.aggregator_token = refs.aggregatorToken;
+  return patch;
+}
+
 /** Auth error surfaced when a passwordless sign-in emailed a magic link (no live session yet). */
 export class MagicLinkSentError extends Error {
   constructor(email: string) {
@@ -236,8 +313,31 @@ export class SupabaseApiClient implements ApiClient {
     if (error) throw new Error(`deleteAllData failed: ${error.message}`);
   }
 
-  async initiateRecovery(_input: { situationId: string }): Promise<{ recoveryId: string }> {
-    throw new Error("initiateRecovery not implemented in SupabaseApiClient yet.");
+  async initiateRecovery(input: { situationId: string }): Promise<{ recoveryId: string }> {
+    const ownerId = await this.ownerId();
+
+    // Resolve the detected situation by id from the situations source (sample in BUILT,
+    // engine-derived in LIVE). The recovery row is projected from it.
+    const { getSituationsFn } = await import("@/lib/api/situations.functions");
+    const { situations } = await getSituationsFn();
+    const situation = situations.find((s) => s.situation.id === input.situationId);
+    if (!situation) throw new Error(`initiateRecovery: situation ${input.situationId} not found`);
+
+    return processInitiateRecovery({
+      situation,
+      ownerId,
+      // Recovery row: owner-scoped insert under the RLS session (auth.uid() = owner_id).
+      insertRecovery: async (row) => {
+        const { data, error } = await this.sb.from("recoveries").insert(row).select("id").single();
+        if (error) throw new Error(`initiateRecovery: recovery insert failed: ${error.message}`);
+        return { id: (data as { id: string }).id };
+      },
+      // Audit event: service-role append (recovery_events has no tenant INSERT policy).
+      writeEvent: async (recoveryId) => {
+        const { recordRecoveryInitiatedFn } = await import("@/lib/api/recovery.functions");
+        await recordRecoveryInitiatedFn({ data: { recoveryId } });
+      },
+    });
   }
 }
 
@@ -378,6 +478,19 @@ export class SupabaseAuthClient implements AuthClient {
     });
   }
 
+  async saveAdapterRefs(refs: {
+    stripeCustomerRef?: string;
+    aggregatorToken?: string;
+  }): Promise<void> {
+    const patch = buildAdapterRefPatch(refs);
+    if (Object.keys(patch).length === 0) return;
+    const { data: sessionData } = await this.sb.auth.getUser();
+    const user = sessionData.user;
+    if (!user) ownerScopeError("saveAdapterRefs");
+    const { error } = await this.sb.from("profiles").update(patch).eq("id", user.id);
+    if (error) throw new Error(`saveAdapterRefs failed: ${error.message}`);
+  }
+
   async updateProfile(patch: Partial<Profile>): Promise<Profile> {
     const { data: sessionData } = await this.sb.auth.getUser();
     const user = sessionData.user;
@@ -398,14 +511,12 @@ export class SupabaseAuthClient implements AuthClient {
     return rowToProfile(data, email);
   }
 
-  async getFlinksConnectUrl(): Promise<{ connectUrl: string }> {
+  async getFlinksConnectUrl(): Promise<ConnectUrlResult> {
     const { getFlinksConnectUrlFn } = await import("@/lib/api/bank.functions");
     return getFlinksConnectUrlFn();
   }
 
-  async ingestTransactions(input: {
-    aggregatorToken: string;
-  }): Promise<{ success: boolean; situationCount: number }> {
+  async ingestTransactions(input: { aggregatorToken: string }): Promise<IngestResult> {
     const { ingestTransactionsFn } = await import("@/lib/api/bank.functions");
     return ingestTransactionsFn({ data: input });
   }

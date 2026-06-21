@@ -26,14 +26,16 @@ function PipelinePage() {
 
   const context = profile.data?.context;
   const fmt = useFormatMoney();
+  const sampleMode = situations.data?.sampleMode ?? false;
+  const situationList = React.useMemo(() => situations.data?.situations ?? [], [situations.data]);
   const orderedSituations = React.useMemo(() => {
-    if (!situations.data) return [];
-    if (!context) return situations.data;
+    if (situationList.length === 0) return [];
+    if (!context) return situationList;
 
     // We import rankByContextKey from the engine and use it to sort the incoming situations
     // based on their avenue/problemType vs the user's occupation context.
-    return rankByContextKey(situations.data, (s) => s.problemType, context);
-  }, [situations.data, context]);
+    return rankByContextKey(situationList, (s) => s.problemType, context);
+  }, [situationList, context]);
 
   const initiate = useMutation({
     mutationFn: (situationId: string) => api.initiateRecovery({ situationId }),
@@ -56,7 +58,9 @@ function PipelinePage() {
         <div>
           <h1 className="font-display text-3xl font-semibold">Found Refunds</h1>
           <p className="mt-2 text-muted-dark">
-            These situations were found by our engines in your bank history.
+            {sampleMode
+              ? "Sample preview — these are example results. Real scanning unlocks at launch."
+              : "These situations were found by our engines in your bank history."}
           </p>
         </div>
         {context && (
@@ -90,7 +94,7 @@ function PipelinePage() {
             </div>
           </div>
         ))}
-        {situations.data && situations.data.length === 0 && (
+        {situations.data && situationList.length === 0 && (
           <div className="text-center py-12 border rounded-xl bg-card">
             <p className="text-muted-dark">No new situations found right now.</p>
           </div>

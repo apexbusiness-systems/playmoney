@@ -26,9 +26,10 @@ function PaymentSetup() {
         data: { email: profile.email, name: profile.displayName },
       });
 
-      // Update profile with the new payout ref (if not in BUILT mode intercept)
+      // Persist the issued Stripe CUSTOMER ref to its own column (not payout_ref —
+      // the customer id is who we charge the fee to, not where the user's money lands).
       if (res.success && res.customerRef) {
-        await auth.updateProfile({ payoutRef: res.customerRef });
+        await auth.saveAdapterRefs({ stripeCustomerRef: res.customerRef });
         toast.success("Payment method secured");
         await nav({ to: "/app" });
       }

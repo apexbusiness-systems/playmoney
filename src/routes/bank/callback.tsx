@@ -39,15 +39,26 @@ function BankCallback() {
 
       try {
         // Kick off ingestion using the returned aggregator token (loginId in Flinks terms).
-        const { success, situationCount } = await auth.ingestTransactions({
-          aggregatorToken: loginId,
-        });
-        if (!success) throw new Error("Ingestion pipeline failed");
+        const result = await auth.ingestTransactions({ aggregatorToken: loginId });
+
+        if (!result.ok) {
+          // Honest sealed-until-live state — no real scan happened.
+          setStatus("done");
+          toast.info("Coming soon", { description: result.message });
+          navTimerRef.current = setTimeout(() => {
+            void nav({ to: "/app" });
+          }, 1800);
+          return;
+        }
+
+        // Persist the aggregator OAuth token (read-only access) for future scans.
+        // Only reached when ingest actually ran (LIVE) — sealed BUILT never lands here.
+        await auth.saveAdapterRefs({ aggregatorToken: loginId });
 
         setStatus("done");
 
         toast.success("Scan complete", {
-          description: `We found ${situationCount} potential refunds in your history.`,
+          description: `We found ${result.situationCount} potential refunds in your history.`,
         });
 
         // Slight delay for UX, then return to dashboard to view the pipeline.
