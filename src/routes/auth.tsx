@@ -20,11 +20,8 @@ function AuthShell() {
         }}
       />
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-16">
-        <a
-          href="/"
-          className="font-display mb-12 text-2xl font-semibold text-text-dark hover:text-gold transition-colors"
-        >
-          PlayMoney
+        <a href="/" className="mb-12 transition-all hover:opacity-90" aria-label="PlayMoney home">
+          <img src="/wordmark.png" alt="PlayMoney" className="h-8 w-auto" width={148} height={32} />
         </a>
         <Outlet />
       </div>

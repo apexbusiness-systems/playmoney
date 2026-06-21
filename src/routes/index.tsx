@@ -484,7 +484,13 @@ function Footer() {
       <div className="container-pm py-14">
         <div className="grid gap-10 sm:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
-            <p className="font-display text-2xl font-semibold text-text-dark">PlayMoney</p>
+            <img
+              src="/wordmark.png"
+              alt="PlayMoney"
+              className="h-8 w-auto"
+              width={148}
+              height={32}
+            />
             <p className="mt-3 max-w-xs text-sm text-muted-dark">
               We do the hard work. You just play with the money.
             </p>
