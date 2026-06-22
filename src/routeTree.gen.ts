@@ -26,6 +26,9 @@ import { Route as AppPipelineRouteImport } from './routes/app/pipeline'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiOmniportSyncRouteImport } from './routes/api/omniport/sync'
+import { Route as ApiOmniportHealthRouteImport } from './routes/api/omniport/health'
+import { Route as ApiOmniportCommandRouteImport } from './routes/api/omniport/command'
 
 const PaymentRoute = PaymentRouteImport.update({
   id: '/payment',
@@ -112,6 +115,21 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOmniportSyncRoute = ApiOmniportSyncRouteImport.update({
+  id: '/api/omniport/sync',
+  path: '/api/omniport/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOmniportHealthRoute = ApiOmniportHealthRouteImport.update({
+  id: '/api/omniport/health',
+  path: '/api/omniport/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOmniportCommandRoute = ApiOmniportCommandRouteImport.update({
+  id: '/api/omniport/command',
+  path: '/api/omniport/command',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +149,9 @@ export interface FileRoutesByFullPath {
   '/bank/connect': typeof BankConnectRoute
   '/payment/setup': typeof PaymentSetupRoute
   '/app/': typeof AppIndexRoute
+  '/api/omniport/command': typeof ApiOmniportCommandRoute
+  '/api/omniport/health': typeof ApiOmniportHealthRoute
+  '/api/omniport/sync': typeof ApiOmniportSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -149,6 +170,9 @@ export interface FileRoutesByTo {
   '/bank/connect': typeof BankConnectRoute
   '/payment/setup': typeof PaymentSetupRoute
   '/app': typeof AppIndexRoute
+  '/api/omniport/command': typeof ApiOmniportCommandRoute
+  '/api/omniport/health': typeof ApiOmniportHealthRoute
+  '/api/omniport/sync': typeof ApiOmniportSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -169,6 +193,9 @@ export interface FileRoutesById {
   '/bank/connect': typeof BankConnectRoute
   '/payment/setup': typeof PaymentSetupRoute
   '/app/': typeof AppIndexRoute
+  '/api/omniport/command': typeof ApiOmniportCommandRoute
+  '/api/omniport/health': typeof ApiOmniportHealthRoute
+  '/api/omniport/sync': typeof ApiOmniportSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,6 +217,9 @@ export interface FileRouteTypes {
     | '/bank/connect'
     | '/payment/setup'
     | '/app/'
+    | '/api/omniport/command'
+    | '/api/omniport/health'
+    | '/api/omniport/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,6 +238,9 @@ export interface FileRouteTypes {
     | '/bank/connect'
     | '/payment/setup'
     | '/app'
+    | '/api/omniport/command'
+    | '/api/omniport/health'
+    | '/api/omniport/sync'
   id:
     | '__root__'
     | '/'
@@ -227,6 +260,9 @@ export interface FileRouteTypes {
     | '/bank/connect'
     | '/payment/setup'
     | '/app/'
+    | '/api/omniport/command'
+    | '/api/omniport/health'
+    | '/api/omniport/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +272,9 @@ export interface RootRouteChildren {
   BankRoute: typeof BankRouteWithChildren
   PaymentRoute: typeof PaymentRouteWithChildren
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiOmniportCommandRoute: typeof ApiOmniportCommandRoute
+  ApiOmniportHealthRoute: typeof ApiOmniportHealthRoute
+  ApiOmniportSyncRoute: typeof ApiOmniportSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -359,6 +398,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/omniport/sync': {
+      id: '/api/omniport/sync'
+      path: '/api/omniport/sync'
+      fullPath: '/api/omniport/sync'
+      preLoaderRoute: typeof ApiOmniportSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/omniport/health': {
+      id: '/api/omniport/health'
+      path: '/api/omniport/health'
+      fullPath: '/api/omniport/health'
+      preLoaderRoute: typeof ApiOmniportHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/omniport/command': {
+      id: '/api/omniport/command'
+      path: '/api/omniport/command'
+      fullPath: '/api/omniport/command'
+      preLoaderRoute: typeof ApiOmniportCommandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -424,6 +484,9 @@ const rootRouteChildren: RootRouteChildren = {
   BankRoute: BankRouteWithChildren,
   PaymentRoute: PaymentRouteWithChildren,
   ApiHealthRoute: ApiHealthRoute,
+  ApiOmniportCommandRoute: ApiOmniportCommandRoute,
+  ApiOmniportHealthRoute: ApiOmniportHealthRoute,
+  ApiOmniportSyncRoute: ApiOmniportSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
