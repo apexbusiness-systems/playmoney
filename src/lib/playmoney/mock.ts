@@ -263,7 +263,7 @@ export class MockAuthClient implements AuthClient {
     // In mock mode there is no real session; profile is already in memory from signIn.
     // This is a no-op so UI flows can complete end-to-end without a real Supabase project.
   }
-  /** Mock: magic-link hash verify is instant (same as verifyOtp in mock). */
+  /** Mock: callback hash verify is instant (same as verifyOtp in mock). */
   async verifyOtpHash(_input: { tokenHash: string; type: string }): Promise<void> {
     // No-op in mock mode.
   }

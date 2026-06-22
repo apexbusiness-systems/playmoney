@@ -183,7 +183,7 @@ const FORBIDDEN_LITERALS: Record<string, string[]> = {
   ],
   "auth/check-email.tsx": [
     // Body copy, not in meta title
-    "Resend sign-in link",
+    "Resend sign-in code",
     "Auto-submits when complete",
   ],
   "auth/callback.tsx": [

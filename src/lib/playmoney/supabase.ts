@@ -222,10 +222,10 @@ export function buildAdapterRefPatch(refs: {
   return patch;
 }
 
-/** Auth error surfaced when a passwordless sign-in emailed a magic link (no live session yet). */
+/** Auth signal surfaced when a passwordless sign-in emailed an OTP code (no live session yet). */
 export class MagicLinkSentError extends Error {
   constructor(email: string) {
-    super(`A sign-in link was sent to ${email}. Confirm it to finish signing in.`);
+    super(`A sign-in code was sent to ${email}. Enter it to finish signing in.`);
     this.name = "MagicLinkSentError";
   }
 }
@@ -383,10 +383,17 @@ export class SupabaseAuthClient implements AuthClient {
     const current = await this.getProfile();
     if (current && current.email.toLowerCase() === email.toLowerCase()) return current;
 
-    // Passwordless sign-in: email a magic link, then surface a typed signal.
+    // Passwordless sign-in: email an OTP code, then surface a typed signal.
+    // The product flow is code-first. If the Supabase email template still renders
+    // an action link, keep that link inside the OTP-entry route instead of the
+    // callback verifier so users are not routed to an error page.
+    const emailRedirectTo =
+      typeof window === "undefined"
+        ? undefined
+        : `${window.location.origin}/auth/check-email?email=${encodeURIComponent(email)}`;
     const { error } = await this.sb.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: true, emailRedirectTo },
     });
     if (error) throw new Error(`signIn failed: ${error.message}`);
     throw new MagicLinkSentError(email);

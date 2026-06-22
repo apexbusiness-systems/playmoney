@@ -89,34 +89,34 @@ export const en = {
 
   // Auth Pages
   "auth.signin.title": "Sign in",
-  "auth.signin.subtitle": "Enter your email. We'll send a one-tap sign-in link.",
+  "auth.signin.subtitle": "Enter your email. We'll send a 6-digit sign-in code.",
   "auth.signin.emailLabel": "Email address",
   "auth.signin.placeholder": "you@example.com",
   "auth.signin.btnSending": "Sending…",
-  "auth.signin.btnSend": "Send sign-in link",
+  "auth.signin.btnSend": "Send sign-in code",
   "auth.signin.footer": "No password. No friction. {link}",
   "auth.signin.footerLinkText": "Learn how PlayMoney works →",
-  "auth.signin.errorToast": "Couldn't send sign-in link",
+  "auth.signin.errorToast": "Couldn't send sign-in code",
   "auth.signin.tryAgain": "Please try again.",
 
   // Auth Check Email Page
   "auth.check.title": "Check your inbox",
   "auth.check.subtitle":
-    "We sent a sign-in link to {email}. Click the link or enter the 6-digit code below.",
+    "We sent a 6-digit sign-in code to {email}. Enter it below to finish signing in.",
   "auth.check.emailFallback": "your email",
   "auth.check.codeLabel": "6-digit code",
   "auth.check.hint": "Auto-submits when complete.",
   "auth.check.btnVerifying": "Verifying…",
   "auth.check.btnVerify": "Verify code",
   "auth.check.resendSending": "Sending…",
-  "auth.check.resendCooldown": "Resend link in {cooldown}s",
-  "auth.check.resendBtn": "Resend sign-in link",
+  "auth.check.resendCooldown": "Resend code in {cooldown}s",
+  "auth.check.resendBtn": "Resend sign-in code",
   "auth.check.back": "← Back to sign in",
   "auth.check.successToast": "You're in!",
   "auth.check.welcome": "Welcome to PlayMoney.",
   "auth.check.errorToast": "Invalid or expired code",
-  "auth.check.invalidCode": "Please try again or request a new link.",
-  "auth.check.newLinkSent": "New link sent",
+  "auth.check.invalidCode": "Please try again or request a new code.",
+  "auth.check.newLinkSent": "New code sent",
   "auth.check.checkFresh": "Check {email} for a fresh code.",
 
   // Auth Callback Page
@@ -125,9 +125,9 @@ export const en = {
   "auth.callback.successTitle": "You're in!",
   "auth.callback.successSub": "Taking you to your wins…",
   "auth.callback.errorTitle": "Link expired or invalid",
-  "auth.callback.errorMissing": "Missing token_hash in URL. Please request a new sign-in link.",
-  "auth.callback.requestNew": "Request a new link",
-  "auth.callback.ariaVerifying": "Verifying sign-in link",
+  "auth.callback.errorMissing": "Missing token_hash in URL. Please request a new sign-in code.",
+  "auth.callback.requestNew": "Request a new code",
+  "auth.callback.ariaVerifying": "Verifying sign-in code",
 
   // App Shell Navigation
   "app.nav.wins": "Wins",
@@ -495,34 +495,34 @@ export const fr: Record<keyof typeof en, string> = {
   // Auth Pages
   "auth.signin.title": "Se connecter",
   "auth.signin.subtitle":
-    "Saisissez votre courriel. Nous vous enverrons un lien de connexion en un clic.",
+    "Saisissez votre courriel. Nous vous enverrons un code de connexion à 6 chiffres.",
   "auth.signin.emailLabel": "Adresse courriel",
   "auth.signin.placeholder": "vous@exemple.com",
   "auth.signin.btnSending": "Envoi…",
-  "auth.signin.btnSend": "Envoyer le lien de connexion",
+  "auth.signin.btnSend": "Envoyer le code de connexion",
   "auth.signin.footer": "Pas de mot de passe. Sans friction. {link}",
   "auth.signin.footerLinkText": "Comment fonctionne PlayMoney →",
-  "auth.signin.errorToast": "Impossible d'envoyer le lien de connexion",
+  "auth.signin.errorToast": "Impossible d'envoyer le code de connexion",
   "auth.signin.tryAgain": "Veuillez réessayer.",
 
   // Auth Check Email Page
   "auth.check.title": "Vérifiez votre boîte de réception",
   "auth.check.subtitle":
-    "Nous avons envoyé un lien de connexion à {email}. Cliquez sur le lien ou saisissez le code à 6 chiffres ci-dessous.",
+    "Nous avons envoyé un code de connexion à 6 chiffres à {email}. Saisissez-le ci-dessous pour terminer la connexion.",
   "auth.check.emailFallback": "votre courriel",
   "auth.check.codeLabel": "Code à 6 chiffres",
   "auth.check.hint": "Envoi automatique dès la saisie complète.",
   "auth.check.btnVerifying": "Vérification…",
   "auth.check.btnVerify": "Vérifier le code",
   "auth.check.resendSending": "Envoi…",
-  "auth.check.resendCooldown": "Renvoyer le lien dans {cooldown}s",
-  "auth.check.resendBtn": "Renvoyer le lien de connexion",
+  "auth.check.resendCooldown": "Renvoyer le code dans {cooldown}s",
+  "auth.check.resendBtn": "Renvoyer le code de connexion",
   "auth.check.back": "← Retour à la connexion",
   "auth.check.successToast": "Vous y êtes!",
   "auth.check.welcome": "Bienvenue sur PlayMoney.",
   "auth.check.errorToast": "Code invalide ou expiré",
-  "auth.check.invalidCode": "Veuillez réessayer ou demander un nouveau lien.",
-  "auth.check.newLinkSent": "Nouveau lien envoyé",
+  "auth.check.invalidCode": "Veuillez réessayer ou demander un nouveau code.",
+  "auth.check.newLinkSent": "Nouveau code envoyé",
   "auth.check.checkFresh": "Vérifiez {email} pour obtenir un code valide.",
 
   // Auth Callback Page
@@ -532,9 +532,9 @@ export const fr: Record<keyof typeof en, string> = {
   "auth.callback.successSub": "Redirection vers vos gains…",
   "auth.callback.errorTitle": "Lien expiré ou invalide",
   "auth.callback.errorMissing":
-    "token_hash manquant dans l'URL. Veuillez demander un nouveau lien.",
-  "auth.callback.requestNew": "Demander un nouveau lien",
-  "auth.callback.ariaVerifying": "Vérification du lien de connexion",
+    "token_hash manquant dans l'URL. Veuillez demander un nouveau code.",
+  "auth.callback.requestNew": "Demander un nouveau code",
+  "auth.callback.ariaVerifying": "Vérification du code de connexion",
 
   // App Shell Navigation
   "app.nav.wins": "Gains",

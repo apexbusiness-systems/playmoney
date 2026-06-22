@@ -481,3 +481,13 @@ OmniPort is `OMNIPORT_ENABLED=false` by default and imports nothing from `compli
 - Added landing footer attribution in the bottom-center footer rail: `Powered by` plus the existing `/apex-wordmark-logo.png` APEX-OmniHub wordmark.
 - Kept the change presentation-only and localized to the landing route footer; no compliance, payment, auth, or mode behavior changed.
 - Validated with `npm run typecheck` and a local Vite/Playwright screenshot capture of the footer.
+
+### 2026-06-22 · D-019 · Auth sign-in corrected to OTP-code-first
+
+Root-caused the reported email confirmation error: the app's intended flow is OTP-code-first
+(`sign-in -> check-email -> 6-digit code -> app`), but the Supabase passwordless request and UI
+copy still framed the email as a magic/action link and could route users into `/auth/callback`,
+where missing/misaligned `token_hash` URLs render the error state. Updated the Supabase sign-in
+request to keep any rendered action-link fallback on `/auth/check-email?email=...`, retained the
+existing token-hash callback verifier for legacy/configured links, and changed EN/FR auth copy to
+instruct users to use the 6-digit code. Added regression coverage for the redirect target.
