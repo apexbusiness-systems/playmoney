@@ -475,3 +475,9 @@ Installed the APEX-OmniHub OmniPort sidecar connector.
 · `bun run build` green (route tree regenerated; OmniPort handlers stripped from the client
 bundle via createServerFn). BUILT seal intact: no non-test file sets `PLAYMONEY_MODE=LIVE`;
 OmniPort is `OMNIPORT_ENABLED=false` by default and imports nothing from `compliance/`.
+
+## 2026-06-22 — Footer APEX attribution
+
+- Added landing footer attribution in the bottom-center footer rail: `Powered by` plus the existing `/apex-wordmark-logo.png` APEX-OmniHub wordmark.
+- Kept the change presentation-only and localized to the landing route footer; no compliance, payment, auth, or mode behavior changed.
+- Validated with `npm run typecheck` and a local Vite/Playwright screenshot capture of the footer.

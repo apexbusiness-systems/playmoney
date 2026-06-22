@@ -538,11 +538,23 @@ function Footer() {
           ))}
         </div>
         <div
-          className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-6"
+          className="mt-12 grid items-center gap-4 border-t pt-6 text-center sm:grid-cols-3 sm:text-left"
           style={{ borderColor: "#1E5A45" }}
         >
           <p className="text-xs text-muted-dark">{t("landing.footer.copyright")}</p>
-          <p className="text-xs text-muted-dark">{t("landing.footer.nonCustodial")}</p>
+          <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-dark">
+            <span>Powered by</span>
+            <img
+              src="/apex-wordmark-logo.png"
+              alt="APEX-OmniHub"
+              className="h-4 w-auto sm:h-5"
+              width={824}
+              height={125}
+            />
+          </div>
+          <p className="text-xs text-muted-dark sm:text-right">
+            {t("landing.footer.nonCustodial")}
+          </p>
         </div>
       </div>
     </footer>
