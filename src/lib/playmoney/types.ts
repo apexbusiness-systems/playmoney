@@ -156,7 +156,7 @@ export interface ApiClient {
 export interface AuthClient {
   getProfile(): Promise<Profile | null>;
   signIn(input: { email: string }): Promise<Profile>;
-  /** Confirm a magic-link OTP code. On success the Supabase session is established. */
+  /** Confirm an emailed OTP code. On success the Supabase session is established. */
   verifyOtp(input: { email: string; token: string }): Promise<void>;
   /** Handle a Supabase magic-link redirect (PKCE flow — token_hash from URL). */
   verifyOtpHash(input: { tokenHash: string; type: string }): Promise<void>;

@@ -30,7 +30,7 @@ function SignIn() {
       await nav({ to: "/app" });
     } catch (err) {
       if (err instanceof MagicLinkSentError) {
-        // Expected path: Supabase sent a magic link → show check-email screen.
+        // Expected path: Supabase sent an OTP code → show check-email screen.
         await nav({
           to: "/auth/check-email",
           search: { email: trimmed },

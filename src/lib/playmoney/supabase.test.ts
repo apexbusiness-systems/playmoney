@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   MagicLinkSentError,
   SupabaseApiClient,
@@ -179,6 +179,35 @@ describe("T5 · adapter-ref patch is owner-scoped, partial-safe, and money-free"
       aggregator_token: "tok_only",
     });
     expect(buildAdapterRefPatch({})).toEqual({});
+  });
+});
+
+describe("P1 · Supabase passwordless sign-in is code-first", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends an OTP email and keeps action-link fallbacks on the code-entry route", async () => {
+    const signInWithOtp = vi.fn().mockResolvedValue({ error: null });
+    const sb = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+        signInWithOtp,
+      },
+    } as never;
+    vi.stubGlobal("window", { location: { origin: "https://playmoney.example" } });
+
+    await expect(
+      new SupabaseAuthClient(sb).signIn({ email: "Maya@Example.com " }),
+    ).rejects.toBeInstanceOf(MagicLinkSentError);
+
+    expect(signInWithOtp).toHaveBeenCalledWith({
+      email: "Maya@Example.com",
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: "https://playmoney.example/auth/check-email?email=Maya%40Example.com",
+      },
+    });
   });
 });
 
