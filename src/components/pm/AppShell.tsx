@@ -76,6 +76,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Extra bottom padding on mobile so content clears the fixed tab bar. */}
       <main className="pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:pb-0">{children}</main>
 
+      {/* APEX-OmniHub attribution — desktop only, non-interactive. */}
+      <div
+        className="fixed bottom-3 right-4 z-20 hidden select-none items-center gap-1.5 sm:flex"
+        style={{ opacity: 0.35, pointerEvents: "none" }}
+      >
+        <img src="/apex-wordmark-logo.png" alt="APEX-OmniHub" className="h-3.5 w-auto" />
+        <span className="text-[10px] font-medium tracking-wide text-ink-muted">
+          Powered by APEX&#8209;OmniHub
+        </span>
+      </div>
+
       {/* Mobile bottom tab bar — iOS-native pattern, replaces the header nav. */}
       <nav
         aria-label={t("app.nav.primary.aria")}
