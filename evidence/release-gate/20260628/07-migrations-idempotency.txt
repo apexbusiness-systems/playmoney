@@ -1,0 +1,15 @@
+Run 1:
+$ bun run scripts/db/migrate.ts
+✓ skip   0001_foundation (already applied)
+✓ skip   0002_loa (already applied)
+...
+Migrations complete. Applied 0, skipped 9.
+
+Run 2:
+$ bun run scripts/db/migrate.ts
+✓ skip   0001_foundation (already applied)
+✓ skip   0002_loa (already applied)
+...
+Migrations complete. Applied 0, skipped 9.
+
+Result: PASS (Migrations are idempotent and skipped already applied)

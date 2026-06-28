@@ -1,0 +1,21 @@
+# Static Gates
+
+## typecheck
+Command: `bun run typecheck`
+Result: PASSED (0 exit code)
+Output: `$ tsc --noEmit`
+
+## lint
+Command: `bun run lint`
+Result: PASSED (0 exit code)
+Output: `$ eslint .`
+
+## test
+Command: `bun run test`
+Result: PASSED (0 exit code)
+Output: 31 test files, 286 tests passed.
+
+## build
+Command: `$env:VITE_PLAYMONEY_REQUIRE_SUPABASE_CONFIG="true"; bun --env-file=.env run build`
+Result: PASSED (0 exit code)
+Output: Build completed successfully. Generated Nitro environment for production.
