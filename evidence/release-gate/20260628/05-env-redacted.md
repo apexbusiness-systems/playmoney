@@ -1,0 +1,14 @@
+# Redacted Environment Summary
+The following environment variables are present in the `.env` file for the staging validation environment. All values have been redacted.
+
+- `VITE_SUPABASE_URL`: PRESENT
+- `VITE_SUPABASE_ANON_KEY`: PRESENT
+- `SUPABASE_URL`: PRESENT
+- `SUPABASE_ANON_KEY`: PRESENT
+- `SUPABASE_PUBLISHABLE_KEY`: PRESENT
+- `SUPABASE_SERVICE_ROLE_KEY`: PRESENT
+- `SUPABASE_TOKEN`: PRESENT
+- `CLOUDFLARE_ACCOUNT_ID`: PRESENT
+- `CLOUDFLARE_AGENT_TOKEN`: PRESENT
+- `GH_TOKEN_TEMP`: PRESENT
+- `OUTBOUND_EMAIL_FROM`: PRESENT
