@@ -2,7 +2,7 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
 // Force LIVE mode for the duration of this script
-process.env.PLAYMONEY_MODE = "LIVE";
+process.env["PLAYMONEY_MODE"] = "LIVE";
 
 const url = process.env.SUPABASE_URL!;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
