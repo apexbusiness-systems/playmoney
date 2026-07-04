@@ -38,6 +38,8 @@ const PROTECTED = [
   "approvals",
   "notifications",
   "recovery_sagas",
+  "omniport_feature_flags",
+  "omniport_command_log",
 ];
 
 let failures = 0;
