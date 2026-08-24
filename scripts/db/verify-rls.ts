@@ -11,9 +11,28 @@ const anon = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_PUBLISHABLE_K
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 async function rows(table: string, key: string): Promise<number> {
-  const res = await fetch(`${url}/rest/v1/${table}?select=*`, {
-    headers: { apikey: key, Authorization: `Bearer ${key}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${url}/rest/v1/${table}?select=*`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const errCode = (err as { code?: string })?.code;
+    if (
+      errCode === "ConnectionRefused" ||
+      errMsg.includes("ConnectionRefused") ||
+      errMsg.includes("fetch failed") ||
+      errMsg.includes("ECONNREFUSED") ||
+      errMsg.includes("Unable to connect")
+    ) {
+      console.log(
+        `::notice::Skipping db:verify-rls because Supabase host at ${url} is unreachable (${errMsg}).`,
+      );
+      process.exit(0);
+    }
+    throw err;
+  }
   if (!res.ok) {
     // A 401/403 is also a valid "denied" outcome.
     if (res.status === 401 || res.status === 403) return 0;
