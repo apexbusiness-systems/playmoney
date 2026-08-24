@@ -123,6 +123,7 @@ export function ConfirmSheet({
                   <PMIcon name="check" stroke="#FFFDF8" /> {t("app.confirm.btnAuthorize")}
                 </PMButton>
                 <button
+                  type="button"
                   className="text-sm font-medium text-ink-muted hover:text-ink"
                   onClick={onClose}
                 >

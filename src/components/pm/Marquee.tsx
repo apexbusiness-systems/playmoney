@@ -25,24 +25,36 @@ function WinChip({ w }: { w: Win }) {
 export function WinsMarquee() {
   const { t } = useI18n();
   return (
-    <div className="marquee overflow-hidden" role="region" aria-label={t("landing.ding.eyebrow")}>
-      <div className="marquee-track flex w-max gap-3">
-        {/* Announced once. */}
-        <ul className="m-0 flex w-max list-none gap-3 p-0">
-          {liveWins.map((w, i) => (
-            <li key={i}>
-              <WinChip w={w} />
-            </li>
-          ))}
-        </ul>
-        {/* Visual duplicate for seamless looping — hidden from assistive tech. */}
-        <ul className="m-0 flex w-max list-none gap-3 p-0" aria-hidden="true">
-          {liveWins.map((w, i) => (
-            <li key={`dup-${i}`}>
-              <WinChip w={w} />
-            </li>
-          ))}
-        </ul>
+    <div className="space-y-3">
+      <div className="flex justify-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border-d/80 bg-espresso/40 px-3 py-1 text-xs text-muted-dark backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold/70" />
+          {t("marquee.disclosure.caption")}
+        </span>
+      </div>
+      <div
+        className="marquee overflow-hidden"
+        role="region"
+        aria-label={t("marquee.disclosure.aria")}
+      >
+        <div className="marquee-track flex w-max gap-3">
+          {/* Announced once. */}
+          <ul className="m-0 flex w-max list-none gap-3 p-0">
+            {liveWins.map((w, i) => (
+              <li key={i}>
+                <WinChip w={w} />
+              </li>
+            ))}
+          </ul>
+          {/* Visual duplicate for seamless looping — hidden from assistive tech. */}
+          <ul className="m-0 flex w-max list-none gap-3 p-0" aria-hidden="true">
+            {liveWins.map((w, i) => (
+              <li key={`dup-${i}`}>
+                <WinChip w={w} />
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

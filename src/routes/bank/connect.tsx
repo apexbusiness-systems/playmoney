@@ -86,7 +86,7 @@ function BankConnect() {
         {loading ? t("bank.connect.btnConnecting") : t("bank.connect.btnAgree")}
       </PMButton>
 
-      {errorMsg && <p className="mt-4 text-sm text-red-500">{errorMsg}</p>}
+      {errorMsg && <p className="mt-4 text-sm text-danger">{errorMsg}</p>}
     </div>
   );
 }

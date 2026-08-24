@@ -103,9 +103,9 @@ function Settings() {
               {t("app.settings.dataExport")}
             </PMButton>
             <button
+              type="button"
               onClick={handleDeleteAll}
-              className="cursor-pointer text-sm font-semibold hover:underline"
-              style={{ color: "#9C2A1A" }}
+              className="cursor-pointer text-sm font-semibold text-danger hover:underline"
             >
               {t("app.settings.dataDelete")}
             </button>

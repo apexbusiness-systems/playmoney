@@ -98,6 +98,7 @@ function AuthCallback() {
           </h1>
           <p className="mt-2 text-sm text-muted-dark">{errorMsg}</p>
           <button
+            type="button"
             onClick={() => {
               toast.dismiss();
               void nav({ to: "/auth/sign-in" });
