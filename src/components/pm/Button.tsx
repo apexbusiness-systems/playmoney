@@ -20,12 +20,13 @@ const variants: Record<Variant, string> = {
 };
 
 export const PMButton = forwardRef<HTMLButtonElement, Props>(function PMButton(
-  { variant = "primaryLight", className, style, ...rest },
+  { variant = "primaryLight", type = "button", className, style, ...rest },
   ref,
 ) {
   return (
     <button
       ref={ref}
+      type={type}
       className={`${base} ${variants[variant]} ${className ?? ""}`}
       style={{
         boxShadow:

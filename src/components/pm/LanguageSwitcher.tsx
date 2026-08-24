@@ -19,6 +19,7 @@ export function LanguageSwitcher({ variant = "dark", className = "" }: Props) {
       aria-label={t("language.switcher.aria")}
     >
       <button
+        type="button"
         onClick={() => setLocale("en")}
         aria-pressed={locale === "en"}
         className={`rounded-full px-2.5 py-1 text-xs font-semibold tracking-wider transition-all min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer ${
@@ -35,6 +36,7 @@ export function LanguageSwitcher({ variant = "dark", className = "" }: Props) {
         <span aria-hidden="true">EN</span>
       </button>
       <button
+        type="button"
         onClick={() => setLocale("fr")}
         aria-pressed={locale === "fr"}
         className={`rounded-full px-2.5 py-1 text-xs font-semibold tracking-wider transition-all min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer ${

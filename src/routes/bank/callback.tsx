@@ -109,7 +109,7 @@ function BankCallback() {
 
       {status === "error" && (
         <>
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-500/20 text-3xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-danger/20 text-3xl">
             ✗
           </div>
           <h1 className="font-display mt-6 text-2xl font-semibold">
@@ -117,6 +117,7 @@ function BankCallback() {
           </h1>
           <p className="mt-2 text-sm text-muted-dark">{t("bank.callback.failedSub")}</p>
           <button
+            type="button"
             onClick={() => void nav({ to: "/bank/connect" })}
             className="mt-6 text-sm font-semibold text-gold hover:underline"
           >

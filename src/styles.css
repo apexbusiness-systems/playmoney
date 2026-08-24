@@ -60,6 +60,7 @@
   --color-text-dark: oklch(0.9503 0.0184 86.15); /* #F4EEE1 */
   --color-muted-dark: oklch(0.7862 0.0311 164.06); /* #A8C0B4 */
   --color-border-d: oklch(0.4223 0.0714 166.51); /* #1E5A45 */
+  --color-danger: oklch(0.55 0.22 25); /* #D9381E */
 
   /* Self-hosted variable fonts (see @font-face below). Metric-matched fallbacks
      keep layout stable while the web fonts load (CLS guard). */

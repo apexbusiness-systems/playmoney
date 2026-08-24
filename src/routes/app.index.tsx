@@ -81,14 +81,12 @@ function WinsPage() {
   return (
     <>
       {/* DARK total strip */}
-      <section style={{ background: "#0E3B2D", borderBottom: "1px solid #1E5A45" }}>
+      <section className="border-b border-border-d bg-evergreen">
         <div className="container-pm py-10 sm:py-14">
           <p className="eyebrow text-muted-dark">{t("app.dashboard.foundTitle")}</p>
           <div className="mt-3 flex items-end justify-between gap-6">
-            <h1
-              className="font-display tabular text-5xl font-semibold leading-none sm:text-6xl"
-              style={{ color: "#F2C24B" }}
-            >
+            <h1 className="font-display tabular text-5xl font-semibold leading-none sm:text-6xl text-gold-num">
+              <span className="sr-only">{t("app.dashboard.foundTitle")}: </span>
               {totals.data ? (
                 <Odometer valueCents={totals.data.foundTotal} duration={1800} />
               ) : (
@@ -295,25 +293,24 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
     <AnimatePresence>
       {rec && (
         <motion.div
-          ref={dialogRef}
+          key="landed"
           role="dialog"
           aria-modal="true"
           aria-label={t("app.landed.ariaLabel", {
             amount: fmt(rec.userNet),
             merchant: rec.merchant,
           })}
-          tabIndex={-1}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center outline-none"
-          style={{ background: "#15110B" }}
+          ref={dialogRef}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-espresso"
         >
           <div className="text-center">
             <p className="eyebrow text-muted-dark">{t("app.landed.eyebrow")}</p>
             <div className="mt-6">
               <GoldDing trigger={1}>
-                <span className="odometer-hero font-display" style={{ color: "#F2C24B" }}>
+                <span className="odometer-hero font-display text-gold-num">
                   <Odometer valueCents={rec.userNet} duration={1600} startFrom={0.3} />
                 </span>
               </GoldDing>
@@ -322,6 +319,7 @@ function LandedDialog({ rec, onClose }: { rec: Recovery | null; onClose: () => v
               {t("app.landed.from", { merchant: rec.merchant })}
             </p>
             <button
+              type="button"
               onClick={onClose}
               className="mt-10 inline-flex h-11 items-center rounded-full bg-gold px-6 font-semibold text-ink"
             >

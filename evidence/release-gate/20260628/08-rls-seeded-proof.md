@@ -4,6 +4,7 @@ Script executed: `bun run scripts/db/seed-rls-test.ts`
 Result: PASSED
 
 ## Execution Log
+
 Creating test users...
 Seeding protected data...
 Running assertions...
@@ -14,6 +15,7 @@ Cleaning up test data...
 ✅ Cleanup complete.
 
 ## Tables Proven Isolated
+
 - `profiles`
 - `audit_log`
 - `loa_tokens`

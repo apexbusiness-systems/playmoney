@@ -135,6 +135,7 @@ function CheckEmail() {
 
       <div className="mt-6 flex flex-col gap-2">
         <button
+          type="button"
           onClick={() => void handleResend()}
           disabled={cooldown > 0 || resending}
           className="text-sm text-muted-dark transition hover:text-text-dark disabled:opacity-50"
@@ -146,6 +147,7 @@ function CheckEmail() {
               : t("auth.check.resendBtn")}
         </button>
         <button
+          type="button"
           onClick={() => void nav({ to: "/auth/sign-in" })}
           className="text-xs text-muted-dark/60 hover:text-muted-dark transition"
         >

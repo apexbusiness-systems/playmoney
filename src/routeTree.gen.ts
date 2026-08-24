@@ -9,7 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PaymentRouteImport } from './routes/payment'
+import { Route as DisclosuresRouteImport } from './routes/disclosures'
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -30,9 +33,24 @@ import { Route as ApiOmniportSyncRouteImport } from './routes/api/omniport/sync'
 import { Route as ApiOmniportHealthRouteImport } from './routes/api/omniport/health'
 import { Route as ApiOmniportCommandRouteImport } from './routes/api/omniport/command'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PaymentRoute = PaymentRouteImport.update({
   id: '/payment',
   path: '/payment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclosuresRoute = DisclosuresRouteImport.update({
+  id: '/disclosures',
+  path: '/disclosures',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BankRoute = BankRouteImport.update({
@@ -136,7 +154,10 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/bank': typeof BankRouteWithChildren
+  '/disclosures': typeof DisclosuresRoute
   '/payment': typeof PaymentRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
   '/app/activity': typeof AppActivityRoute
   '/app/onboarding': typeof AppOnboardingRoute
@@ -157,7 +178,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/bank': typeof BankRouteWithChildren
+  '/disclosures': typeof DisclosuresRoute
   '/payment': typeof PaymentRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
   '/app/activity': typeof AppActivityRoute
   '/app/onboarding': typeof AppOnboardingRoute
@@ -180,7 +204,10 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/bank': typeof BankRouteWithChildren
+  '/disclosures': typeof DisclosuresRoute
   '/payment': typeof PaymentRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
   '/app/activity': typeof AppActivityRoute
   '/app/onboarding': typeof AppOnboardingRoute
@@ -204,7 +231,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/bank'
+    | '/disclosures'
     | '/payment'
+    | '/privacy'
+    | '/terms'
     | '/api/health'
     | '/app/activity'
     | '/app/onboarding'
@@ -225,7 +255,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/bank'
+    | '/disclosures'
     | '/payment'
+    | '/privacy'
+    | '/terms'
     | '/api/health'
     | '/app/activity'
     | '/app/onboarding'
@@ -247,7 +280,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/bank'
+    | '/disclosures'
     | '/payment'
+    | '/privacy'
+    | '/terms'
     | '/api/health'
     | '/app/activity'
     | '/app/onboarding'
@@ -270,7 +306,10 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   BankRoute: typeof BankRouteWithChildren
+  DisclosuresRoute: typeof DisclosuresRoute
   PaymentRoute: typeof PaymentRouteWithChildren
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiOmniportCommandRoute: typeof ApiOmniportCommandRoute
   ApiOmniportHealthRoute: typeof ApiOmniportHealthRoute
@@ -279,11 +318,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/payment': {
       id: '/payment'
       path: '/payment'
       fullPath: '/payment'
       preLoaderRoute: typeof PaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclosures': {
+      id: '/disclosures'
+      path: '/disclosures'
+      fullPath: '/disclosures'
+      preLoaderRoute: typeof DisclosuresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bank': {
@@ -482,7 +542,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   BankRoute: BankRouteWithChildren,
+  DisclosuresRoute: DisclosuresRoute,
   PaymentRoute: PaymentRouteWithChildren,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiOmniportCommandRoute: ApiOmniportCommandRoute,
   ApiOmniportHealthRoute: ApiOmniportHealthRoute,

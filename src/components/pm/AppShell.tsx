@@ -57,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <LanguageSwitcher variant="dark" />
             <button
+              type="button"
               className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10"
               aria-label={t("app.nav.notifications.aria")}
             >

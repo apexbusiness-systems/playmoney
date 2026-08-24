@@ -1,4 +1,5 @@
 # Redacted Environment Summary
+
 The following environment variables are present in the `.env` file for the staging validation environment. All values have been redacted.
 
 - `VITE_SUPABASE_URL`: PRESENT
