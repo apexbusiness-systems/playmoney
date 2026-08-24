@@ -53,10 +53,7 @@ function Nav() {
   const { t } = useI18n();
 
   return (
-    <header
-      className="fixed inset-x-0 top-0 z-40 border-b"
-      style={{ background: "#0E3B2D", borderColor: "#1E5A45" }}
-    >
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-border-d bg-evergreen">
       <div className="container-pm flex h-16 items-center justify-between">
         <Link to="/" className="inline-flex items-center" aria-label="PlayMoney home">
           <img src="/wordmark.png" alt="PlayMoney" className="h-8 w-auto" width={148} height={32} />
@@ -93,10 +90,7 @@ function Hero() {
   const { t } = useI18n();
 
   return (
-    <section
-      className="relative flex min-h-screen items-center justify-center overflow-hidden"
-      style={{ background: "#15110B" }}
-    >
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-espresso">
       {/* warm radial glow */}
       <div
         aria-hidden
@@ -166,15 +160,7 @@ function Hero() {
 
 function Ticker() {
   return (
-    <section
-      id="wins"
-      style={{
-        background: "#0E3B2D",
-        borderTop: "1px solid #1E5A45",
-        borderBottom: "1px solid #1E5A45",
-      }}
-      className="py-6"
-    >
+    <section id="wins" className="border-y border-border-d bg-evergreen py-6">
       <WinsMarquee />
     </section>
   );
@@ -419,13 +405,13 @@ function Testimonial() {
   ];
 
   return (
-    <section className="section-pad" style={{ background: "#0E3B2D" }}>
+    <section className="section-pad bg-evergreen">
       <div className="container-pm">
         <div className="relative mx-auto max-w-4xl">
           <span
             aria-hidden
-            className="font-display absolute -left-2 -top-8 select-none text-[10rem] leading-none"
-            style={{ color: "#F2C24B", opacity: 0.8 }}
+            className="font-display absolute -left-2 -top-8 select-none text-[10rem] leading-none text-gold-num"
+            style={{ opacity: 0.8 }}
           >
             “
           </span>
@@ -462,7 +448,7 @@ function FinalCta() {
   const { t } = useI18n();
 
   return (
-    <section className="section-pad relative overflow-hidden" style={{ background: "#15110B" }}>
+    <section className="section-pad relative overflow-hidden bg-espresso">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -493,13 +479,34 @@ function Footer() {
   const { t } = useI18n();
 
   const footerCols = [
-    { h: t("landing.footer.product"), l: [t("landing.nav.howItWorks"), "Pricing", "Security"] },
-    { h: t("landing.footer.company"), l: ["About", t("landing.nav.wins"), "Press"] },
-    { h: t("landing.footer.legal"), l: ["Privacy", "Terms", "Disclosures"] },
+    {
+      h: t("landing.footer.product"),
+      l: [
+        { label: t("landing.nav.howItWorks"), href: "#how", isInternal: false },
+        { label: "Pricing", href: "#nowin", isInternal: false },
+        { label: "Security", href: "#how", isInternal: false },
+      ],
+    },
+    {
+      h: t("landing.footer.company"),
+      l: [
+        { label: "About", href: "#how", isInternal: false },
+        { label: t("landing.nav.wins"), href: "#wins", isInternal: false },
+        { label: "Press", href: "mailto:press@playmoney.app", isInternal: false },
+      ],
+    },
+    {
+      h: t("landing.footer.legal"),
+      l: [
+        { label: "Privacy", href: "/privacy", isInternal: true },
+        { label: "Terms", href: "/terms", isInternal: true },
+        { label: "Disclosures", href: "/disclosures", isInternal: true },
+      ],
+    },
   ];
 
   return (
-    <footer className="border-t" style={{ background: "#15110B", borderColor: "#1E5A45" }}>
+    <footer className="border-t border-border-d bg-espresso">
       <div className="container-pm py-14">
         <div className="grid gap-10 sm:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
@@ -527,20 +534,29 @@ function Footer() {
               <p className="eyebrow text-muted-dark">{c.h}</p>
               <ul className="mt-4 space-y-2">
                 {c.l.map((x) => (
-                  <li key={x}>
-                    <a className="text-sm text-text-dark/85 hover:text-text-dark" href="#">
-                      {x}
-                    </a>
+                  <li key={x.label}>
+                    {x.isInternal ? (
+                      <Link
+                        to={x.href}
+                        className="text-sm text-text-dark/85 hover:text-text-dark transition-colors"
+                      >
+                        {x.label}
+                      </Link>
+                    ) : (
+                      <a
+                        className="text-sm text-text-dark/85 hover:text-text-dark transition-colors"
+                        href={x.href}
+                      >
+                        {x.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-        <div
-          className="mt-12 grid items-center gap-4 border-t pt-6 text-center sm:grid-cols-3 sm:text-left"
-          style={{ borderColor: "#1E5A45" }}
-        >
+        <div className="mt-12 grid items-center gap-4 border-t border-border-d pt-6 text-center sm:grid-cols-3 sm:text-left">
           <p className="text-xs text-muted-dark">{t("landing.footer.copyright")}</p>
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-dark">
             <span>Powered by</span>

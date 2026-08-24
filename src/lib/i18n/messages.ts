@@ -399,6 +399,23 @@ export const en = {
   "marquee.reason.renew": "Amazon auto-renew",
   "marquee.reason.atm": "Wrong ATM fee",
   "marquee.reason.delivery": "Late delivery credit",
+
+  // Legal Pages
+  "legal.title.disclosures": "Legal Disclosures & Agreements",
+  "legal.meta.version": "Version",
+  "legal.meta.updatedAt": "Last updated",
+  "legal.meta.hash": "Integrity Hash",
+  "legal.meta.feeBasis": "Success Fee Basis",
+  "legal.meta.cancellation": "Cancellation Policy",
+  "legal.placeholder.title": "Pending Legal Review",
+  "legal.placeholder.notice": "Pending legal-reviewed copy — do not publish live until replaced.",
+  "legal.placeholder.desc":
+    "The formal language for this agreement is currently undergoing compliance and legal verification. Consent hashes recorded during onboarding anchor to the version-controlled release candidate.",
+  "legal.nav.backHome": "← Back to home",
+
+  // Marquee Disclosure
+  "marquee.disclosure.caption": "Illustrative examples",
+  "marquee.disclosure.aria": "Recent illustrative recovery examples",
 } as const;
 
 export const fr: Record<keyof typeof en, string> = {
@@ -818,6 +835,24 @@ export const fr: Record<keyof typeof en, string> = {
   "marquee.reason.renew": "Renouvellement auto Amazon",
   "marquee.reason.atm": "Frais de guichet indus",
   "marquee.reason.delivery": "Crédit de livraison retardée",
+
+  // Legal Pages
+  "legal.title.disclosures": "Divulgations légales et accords",
+  "legal.meta.version": "Version",
+  "legal.meta.updatedAt": "Dernière mise à jour",
+  "legal.meta.hash": "Empreinte d'intégrité",
+  "legal.meta.feeBasis": "Base des frais de réussite",
+  "legal.meta.cancellation": "Politique d'annulation",
+  "legal.placeholder.title": "En attente de révision juridique",
+  "legal.placeholder.notice":
+    "En attente de texte révisé par un conseiller juridique — ne pas publier en direct avant remplacement.",
+  "legal.placeholder.desc":
+    "Le texte officiel de cet accord fait actuellement l'objet d'une vérification de conformité et juridique. Les empreintes de consentement enregistrées lors de l'intégration s'ancrent à la version candidate contrôlée.",
+  "legal.nav.backHome": "← Retour à l'accueil",
+
+  // Marquee Disclosure
+  "marquee.disclosure.caption": "Exemples illustratifs",
+  "marquee.disclosure.aria": "Exemples récents illustratifs de récupération",
 } as const;
 
 export const messages = { en, fr } as const;

@@ -196,13 +196,34 @@ function Onboarding() {
 
   // Content for legal consents
   const tosLink = (
-    <span className="font-semibold text-ink">{t("app.onboarding.step4.tosLabel")}</span>
+    <a
+      href="/terms"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-semibold text-ink underline hover:text-green-btn"
+    >
+      {t("app.onboarding.step4.tosLabel")}
+    </a>
   );
   const privacyLink = (
-    <span className="font-semibold text-ink">{t("app.onboarding.step4.privacyLabel")}</span>
+    <a
+      href="/privacy"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-semibold text-ink underline hover:text-green-btn"
+    >
+      {t("app.onboarding.step4.privacyLabel")}
+    </a>
   );
   const cardLink = (
-    <span className="font-semibold text-ink">{t("app.onboarding.step4.cardLabel")}</span>
+    <a
+      href="/disclosures"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-semibold text-ink underline hover:text-green-btn"
+    >
+      {t("app.onboarding.step4.cardLabel")}
+    </a>
   );
 
   const renderConsentText = (template: string, element: ReactNode) => {
@@ -340,7 +361,7 @@ function Onboarding() {
                       type="email"
                     />
                     {payoutEmail.length > 0 && !payoutEmailValid && (
-                      <p className="mt-1 text-xs text-red-500">
+                      <p className="mt-1 text-xs text-danger">
                         {t("app.onboarding.step3.emailError")}
                       </p>
                     )}
@@ -401,6 +422,7 @@ function Onboarding() {
               )}
               {step > 1 && (
                 <button
+                  type="button"
                   className="text-sm text-ink-muted hover:text-ink disabled:opacity-50"
                   onClick={() => setStep((step - 1) as Step)}
                   disabled={saving || submitting}
