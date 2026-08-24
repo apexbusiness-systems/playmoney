@@ -48,6 +48,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">{t("fallback.error.desc")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
+            type="button"
             onClick={() => {
               router.invalidate();
               reset();
@@ -102,16 +103,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         property: "og:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cbe203bb-3f67-4208-8d83-04e0bf67503e",
+        content: "https://playmoney.icu/og-image.png",
       },
       {
         name: "twitter:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cbe203bb-3f67-4208-8d83-04e0bf67503e",
+        content: "https://playmoney.icu/og-image.png",
       },
     ],
     links: [
+      { rel: "canonical", href: "https://playmoney.icu/" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
       // Fonts are self-hosted via @font-face in styles.css (no third-party CDN).

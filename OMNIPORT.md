@@ -22,9 +22,9 @@ OmniPort is firewalled away from the PlayMoney compliance spine:
 
 OmniPort reads two secrets from the environment (per-request, inside the handler):
 
-| Var                | Purpose                                                        |
-| ------------------ | ------------------------------------------------------------- |
-| `OMNIPORT_ENABLED` | Must be exactly `"true"` to bring the connector online.       |
+| Var                | Purpose                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| `OMNIPORT_ENABLED` | Must be exactly `"true"` to bring the connector online.          |
 | `OMNIPORT_SECRET`  | Long random hex; the HMAC key shared with the OmniHub dashboard. |
 
 Production (Cloudflare Workers):
@@ -56,29 +56,29 @@ comparison is constant-time. A missing/malformed/mismatched signature returns `4
 
 ### Endpoints
 
-| Method · Path               | Auth                 | Purpose                                            |
-| --------------------------- | -------------------- | -------------------------------------------------- |
-| `GET  /api/omniport/health` | enabled-guard only   | Liveness + read-only `OmniSnapshot`.               |
-| `POST /api/omniport/sync`   | enabled + signature  | Authenticated state pull (returns `OmniSnapshot`). |
-| `POST /api/omniport/command`| enabled + signature  | Dispatch one hot-edit command (returns `OmniReceipt`). |
+| Method · Path                | Auth                | Purpose                                                |
+| ---------------------------- | ------------------- | ------------------------------------------------------ |
+| `GET  /api/omniport/health`  | enabled-guard only  | Liveness + read-only `OmniSnapshot`.                   |
+| `POST /api/omniport/sync`    | enabled + signature | Authenticated state pull (returns `OmniSnapshot`).     |
+| `POST /api/omniport/command` | enabled + signature | Dispatch one hot-edit command (returns `OmniReceipt`). |
 
 ### Command packet (`POST /api/omniport/command`)
 
 ```jsonc
 {
-  "command": "SET_FEATURE_FLAG",      // | BROADCAST_NOTICE | REFRESH_CONFIG | HEALTH_PING
+  "command": "SET_FEATURE_FLAG", // | BROADCAST_NOTICE | REFRESH_CONFIG | HEALTH_PING
   "payload": { "key": "beta", "value": "on" },
   "sentAt": "2026-06-22T00:00:00Z",
-  "nonce": "unique-per-packet"
+  "nonce": "unique-per-packet",
 }
 ```
 
-| Command            | Effect                                              | Receipt (DB-derived)            |
-| ------------------ | --------------------------------------------------- | ------------------------------- |
-| `SET_FEATURE_FLAG` | Upsert `omniport_feature_flags(key, value)`         | DB `updated_at` timestamp       |
-| `BROADCAST_NOTICE` | Insert `omniport_command_log` (payload serialized)  | DB-generated row `id`           |
-| `REFRESH_CONFIG`   | Insert `omniport_command_log`                       | DB-generated row `id`           |
-| `HEALTH_PING`      | No write; returns the current `OmniSnapshot`        | snapshot `checkedAt`            |
+| Command            | Effect                                             | Receipt (DB-derived)      |
+| ------------------ | -------------------------------------------------- | ------------------------- |
+| `SET_FEATURE_FLAG` | Upsert `omniport_feature_flags(key, value)`        | DB `updated_at` timestamp |
+| `BROADCAST_NOTICE` | Insert `omniport_command_log` (payload serialized) | DB-generated row `id`     |
+| `REFRESH_CONFIG`   | Insert `omniport_command_log`                      | DB-generated row `id`     |
+| `HEALTH_PING`      | No write; returns the current `OmniSnapshot`       | snapshot `checkedAt`      |
 
 Every receipt is read back from the database **after** the write resolves — a receipt is
 never fabricated before the mutation is confirmed. If the write fails, no `success: true`
@@ -86,12 +86,12 @@ receipt is returned.
 
 ### Responses
 
-| Status | When                                                          |
-| ------ | ------------------------------------------------------------ |
-| `200`  | Command executed / snapshot returned.                        |
+| Status | When                                                                              |
+| ------ | --------------------------------------------------------------------------------- |
+| `200`  | Command executed / snapshot returned.                                             |
 | `400`  | Malformed JSON, invalid packet schema, or invalid payload (structured Zod error). |
-| `401`  | Missing / malformed / mismatched signature.                  |
-| `503`  | `OMNIPORT_ENABLED` is not `"true"` (connector offline).      |
+| `401`  | Missing / malformed / mismatched signature.                                       |
+| `503`  | `OMNIPORT_ENABLED` is not `"true"` (connector offline).                           |
 
 ## Rate limiting
 

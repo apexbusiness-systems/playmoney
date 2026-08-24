@@ -1,9 +1,11 @@
 # Verification Log: LIVE Recovery Dispatch (Resend Adapter)
 
 ## Mission
+
 Execute a full LIVE mode recovery test via script to prove the Resend outbound adapter works end-to-end when `PLAYMONEY_MODE=LIVE` and all gates are green.
 
 ## Evidence
+
 - Test script: `scripts/e2e/test-live-recovery.ts` executed.
 - Modifies `go_live_attestations` for 10 gates to `true`.
 - Sets `PLAYMONEY_MODE="LIVE"`.
@@ -25,7 +27,9 @@ Cleaning up...
 ```
 
 ## Analysis
+
 The test **SUCCEEDED** in proving the code execution path works end-to-end:
+
 1. The compliance spine opened perfectly when `PLAYMONEY_MODE=LIVE` and gates were attested.
 2. The `approveRecoveryFn` successfully built the Recovery Communication Package.
 3. The execution hit the `ResendOutboundAdapter.sendRecoveryPackage` without being blocked by `LiveModeBlockedError`.
@@ -34,7 +38,9 @@ The test **SUCCEEDED** in proving the code execution path works end-to-end:
 6. The `outbound_dispatched` audit event was successfully written to the ledger.
 
 ## Conclusion
+
 The LIVE Recovery Dispatch gate via Resend is **VERIFIED AND COMPLETE**.
 
 ## Next Actions
+
 - The Auth OTP Flow remains blocked due to lack of a test inbox (Mailosaur/Ethereal). This prevents a full GO for release.
